@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "559660006066",
+    "firebase_url": "https://familydap-64a19-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "familydap-64a19",
+    "storage_bucket": "familydap-64a19.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559660006066:android:b964c9ec2c6781fb36e7ab",
+        "android_client_info": {
+          "package_name": "com.familyguard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIGi1qV9uW4PES75mXqYZ5OmCcrrIttsA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

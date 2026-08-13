@@ -1,0 +1,35 @@
+<state_snapshot>
+    <overall_goal>
+        Develop and harden the FamilyGuard Android app to provide robust parental controls, including remote screen locking, specific app protection, persistent background operation, and remote management of child apps.
+    </overall_goal>
+
+    <key_knowledge>
+        - **Icon Sharing**: App icons are converted to 64x64 Base64 PNG thumbnails to stay within Firestore document size limits while providing visual identification in the dashboard.
+        - **Lock All Feature**: Optimized batch processing using `addLockedApps` and `removeLockedApps` in `AppLockPrefs` to minimize disk I/O and prevent UI stutters.
+        - **Search Implementation**: Real-time filtering in both `MainActivity` and `DeviceAppsActivity` now includes "No apps found" UI feedback for better user experience.
+        - **Persistence**: Relies on `SyncWorker`, `GuardService`, and high-priority FCM pings for reliable remote command execution.
+    </key_knowledge>
+
+    <file_system_state>
+        - **MODIFIED**: `app/src/main/java/com/familyguard/utils/AppLockPrefs.kt` - Added batch operation methods for app locking.
+        - **MODIFIED**: `app/src/main/java/com/familyguard/service/GuardService.kt` - Updated `CMD_LOCK_ALL_NON_SYSTEM` to use batch methods.
+        - **MODIFIED**: `app/src/main/java/com/familyguard/ui/MainActivity.kt` & `DeviceAppsActivity.kt` - Integrated empty state visibility for search.
+        - **MODIFIED**: `app/src/main/res/layout/activity_main.xml` & `activity_device_apps.xml` - Added empty state `TextView` for search results.
+        - **MODIFIED**: `app/src/main/res/values/strings.xml` - Added localized strings for empty states.
+    </file_system_state>
+
+    <recent_actions>
+        - Optimized "Lock All" performance by implementing batch SharedPreferences updates.
+        - Enhanced search functionality with visual feedback when no results match the query.
+        - Refined Firestore data publishing to include Base64 icons and synchronized lock states.
+        - Standardized UI components across child and parent views for consistency.
+    </recent_actions>
+
+    <current_plan>
+        1. [DONE] Implement APK logo sharing between child and parent devices.
+        2. [DONE] Implement "Lock All Apps" toggle for remote management.
+        3. [DONE] Implement app search functionality for local and remote lists.
+        4. [DONE] Optimize "Lock All" performance and ensure Firestore limits are respected.
+        5. [DONE] Finalize UI polish for icon display and search feedback.
+    </current_plan>
+</state_snapshot>
