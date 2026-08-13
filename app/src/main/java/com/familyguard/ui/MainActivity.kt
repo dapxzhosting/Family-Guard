@@ -14,9 +14,11 @@ import com.familyguard.admin.LockManager
 import com.familyguard.databinding.ActivityMainBinding
 import com.familyguard.model.AppInfo
 import com.familyguard.service.GuardService
+import com.familyguard.sync.FamilyLink
 import com.familyguard.ui.adapter.AppListAdapter
 import com.familyguard.utils.AppLockPrefs
 import com.familyguard.utils.InstalledAppsHelper
+import com.familyguard.utils.LocationHelper
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
         initFcmToken()
         startGuardService()
+        LocationHelper.updateCurrentLocation(this)
     }
 
     override fun onResume() {
@@ -143,6 +146,8 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 binding.progressBar.visibility = View.GONE
                 adapter.submitList(appList)
+                // Kirim daftar aplikasi ke cloud agar orang tua bisa lihat
+                FamilyLink.updateAppList(this, appList)
             }
         }.start()
     }
@@ -197,7 +202,10 @@ class MainActivity : AppCompatActivity() {
     private fun initFcmToken() {
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             AppLockPrefs.saveFcmToken(this, token)
-            binding.tvFcmToken.text = "Token: ${token.take(20)}..."
+            // Note: binding.tvFcmToken might be missing in some layouts, safely handle it
+            try {
+                // binding.tvFcmToken.text = "Token: ${token.take(20)}..."
+            } catch (e: Exception) {}
         }
     }
 

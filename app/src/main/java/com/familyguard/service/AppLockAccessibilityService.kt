@@ -28,6 +28,12 @@ class AppLockAccessibilityService : AccessibilityService() {
 
             val lockedApps = AppLockPrefs.getLockedApps(this)
             if (lockedApps.contains(packageName)) {
+                // Cek apakah baru saja dibuka dengan PIN (grace period 30 detik)
+                if (AppLockPrefs.isPackageTemporarilyUnlocked(this, packageName)) {
+                    Log.d(TAG, "App $packageName is temporarily unlocked, skipping lock")
+                    return
+                }
+
                 Log.d(TAG, "Blocked app detected: $packageName → showing lock screen")
                 showLockScreen(packageName)
             }

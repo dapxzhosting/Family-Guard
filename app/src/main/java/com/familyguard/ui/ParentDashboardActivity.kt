@@ -9,6 +9,10 @@ import com.familyguard.sync.FamilyDevice
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.database.ValueEventListener
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,24 +27,66 @@ class ParentDashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityParentDashboardBinding
     private var deviceObserver: ValueEventListener? = null
+    private lateinit var appAdapter: com.familyguard.ui.adapter.AppListAdapter
     private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // OSMDroid Configuration
+        Configuration.getInstance().userAgentValue = packageName
+        Configuration.getInstance().load(this, android.preference.PreferenceManager.getDefaultSharedPreferences(this))
+        
         binding = ActivityParentDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = "Kode keluarga: ${formatCode(code)}"
 
+        setupAppRecyclerView()
         setupButtons()
+        setupMap()
         observeConnectedDevices()
+    }
+
+    private fun setupMap() {
+        binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
+        binding.mapView.setMultiTouchControls(true)
+        binding.mapView.controller.setZoom(15.0)
+    }
+
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        binding.mapView.visibility = android.view.View.VISIBLE
+        val point = GeoPoint(lat, lng)
+        binding.mapView.controller.setCenter(point)
+        
+        binding.mapView.overlays.clear()
+        val marker = Marker(binding.mapView)
+        marker.position = point
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        marker.title = "Lokasi Anak"
+        binding.mapView.overlays.add(marker)
+        binding.mapView.invalidate()
+    }
+
+    private fun setupAppRecyclerView() {
+        appAdapter = com.familyguard.ui.adapter.AppListAdapter(
+            onLockToggle = { appInfo, locked ->
+                FamilyLink.sendLockApp(this, appInfo.packageName, locked)
+                toast(if (locked) "Kunci ${appInfo.appName} dikirim" else "Buka ${appInfo.appName} dikirim")
+            },
+            onNotifToggle = { appInfo, blocked ->
+                FamilyLink.sendBlockNotif(this, appInfo.packageName, blocked)
+                toast(if (blocked) "Blokir notif ${appInfo.appName} dikirim" else "Buka notif ${appInfo.appName} dikirim")
+            }
+        )
+        binding.rvChildApps.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvChildApps.adapter = appAdapter
     }
 
     // ─── TOMBOL PERINTAH ─────────────────────────────────────────
 
     private fun setupButtons() {
-
         // Kunci layar HP anak
         binding.btnLockScreen.setOnClickListener {
             confirmAction("Kunci layar HP anak sekarang?") {
@@ -49,9 +95,31 @@ class ParentDashboardActivity : AppCompatActivity() {
             }
         }
 
+        // Buka kunci layar HP anak
+        binding.btnUnlockScreen.setOnClickListener {
+            confirmAction("Buka kunci layar HP anak?") {
+                FamilyLink.sendUnlockScreen(this)
+                toast("Perintah buka kunci dikirim ✓")
+            }
+        }
+
         // Kirim pesan ke HP anak
         binding.btnSendMessage.setOnClickListener {
             showSendMessageDialog()
+        }
+
+        // Atur PIN Anak
+        binding.btnSetPin.setOnClickListener {
+            showSetPinDialog()
+        }
+
+        // Reset Role (untuk testing/pindah device)
+        binding.btnResetRole.setOnClickListener {
+            confirmAction("Reset semua data dan kembali ke awal?") {
+                AppLockPrefs.saveRole(this, "") 
+                AppLockPrefs.saveFamilyCode(this, "")
+                android.os.Process.killProcess(android.os.Process.myPid())
+            }
         }
     }
 
@@ -74,15 +142,78 @@ class ParentDashboardActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showSetPinDialog() {
+        val input = android.widget.EditText(this).apply {
+            hint = "Masukkan 4 digit PIN baru"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            filters = arrayOf(android.text.InputFilter.LengthFilter(4))
+            setPadding(48, 32, 48, 16)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Atur PIN HP Anak")
+            .setMessage("PIN ini akan digunakan anak untuk membuka aplikasi yang dikunci.")
+            .setView(input)
+            .setPositiveButton("Simpan") { _, _ ->
+                val pin = input.text.toString().trim()
+                if (pin.length == 4) {
+                    FamilyLink.sendSetPin(this, pin)
+                    toast("Perintah atur PIN dikirim ✓")
+                } else {
+                    toast("PIN harus 4 digit!")
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
     // ─── OBSERVE PERANGKAT TERHUBUNG ──────────────────────────────
 
     private fun observeConnectedDevices() {
+        // Observer dasar untuk status online
         deviceObserver = FamilyLink.observeDevices(this) { devices ->
-            updateDeviceList(devices)
+            updateDeviceStatusUI(devices)
         }
+
+        // Observer detail untuk app list dan lokasi (ambil dari anak pertama yang ditemukan)
+        val code = AppLockPrefs.getFamilyCode(this) ?: return
+        val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
+        
+        db.child("families").child(code).child("devices")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    val childNode = snapshot.children.firstOrNull { 
+                        it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD 
+                    }
+                    
+                    childNode?.let { node ->
+                        // Update Lokasi
+                        val loc = node.child("location")
+                        val lat = loc.child("lat").getValue(Double::class.java)
+                        val lng = loc.child("lng").getValue(Double::class.java)
+                        if (lat != null && lng != null) {
+                            binding.tvLocation.text = "📍 Terakhir terlihat di: $lat, $lng"
+                            updateMapLocation(lat, lng)
+                        }
+
+                        // Update App List
+                        val appListData = node.child("appList").children.mapNotNull { appSnap ->
+                            val pkg = appSnap.child("packageName").getValue(String::class.java) ?: return@mapNotNull null
+                            val name = appSnap.child("appName").getValue(String::class.java) ?: "App"
+                            val locked = appSnap.child("isLocked").getValue(Boolean::class.java) ?: false
+                            val notifBlocked = appSnap.child("isNotifBlocked").getValue(Boolean::class.java) ?: false
+                            
+                            com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked)
+                        }
+                        if (appListData.isNotEmpty()) {
+                            appAdapter.submitList(appListData)
+                        }
+                    }
+                }
+                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+            })
     }
 
-    private fun updateDeviceList(devices: List<FamilyDevice>) {
+    private fun updateDeviceStatusUI(devices: List<FamilyDevice>) {
         val sb = StringBuilder()
         val children = devices.filter { it.role == AppLockPrefs.ROLE_CHILD }
 
@@ -103,7 +234,9 @@ class ParentDashboardActivity : AppCompatActivity() {
 
     private fun setControlsEnabled(enabled: Boolean) {
         binding.btnLockScreen.isEnabled = enabled
+        binding.btnUnlockScreen.isEnabled = enabled
         binding.btnSendMessage.isEnabled = enabled
+        binding.btnSetPin.isEnabled = enabled
     }
 
     // ─── HELPERS ─────────────────────────────────────────────────

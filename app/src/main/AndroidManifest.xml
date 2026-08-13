@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
@@ -21,15 +27,15 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_family"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/ic_family"
         android:supportsRtl="true"
         android:theme="@style/Theme.FamilyGuard">
 
         <!-- ========== ACTIVITIES ========== -->
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.RoleSelectionActivity"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
@@ -38,6 +44,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
         <activity android:name=".ui.FamilyCodeActivity" android:exported="false" />
         <activity android:name=".ui.ChildHomeActivity" android:exported="false" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
@@ -45,7 +56,8 @@
         <activity
             android:name=".ui.LockScreenActivity"
             android:exported="false"
-            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:excludeFromRecents="true"

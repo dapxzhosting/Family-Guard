@@ -16,11 +16,34 @@ import com.familyguard.ui.MainActivity
  * Foreground Service agar FamilyGuard tetap berjalan di background.
  * Tanpa ini, Android dapat mematikan proses saat tidak aktif.
  */
+import com.familyguard.sync.FamilyLink
+import com.familyguard.ui.LockScreenActivity
+
 class GuardService : Service() {
 
     override fun onCreate() {
         super.onCreate()
         startForeground(NOTIF_ID, buildNotification())
+        
+        // Start listening for remote commands globally
+        FamilyLink.startListening(this, isGlobal = true) { title, message ->
+            showGlobalMessage(title, message)
+        }
+    }
+
+    private fun showGlobalMessage(title: String, message: String) {
+        val intent = Intent(this, LockScreenActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra(LockScreenActivity.EXTRA_MODE, LockScreenActivity.MODE_MESSAGE)
+            putExtra(LockScreenActivity.EXTRA_MESSAGE_TITLE, title)
+            putExtra(LockScreenActivity.EXTRA_MESSAGE_BODY, message)
+        }
+        startActivity(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        FamilyLink.stopListening(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -18,10 +18,19 @@ class RoleSelectionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Kalau role sudah pernah dipilih, langsung lempar ke layar yang sesuai
         val existingRole = AppLockPrefs.getRole(this)
-        if (existingRole != null) {
+        val existingCode = AppLockPrefs.getFamilyCode(this)
+
+        // Jika sudah ada role DAN sudah ada kode, langsung ke Dashboard
+        if (existingRole != null && existingCode != null) {
             goToRoleHome(existingRole)
+            return
+        }
+
+        // Jika sudah pilih role tapi belum ada kode, ke layar kode
+        if (existingRole != null && existingCode == null) {
+            startActivity(Intent(this, FamilyCodeActivity::class.java))
+            finish()
             return
         }
 
@@ -30,12 +39,14 @@ class RoleSelectionActivity : AppCompatActivity() {
 
         binding.btnRoleParent.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_PARENT)
-            goToRoleHome(AppLockPrefs.ROLE_PARENT)
+            startActivity(Intent(this, FamilyCodeActivity::class.java))
+            finish()
         }
 
         binding.btnRoleChild.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_CHILD)
-            goToRoleHome(AppLockPrefs.ROLE_CHILD)
+            startActivity(Intent(this, FamilyCodeActivity::class.java))
+            finish()
         }
     }
 
@@ -43,7 +54,7 @@ class RoleSelectionActivity : AppCompatActivity() {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
             ParentDashboardActivity::class.java
         } else {
-            MainActivity::class.java
+            ChildHomeActivity::class.java
         }
         startActivity(Intent(this, target))
         finish()

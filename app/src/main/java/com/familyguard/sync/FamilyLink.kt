@@ -24,14 +24,48 @@ object FamilyLink {
             child("role").setValue(role)
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
+            child("model").setValue(android.os.Build.MODEL)
             child("online").onDisconnect().setValue(false)
             child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
         }
         Log.d(TAG, "Device registered: $id as $role in family $code")
     }
 
+    fun updateAppList(context: Context, apps: List<com.familyguard.model.AppInfo>) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        
+        val appData = apps.map { app ->
+            mapOf(
+                "packageName" to app.packageName,
+                "appName" to app.appName,
+                "isLocked" to app.isLocked,
+                "isNotifBlocked" to app.isNotifBlocked
+            )
+        }
+        deviceRef(code, id).child("appList").setValue(appData)
+    }
+
+    fun updateLocation(context: Context, lat: Double, lng: Double) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        
+        val locData = mapOf(
+            "lat" to lat,
+            "lng" to lng,
+            "timestamp" to System.currentTimeMillis()
+        )
+        deviceRef(code, id).child("location").setValue(locData)
+    }
+
     fun sendLockScreen(context: Context) =
         sendCommand(context, "lock_screen", emptyMap())
+
+    fun sendUnlockScreen(context: Context) =
+        sendCommand(context, "unlock_screen", emptyMap())
+
+    fun sendSetPin(context: Context, pin: String) =
+        sendCommand(context, "set_pin", mapOf("pin" to pin))
 
     fun sendMessage(context: Context, title: String, message: String) =
         sendCommand(context, "send_message", mapOf("title" to title, "message" to message))
@@ -69,12 +103,22 @@ object FamilyLink {
     }
 
     private var commandListener: ValueEventListener? = null
+    private var isGlobalListener = false
 
-    fun startListening(context: Context, onMessage: (title: String, body: String) -> Unit) {
+    fun startListening(context: Context, isGlobal: Boolean = false, onMessage: (title: String, body: String) -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context) ?: run {
             Log.w(TAG, "No family code — not listening")
             return
         }
+
+        // Jangan timpa listener global dengan listener activity
+        if (commandListener != null && isGlobalListener && !isGlobal) return
+
+        if (commandListener != null) {
+            stopListening(context, true)
+        }
+
+        isGlobalListener = isGlobal
         val lockManager = LockManager(context)
 
         commandListener = object : ValueEventListener {
@@ -89,7 +133,31 @@ object FamilyLink {
                     Log.d(TAG, "Executing command: $type")
 
                     when (type) {
-                        "lock_screen" -> lockManager.lockScreen()
+                        "lock_screen" -> {
+                            // 1. Kunci sistem
+                            lockManager.lockScreen()
+                            // 2. Munculkan overlay LockScreenActivity kita
+                            val intent = android.content.Intent(context, com.familyguard.ui.LockScreenActivity::class.java).apply {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                putExtra(com.familyguard.ui.LockScreenActivity.EXTRA_MODE, com.familyguard.ui.LockScreenActivity.MODE_DEVICE_LOCK)
+                            }
+                            context.startActivity(intent)
+                        }
+
+                        "unlock_screen" -> {
+                            // Kirim broadcast atau gunakan EventBus/LocalBroadcast untuk menutup LockScreenActivity
+                            val intent = android.content.Intent("com.familyguard.ACTION_UNLOCK").apply {
+                                `package` = context.packageName
+                            }
+                            context.sendBroadcast(intent)
+                        }
+
+                        "set_pin" -> {
+                            val pin = payload.child("pin").getValue(String::class.java) ?: ""
+                            if (pin.isNotEmpty()) {
+                                AppLockPrefs.savePin(context, pin)
+                            }
+                        }
 
                         "send_message" -> {
                             val title = payload.child("title").getValue(String::class.java)
@@ -127,10 +195,13 @@ object FamilyLink {
         Log.d(TAG, "Listening for commands in family: $code")
     }
 
-    fun stopListening(context: Context) {
+    fun stopListening(context: Context, force: Boolean = false) {
+        if (isGlobalListener && !force) return // Jangan stop jika ini listener global dari Service
+
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         commandListener?.let { commandsRef(code).removeEventListener(it) }
         commandListener = null
+        isGlobalListener = false
     }
 
     fun observeDevices(

@@ -26,7 +26,17 @@ class AppListAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(app: AppInfo) {
-            binding.ivAppIcon.setImageDrawable(app.icon)
+            val context = binding.root.context
+            val pm = context.packageManager
+            
+            // Mencoba load icon, jika gagal gunakan default
+            val icon = app.icon ?: try {
+                pm.getApplicationIcon(app.packageName)
+            } catch (e: Exception) {
+                androidx.core.content.ContextCompat.getDrawable(context, com.familyguard.R.drawable.ic_family)
+            }
+            
+            binding.ivAppIcon.setImageDrawable(icon)
             binding.tvAppName.text = app.appName
             binding.tvPackageName.text = app.packageName
 
