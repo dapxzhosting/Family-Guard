@@ -54,14 +54,20 @@
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
 
         <activity
+            android:name=".ui.LocationMapActivity"
+            android:exported="false"
+            android:label="Lokasi HP Anak" />
+
+        <activity
             android:name=".ui.LockScreenActivity"
             android:exported="false"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:screenOrientation="portrait"
-            android:launchMode="singleTop"
+            android:launchMode="singleInstance"
             android:excludeFromRecents="true"
-            android:taskAffinity="com.familyguard.lock" />
+            android:taskAffinity="com.familyguard.lock"
+            android:theme="@style/Theme.FamilyGuard.LockScreen" />
 
         <activity
             android:name=".ui.SetupActivity"

@@ -25,6 +25,7 @@ import android.provider.Settings
 import android.view.View
 import com.familyguard.admin.DeviceAdminReceiver
 import com.familyguard.service.AppLockAccessibilityService
+import com.familyguard.service.GuardService
 
 class ChildHomeActivity : AppCompatActivity() {
 
@@ -35,8 +36,44 @@ class ChildHomeActivity : AppCompatActivity() {
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
             LocationHelper.updateCurrentLocation(this)
+            startGuardService()
+            // Setelah lokasi biasa dapat, minta lokasi background (untuk Android 10+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    showBackgroundLocationDialog()
+                }
+            }
+        } else {
+            Toast.makeText(
+                this,
+                "Izin lokasi ditolak — lokasi HP anak tidak akan terlihat di dashboard orang tua.",
+                Toast.LENGTH_LONG
+            ).show()
         }
         updateStatusIcons()
+    }
+
+    private fun showBackgroundLocationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Izin Lokasi Latar Belakang")
+            .setMessage("Agar lokasi anak selalu terpantau walau layar mati atau aplikasi tertutup, pilih 'Izinkan sepanjang waktu' (Allow all the time) pada menu pengaturan lokasi berikutnya.")
+            .setPositiveButton("Buka Pengaturan") { _, _ ->
+                // Catatan: mulai Android 11 (API 30), ACCESS_BACKGROUND_LOCATION tidak lagi
+                // bisa diminta lewat dialog izin biasa bersamaan dengan izin lain — sistem akan
+                // otomatis menolaknya. Satu-satunya cara yang reliable adalah mengarahkan user
+                // ke halaman Detail Aplikasi di Settings, lalu mereka pilih izin lokasi manual.
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Nanti", null)
+            .show()
+    }
+
+    private fun startGuardService() {
+        AppLockPrefs.setGuardEnabled(this, true)
+        GuardService.start(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +91,7 @@ class ChildHomeActivity : AppCompatActivity() {
 
         checkPermissions()
         setupStatusButtons()
-        
+
         binding.root.setOnLongClickListener {
             AppLockPrefs.saveRole(this, "")
             AppLockPrefs.saveFamilyCode(this, "")
@@ -93,6 +130,21 @@ class ChildHomeActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
+        binding.btnLocation.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Belum granted sama sekali -> tampilkan dialog izin biasa
+                requestPermissionLauncher.launch(
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                )
+            } else {
+                // Sudah granted foreground, tapi mungkin background belum -> ke Settings
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+        }
+
         binding.btnSetPinLocal.setOnClickListener {
             startActivity(Intent(this, LockScreenActivity::class.java))
         }
@@ -115,6 +167,16 @@ class ChildHomeActivity : AppCompatActivity() {
         // 4. Notification Listener
         val isNotifActive = isNotificationServiceEnabled()
         setStatus(binding.statusNotif, binding.btnNotifListener, isNotifActive)
+
+        // 5. Izin Lokasi (foreground). Kalau ini aktif tapi lokasi tetap gak muncul
+        // di dashboard ortu, kemungkinan besar penyebabnya bukan izin lagi, melainkan
+        // GPS/fused location belum dapat sinyal (umum terjadi di emulator).
+        val isLocationActive = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        setStatus(binding.statusLocation, binding.btnLocation, isLocationActive)
 
         // PIN Status
         if (AppLockPrefs.hasPin(this)) {
@@ -155,13 +217,14 @@ class ChildHomeActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        
+
         val missing = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
 
         if (missing.isEmpty()) {
             LocationHelper.updateCurrentLocation(this)
+            startGuardService()
         } else {
             requestPermissionLauncher.launch(missing.toTypedArray())
         }

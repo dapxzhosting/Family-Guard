@@ -11,8 +11,15 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
             intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED
         ) {
-            // Restart guard service setelah reboot
-            if (AppLockPrefs.isGuardEnabled(context)) {
+            // Cek apakah mode lock sedang aktif
+            if (AppLockPrefs.isDeviceLocked(context)) {
+                // Beri jeda sedikit agar sistem stabil lalu kunci lagi
+                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                handler.postDelayed({
+                    GuardService.start(context)
+                }, 5000)
+            } else if (AppLockPrefs.isGuardEnabled(context)) {
+                // Restart guard service setelah reboot
                 GuardService.start(context)
             }
         }

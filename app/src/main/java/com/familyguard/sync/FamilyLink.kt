@@ -31,10 +31,32 @@ object FamilyLink {
         Log.d(TAG, "Device registered: $id as $role in family $code")
     }
 
+    /**
+     * Heartbeat berkala supaya status "online" & "lastSeen" di dashboard orang tua
+     * selalu akurat selama app/service masih hidup — bukan cuma sekali pas pairing.
+     *
+     * PENTING: onDisconnect() itu terikat ke KONEKSI Firebase yang aktif saat itu.
+     * Kalau koneksi terputus & sambung ulang (device restart, app di-kill lalu
+     * dibuka lagi, ganti jaringan), handler onDisconnect yang lama otomatis hilang
+     * dan HARUS didaftarkan ulang — makanya di sini juga dipanggil ulang, tidak cukup
+     * cuma di registerDevice() pas pairing pertama kali.
+     */
+    fun sendHeartbeat(context: Context) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+
+        deviceRef(code, id).apply {
+            child("online").setValue(true)
+            child("lastSeen").setValue(System.currentTimeMillis())
+            child("online").onDisconnect().setValue(false)
+            child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
+        }
+    }
+
     fun updateAppList(context: Context, apps: List<com.familyguard.model.AppInfo>) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
-        
+
         val appData = apps.map { app ->
             mapOf(
                 "packageName" to app.packageName,
@@ -49,7 +71,7 @@ object FamilyLink {
     fun updateLocation(context: Context, lat: Double, lng: Double) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
-        
+
         val locData = mapOf(
             "lat" to lat,
             "lng" to lng,
@@ -134,17 +156,21 @@ object FamilyLink {
 
                     when (type) {
                         "lock_screen" -> {
-                            // 1. Kunci sistem
+                            // Simpan status kunci secara lokal
+                            AppLockPrefs.setDeviceLocked(context, true)
+                            // 1. Kunci sistem (jika admin aktif)
                             lockManager.lockScreen()
                             // 2. Munculkan overlay LockScreenActivity kita
                             val intent = android.content.Intent(context, com.familyguard.ui.LockScreenActivity::class.java).apply {
-                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 putExtra(com.familyguard.ui.LockScreenActivity.EXTRA_MODE, com.familyguard.ui.LockScreenActivity.MODE_DEVICE_LOCK)
                             }
                             context.startActivity(intent)
                         }
 
                         "unlock_screen" -> {
+                            // Hapus status kunci secara lokal
+                            AppLockPrefs.setDeviceLocked(context, false)
                             // Kirim broadcast atau gunakan EventBus/LocalBroadcast untuk menutup LockScreenActivity
                             val intent = android.content.Intent("com.familyguard.ACTION_UNLOCK").apply {
                                 `package` = context.packageName
@@ -230,6 +256,46 @@ object FamilyLink {
     }
 
     fun removeDeviceObserver(context: Context, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        devicesRef(code).removeEventListener(listener)
+    }
+
+    /**
+     * Observe lokasi HP anak secara real-time (dipakai oleh LocationMapActivity).
+     * Ambil dari device pertama yang role-nya CHILD dalam family yang sama.
+     */
+    fun observeChildLocation(
+        context: Context,
+        onUpdate: (lat: Double, lng: Double, timestamp: Long) -> Unit,
+        onNoData: () -> Unit = {}
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val childNode = snapshot.children.firstOrNull {
+                    it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD
+                }
+                val loc = childNode?.child("location")
+                val lat = loc?.child("lat")?.getValue(Double::class.java)
+                val lng = loc?.child("lng")?.getValue(Double::class.java)
+                val ts = loc?.child("timestamp")?.getValue(Long::class.java) ?: 0L
+
+                if (lat != null && lng != null) {
+                    onUpdate(lat, lng, ts)
+                } else {
+                    onNoData()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "Location observer cancelled: ${error.message}")
+            }
+        }
+        devicesRef(code).addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeLocationObserver(context: Context, listener: ValueEventListener) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         devicesRef(code).removeEventListener(listener)
     }

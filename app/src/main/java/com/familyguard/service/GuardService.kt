@@ -18,17 +18,50 @@ import com.familyguard.ui.MainActivity
  */
 import com.familyguard.sync.FamilyLink
 import com.familyguard.ui.LockScreenActivity
+import com.familyguard.utils.AppLockPrefs
+import com.familyguard.utils.LocationHelper
 
 class GuardService : Service() {
 
     override fun onCreate() {
         super.onCreate()
         startForeground(NOTIF_ID, buildNotification())
-        
+
+        // Registrasi ulang device setiap kali service start (bukan cuma sekali pas
+        // pairing) supaya status "online" & onDisconnect handler selalu ter-arm dengan
+        // koneksi Firebase yang aktif saat ini. Lihat catatan di FamilyLink.sendHeartbeat().
+        FamilyLink.registerDevice(this)
+
         // Start listening for remote commands globally
         FamilyLink.startListening(this, isGlobal = true) { title, message ->
             showGlobalMessage(title, message)
         }
+
+        if (AppLockPrefs.isDeviceLocked(this)) {
+            showDeviceLockScreen()
+        }
+
+        startPeriodicLocationUpdates()
+    }
+
+    private fun showDeviceLockScreen() {
+        val intent = Intent(this, LockScreenActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra(LockScreenActivity.EXTRA_MODE, LockScreenActivity.MODE_DEVICE_LOCK)
+        }
+        startActivity(intent)
+    }
+
+    private fun startPeriodicLocationUpdates() {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val runnable = object : Runnable {
+            override fun run() {
+                LocationHelper.updateCurrentLocation(this@GuardService)
+                FamilyLink.sendHeartbeat(this@GuardService)
+                handler.postDelayed(this, 60_000) // Update setiap 1 menit
+            }
+        }
+        handler.post(runnable)
     }
 
     private fun showGlobalMessage(title: String, message: String) {

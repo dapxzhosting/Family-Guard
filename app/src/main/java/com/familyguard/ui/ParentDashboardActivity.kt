@@ -32,11 +32,11 @@ class ParentDashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // OSMDroid Configuration
         Configuration.getInstance().userAgentValue = packageName
         Configuration.getInstance().load(this, android.preference.PreferenceManager.getDefaultSharedPreferences(this))
-        
+
         binding = ActivityParentDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -53,13 +53,17 @@ class ParentDashboardActivity : AppCompatActivity() {
         binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
         binding.mapView.setMultiTouchControls(true)
         binding.mapView.controller.setZoom(15.0)
+
+        binding.btnOpenMap.setOnClickListener {
+            startActivity(android.content.Intent(this, LocationMapActivity::class.java))
+        }
     }
 
     private fun updateMapLocation(lat: Double, lng: Double) {
         binding.mapView.visibility = android.view.View.VISIBLE
         val point = GeoPoint(lat, lng)
         binding.mapView.controller.setCenter(point)
-        
+
         binding.mapView.overlays.clear()
         val marker = Marker(binding.mapView)
         marker.position = point
@@ -116,7 +120,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         // Reset Role (untuk testing/pindah device)
         binding.btnResetRole.setOnClickListener {
             confirmAction("Reset semua data dan kembali ke awal?") {
-                AppLockPrefs.saveRole(this, "") 
+                AppLockPrefs.saveRole(this, "")
                 AppLockPrefs.saveFamilyCode(this, "")
                 android.os.Process.killProcess(android.os.Process.myPid())
             }
@@ -177,14 +181,14 @@ class ParentDashboardActivity : AppCompatActivity() {
         // Observer detail untuk app list dan lokasi (ambil dari anak pertama yang ditemukan)
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
-        
+
         db.child("families").child(code).child("devices")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
-                    val childNode = snapshot.children.firstOrNull { 
-                        it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD 
+                    val childNode = snapshot.children.firstOrNull {
+                        it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD
                     }
-                    
+
                     childNode?.let { node ->
                         // Update Lokasi
                         val loc = node.child("location")
@@ -201,7 +205,7 @@ class ParentDashboardActivity : AppCompatActivity() {
                             val name = appSnap.child("appName").getValue(String::class.java) ?: "App"
                             val locked = appSnap.child("isLocked").getValue(Boolean::class.java) ?: false
                             val notifBlocked = appSnap.child("isNotifBlocked").getValue(Boolean::class.java) ?: false
-                            
+
                             com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked)
                         }
                         if (appListData.isNotEmpty()) {

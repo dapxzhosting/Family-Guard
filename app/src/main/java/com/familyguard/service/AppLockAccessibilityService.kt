@@ -18,12 +18,21 @@ class AppLockAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
 
+        // Periksa apakah perangkat sedang dikunci total (Device Lock)
+        if (AppLockPrefs.isDeviceLocked(this)) {
+            val packageName = event.packageName?.toString() ?: ""
+            if (packageName != "com.familyguard") {
+                showLockScreen("", true)
+                return
+            }
+        }
+
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
-
+            
             // Skip sistem & app kita sendiri
             if (packageName == "com.familyguard" || packageName == lastPackage) return
-
+            
             lastPackage = packageName
 
             val lockedApps = AppLockPrefs.getLockedApps(this)
@@ -35,16 +44,16 @@ class AppLockAccessibilityService : AccessibilityService() {
                 }
 
                 Log.d(TAG, "Blocked app detected: $packageName → showing lock screen")
-                showLockScreen(packageName)
+                showLockScreen(packageName, false)
             }
         }
     }
 
-    private fun showLockScreen(packageName: String) {
+    private fun showLockScreen(packageName: String, isDeviceLock: Boolean) {
         val intent = Intent(this, LockScreenActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra(LockScreenActivity.EXTRA_LOCKED_PACKAGE, packageName)
-            putExtra(LockScreenActivity.EXTRA_MODE, LockScreenActivity.MODE_APP_LOCK)
+            putExtra(LockScreenActivity.EXTRA_MODE, if (isDeviceLock) LockScreenActivity.MODE_DEVICE_LOCK else LockScreenActivity.MODE_APP_LOCK)
         }
         startActivity(intent)
     }

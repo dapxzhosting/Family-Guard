@@ -8,4 +8,22 @@
         <item name="colorOnSecondary">#FFFFFF</item>
         <item name="android:statusBarColor">#1A237E</item>
     </style>
+
+    <!--
+        Tema khusus untuk LockScreenActivity: fullscreen tanpa title bar,
+        TAPI tetap turunan MaterialComponents supaya widget seperti
+        TextInputLayout tidak crash (butuh Theme.MaterialComponents atau turunannya).
+        Jangan pakai @android:style/Theme.NoTitleBar.Fullscreen — itu bukan
+        turunan MaterialComponents.
+    -->
+    <style name="Theme.FamilyGuard.LockScreen" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="colorPrimary">#1A237E</item>
+        <item name="colorPrimaryVariant">#0D47A1</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#00695C</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+    </style>
 </resources>

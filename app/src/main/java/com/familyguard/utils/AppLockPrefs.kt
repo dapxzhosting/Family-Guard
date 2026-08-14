@@ -21,6 +21,7 @@ object AppLockPrefs {
     private const val KEY_DEVICE_PIN = "device_pin"
     private const val KEY_FAMILY_CODE = "family_code"
     private const val KEY_ROLE = "role"
+    private const val KEY_DEVICE_LOCKED = "device_locked"
     private const val KEY_LAST_UNLOCKED_PACKAGE = "last_unlocked_pkg"
     private const val KEY_LAST_UNLOCKED_TIME = "last_unlocked_time"
 
@@ -125,12 +126,15 @@ object AppLockPrefs {
         prefs(context).getString(KEY_ROLE, null)
 
     fun getDeviceId(context: Context): String {
-        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown_device"
     }
 
-    // ──────────────────────────────────────────────
-    // GRACE PERIOD (buka kunci sementara)
-    // ──────────────────────────────────────────────
+    fun setDeviceLocked(context: Context, locked: Boolean) {
+        prefs(context).edit().putBoolean(KEY_DEVICE_LOCKED, locked).apply()
+    }
+
+    fun isDeviceLocked(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_DEVICE_LOCKED, false)
 
     fun setPackageUnlocked(context: Context, packageName: String) {
         prefs(context).edit()
