@@ -47,6 +47,15 @@ class LockScreenActivity : Activity() {
                     android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
 
+        // PENTING (fix keyboard tidak muncul): activity yang tampil DI ATAS keyguard
+        // (FLAG_SHOW_WHEN_LOCKED) sering tidak auto-munculin keyboard di banyak HP,
+        // terutama custom ROM (HiOS/Tecno, dll). Paksa mode soft input di sini.
+        @Suppress("DEPRECATION")
+        window.setSoftInputMode(
+            android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        )
+
         // Sembunyikan navigasi dan status bar (Immersive Mode)
         // PENTING: harus dipanggil SETELAH setContentView(), karena window.insetsController
         // butuh DecorView yang baru dibuat saat setContentView() dijalankan. Kalau dipanggil
@@ -54,6 +63,7 @@ class LockScreenActivity : Activity() {
         binding = ActivityLockScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
         hideSystemUI()
+        setupKeyboardInsetsFix()
 
         setFinishOnTouchOutside(false)
 
@@ -74,7 +84,7 @@ class LockScreenActivity : Activity() {
                 binding.tvTitle.text = "Perangkat Terkunci 🛑"
                 binding.tvSubtitle.text = "Gunakan PIN Orang Tua untuk Membuka Sesi"
                 binding.btnGoHome.visibility = android.view.View.GONE
-                binding.btnUnlock.text = "Buka Perangkat"
+                binding.btnUnlock.visibility = android.view.View.GONE
             }
             MODE_MESSAGE -> {
                 val title = intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "Pesan"
@@ -82,21 +92,33 @@ class LockScreenActivity : Activity() {
                 binding.tvTitle.text = "📩 $title"
                 binding.tvSubtitle.text = body
                 binding.btnUnlock.text = "Tutup Pesan"
-                binding.etPin.visibility = android.view.View.GONE
+                binding.pinInputArea.visibility = android.view.View.GONE
                 binding.btnUnlock.setOnClickListener { finish() }
             }
             else -> { // APP_LOCK
                 if (pin == null) {
                     binding.tvTitle.text = "Buat PIN Pertama Kali"
-                    binding.tvSubtitle.text = "Masukkan PIN 4 digit untuk melindungi aplikasi ini"
+                    binding.tvSubtitle.text = "Masukkan PIN 4-6 digit untuk melindungi aplikasi ini"
                     binding.btnUnlock.text = "Simpan PIN"
                     binding.btnUnlock.setOnClickListener { setFirstPin() }
                 } else {
                     binding.tvTitle.text = "Aplikasi Dikunci 🔒"
                     binding.tvSubtitle.text = "Masukkan PIN orang tua untuk membuka"
+                    // Tombol "Buka Aplikasi" dihapus -- PIN akan diverifikasi
+                    // OTOMATIS begitu jumlah digit yang diketik sudah pas
+                    // sepanjang PIN yang di-set orang tua (lihat setupPinInputAndKeyboard).
+                    binding.btnUnlock.visibility = android.view.View.GONE
                 }
             }
         }
+
+        // PENTING: jumlah titik PIN yang ditampilkan & batas digit yang bisa
+        // diketik mengikuti PANJANG PIN ASLI yang di-set orang tua (4-6 digit),
+        // bukan selalu 6 titik. Kalau belum ada PIN sama sekali (setup pertama
+        // kali), tampilkan 6 titik sebagai batas maksimal yang boleh dibuat.
+        val pinLength = pin?.length?.coerceIn(4, MAX_PIN_LENGTH) ?: MAX_PIN_LENGTH
+        setupPinDotsCount(pinLength)
+        binding.etPin.filters = arrayOf(android.text.InputFilter.LengthFilter(pinLength))
 
         if (mode != MODE_MESSAGE && pin != null) {
             binding.btnUnlock.setOnClickListener { verifyPin(pin) }
@@ -106,6 +128,118 @@ class LockScreenActivity : Activity() {
 
         if (mode == MODE_DEVICE_LOCK) {
             startPersistenceTimer()
+        }
+
+        if (mode != MODE_MESSAGE) {
+            setupPinInputAndKeyboard()
+        }
+    }
+
+    /**
+     * Fix "keyboard tidak muncul": minta fokus ke etPin lalu paksa tampilkan
+     * keyboard lewat InputMethodManager, dengan sedikit delay supaya window
+     * benar-benar sudah attached (butuh delay khusus untuk window yang tampil
+     * di atas keyguard). Ditambah fallback: tap di kolom PIN akan memaksa
+     * keyboard muncul lagi kalau OEM tetap menutupnya otomatis, dan tombol
+     * "Done" di keyboard langsung memicu verifikasi PIN.
+     */
+    private fun setupPinInputAndKeyboard() {
+        binding.etPin.isFocusableInTouchMode = true
+        binding.etPin.requestFocus()
+
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+
+        binding.etPin.post {
+            binding.etPin.requestFocus()
+            imm.showSoftInput(binding.etPin, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+        }
+        // Delay tambahan sebagai jaring pengaman -- beberapa OEM butuh sedikit
+        // jeda lebih lama setelah window over-keyguard benar-benar siap.
+        binding.etPin.postDelayed({
+            binding.etPin.requestFocus()
+            imm.showSoftInput(binding.etPin, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+        }, 300)
+
+        binding.etPin.setOnClickListener {
+            binding.etPin.requestFocus()
+            imm.showSoftInput(binding.etPin, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+        }
+
+        binding.etPin.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                binding.btnUnlock.performClick()
+                true
+            } else {
+                false
+            }
+        }
+
+        // Update titik-titik PIN setiap kali teks berubah, dan tap di area
+        // manapun di kotak PIN (termasuk di sekitar titik-titik) tetap fokus
+        // ke EditText tersembunyi. Kalau ini layar VERIFIKASI (PIN sudah ada),
+        // begitu jumlah digit yang diketik sudah PAS sepanjang PIN tersimpan,
+        // langsung verifikasi otomatis -- tidak perlu tombol "Buka" lagi.
+        val savedPinForAutoSubmit = AppLockPrefs.getPin(this)
+        binding.etPin.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val length = s?.length ?: 0
+                updatePinDots(length)
+                if (mode != MODE_MESSAGE && savedPinForAutoSubmit != null && length == savedPinForAutoSubmit.length) {
+                    verifyPin(savedPinForAutoSubmit)
+                }
+            }
+        })
+        binding.pinInputArea.setOnClickListener {
+            binding.etPin.requestFocus()
+            imm.showSoftInput(binding.etPin, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+        }
+    }
+
+    /**
+     * Tampilkan hanya sejumlah `count` titik PIN (menyembunyikan sisanya),
+     * supaya jumlah titik yang kelihatan PERSIS sama dengan panjang PIN asli
+     * yang di-set orang tua -- bukan selalu 6 titik.
+     */
+    private fun setupPinDotsCount(count: Int) {
+        val dots = listOf(binding.dot1, binding.dot2, binding.dot3, binding.dot4, binding.dot5, binding.dot6)
+        dots.forEachIndexed { index, dot ->
+            dot.visibility = if (index < count) android.view.View.VISIBLE else android.view.View.GONE
+        }
+    }
+
+    /**
+     * Isi/kosongkan titik-titik PIN sesuai jumlah karakter yang sudah diketik,
+     * supaya kelihatan seperti kotak input PIN asli (bukan angka polos).
+     */
+    private fun updatePinDots(filledCount: Int) {
+        val dots = listOf(binding.dot1, binding.dot2, binding.dot3, binding.dot4, binding.dot5, binding.dot6)
+        dots.forEachIndexed { index, dot ->
+            dot.setBackgroundResource(
+                if (index < filledCount) com.familyguard.R.drawable.pin_dot_filled
+                else com.familyguard.R.drawable.pin_dot_empty
+            )
+        }
+    }
+
+    /**
+     * Fix "tombol Buka Aplikasi/Perangkat ketutup keyboard": karena hideSystemUI()
+     * memanggil setDecorFitsSystemWindows(false) untuk mode immersive, sistem
+     * BERHENTI otomatis menyusutkan layout saat keyboard muncul (konflik dengan
+     * android:windowSoftInputMode="adjustResize"). Jadi kita tangani manual di
+     * sini: dengarkan inset IME (keyboard), lalu kasih padding-bottom ke
+     * ScrollView sebesar tinggi keyboard supaya seluruh konten -- termasuk
+     * tombol paling bawah -- tetap bisa di-scroll sampai kelihatan penuh.
+     */
+    private fun setupKeyboardInsetsFix() {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.rootScroll) { view, insets ->
+            val imeHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, imeHeight)
+            if (imeHeight > 0) {
+                binding.rootScroll.post { binding.rootScroll.fullScroll(android.view.View.FOCUS_DOWN) }
+            }
+            insets
         }
     }
 
@@ -117,9 +251,13 @@ class LockScreenActivity : Activity() {
     }
 
     private fun setFirstPin() {
-        val input = binding.etPin.text.toString()
+        val input = binding.etPin.text.toString().trim()
         if (input.length < 4) {
             Toast.makeText(this, "PIN minimal 4 digit", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (input.length > MAX_PIN_LENGTH) {
+            Toast.makeText(this, "PIN maksimal $MAX_PIN_LENGTH digit", Toast.LENGTH_SHORT).show()
             return
         }
         AppLockPrefs.savePin(this, input)
@@ -128,8 +266,8 @@ class LockScreenActivity : Activity() {
     }
 
     private fun verifyPin(savedPin: String) {
-        val input = binding.etPin.text?.toString() ?: ""
-        if (input == savedPin) {
+        val input = binding.etPin.text?.toString()?.trim() ?: ""
+        if (input == savedPin.trim()) {
             if (mode == MODE_APP_LOCK && lockedPackage != null) {
                 // Beri waktu 30 detik akses
                 AppLockPrefs.setPackageUnlocked(this, lockedPackage!!)
@@ -153,13 +291,22 @@ class LockScreenActivity : Activity() {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
-                if (!isFinishing && mode == MODE_DEVICE_LOCK) {
-                    // Pastikan kita tetap di depan
+                // PENTING (fix lag & patah-patah pas ngetik PIN di Device Lock):
+                // Sebelumnya startActivity() dipanggil TIAP 2 DETIK TANPA SYARAT,
+                // termasuk saat activity ini sendiri sedang difokus & anak lagi
+                // mengetik PIN -- tiap panggilan startActivity() ke sistem bikin
+                // main thread kena hentakan (transaction ke ActivityManager), jadi
+                // ketikan kerasa patah-patah. Sekarang HANYA relaunch kalau window
+                // ini benar-benar SUDAH KEHILANGAN FOKUS (artinya ada yang berhasil
+                // menutupi/mengalihkan layar ini) -- bukan proaktif tiap 2 detik.
+                if (!isFinishing && mode == MODE_DEVICE_LOCK && !hasWindowFocus()) {
                     val intent = android.content.Intent(this@LockScreenActivity, LockScreenActivity::class.java).apply {
                         addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                         putExtra(EXTRA_MODE, mode)
                     }
                     startActivity(intent)
+                }
+                if (!isFinishing && mode == MODE_DEVICE_LOCK) {
                     handler.postDelayed(this, 2000) // Cek setiap 2 detik
                 }
             }
@@ -192,13 +339,30 @@ class LockScreenActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        isForeground = true
         hideSystemUI()
+        // Munculin lagi keyboard tiap kali activity ini resume (misal habis watchdog
+        // relaunch activity) -- hideSystemUI() kadang ikut menutup keyboard yang sudah tampil.
+        if (mode != MODE_MESSAGE && ::binding.isInitialized) {
+            binding.etPin.postDelayed({
+                if (!isFinishing) {
+                    binding.etPin.requestFocus()
+                    val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                    imm.showSoftInput(binding.etPin, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+                }
+            }, 200)
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        // Jika dipaksa keluar (misal lewat Assistant atau cara cerdik lainnya)
-        if (!isFinishing && (mode == MODE_DEVICE_LOCK || mode == MODE_APP_LOCK)) {
+        isForeground = false
+        // Auto-relaunch HANYA untuk MODE_DEVICE_LOCK (mengunci seluruh perangkat).
+        // Untuk MODE_APP_LOCK, anak HARUS bisa keluar (pencet Home/Back) ke home screen
+        // tanpa PIN -- yang diblokir itu re-entry ke app yang dikunci (via Accessibility
+        // Service), bukan exit dari layar kunci ini. Kalau MODE_APP_LOCK ikut di-relaunch
+        // di sini, anak jadi terjebak selamanya di layar kunci walau sudah "keluar".
+        if (!isFinishing && mode == MODE_DEVICE_LOCK) {
             val intent = android.content.Intent(this, LockScreenActivity::class.java).apply {
                 addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 putExtra(EXTRA_MODE, mode)
@@ -248,8 +412,9 @@ class LockScreenActivity : Activity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        // Jika user mencoba memencet HOME (terutama di Android versi lama)
-        if (mode == MODE_DEVICE_LOCK || mode == MODE_APP_LOCK) {
+        // Sama seperti onPause(): hanya kejar-kejar balik untuk MODE_DEVICE_LOCK.
+        // MODE_APP_LOCK harus dibiarkan pergi ke Home tanpa dipaksa balik.
+        if (mode == MODE_DEVICE_LOCK) {
             val intent = android.content.Intent(this, LockScreenActivity::class.java).apply {
                 addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(EXTRA_MODE, mode)
@@ -273,6 +438,7 @@ class LockScreenActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isForeground = false
         try {
             unregisterReceiver(unlockReceiver)
         } catch (e: Exception) {
@@ -281,6 +447,12 @@ class LockScreenActivity : Activity() {
     }
 
     companion object {
+        // Dibaca oleh AppLockAccessibilityService (di thread berbeda) untuk skip
+        // watchdog polling total selama lock screen ini sedang tampil di depan --
+        // supaya tidak ada beban tambahan ke main thread pas anak mengetik PIN.
+        @Volatile
+        var isForeground: Boolean = false
+
         const val EXTRA_LOCKED_PACKAGE = "locked_package"
         const val EXTRA_MODE = "mode"
         const val EXTRA_MESSAGE_TITLE = "msg_title"
@@ -289,5 +461,7 @@ class LockScreenActivity : Activity() {
         const val MODE_APP_LOCK = "app_lock"
         const val MODE_DEVICE_LOCK = "device_lock"
         const val MODE_MESSAGE = "message"
+
+        const val MAX_PIN_LENGTH = 6
     }
 }

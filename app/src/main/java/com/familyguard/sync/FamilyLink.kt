@@ -104,6 +104,34 @@ object FamilyLink {
             mapOf("package_name" to packageName, "action" to if (block) "add" else "remove")
         )
 
+    // ===== Lihat Layar & Kontrol Jarak Jauh =====
+    // Dikirim dari HP ORANG TUA ke HP ANAK lewat channel command yang sama.
+
+    /** Minta HP anak mulai membagikan layarnya. Anak akan melihat dialog izin
+     * "Mulai merekam layar?" dari sistem Android sekali (ini WAJIB dari Android,
+     * tidak bisa dilewati oleh aplikasi manapun tanpa akses Device Owner). */
+    fun sendRequestScreenShare(context: Context) =
+        sendCommand(context, "start_screen_share", emptyMap())
+
+    fun sendStopScreenShare(context: Context) =
+        sendCommand(context, "stop_screen_share", emptyMap())
+
+    /** Kirim tap jarak jauh. x, y dinormalisasi 0.0-1.0 relatif terhadap lebar/tinggi
+     * layar HP anak (bukan pixel absolut), supaya rasio tetap benar walau resolusi beda. */
+    fun sendRemoteTap(context: Context, xNorm: Float, yNorm: Float) =
+        sendCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm))
+
+    /** Kirim swipe/drag jarak jauh (dipakai untuk scroll, swipe, dsb saat Mode Kontrol aktif). */
+    fun sendRemoteSwipe(context: Context, x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long) =
+        sendCommand(
+            context, "remote_swipe",
+            mapOf("x1" to x1, "y1" to y1, "x2" to x2, "y2" to y2, "duration" to durationMs)
+        )
+
+    /** Kirim tombol back jarak jauh (tidak bisa lewat dispatchGesture biasa). */
+    fun sendRemoteBack(context: Context) =
+        sendCommand(context, "remote_back", emptyMap())
+
     private fun sendCommand(context: Context, type: String, payload: Map<String, Any>) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val deviceId = AppLockPrefs.getDeviceId(context)
@@ -205,6 +233,27 @@ object FamilyLink {
                             if (action == "add") AppLockPrefs.addBlockedNotifApp(context, pkg)
                             else AppLockPrefs.removeBlockedNotifApp(context, pkg)
                         }
+
+                        "start_screen_share" -> {
+                            // Diproses HP ANAK: minta izin MediaProjection ke sistem (sekali,
+                            // wajib dari Android) lalu mulai capture layar. Lewat activity
+                            // transparan karena createScreenCaptureIntent() butuh Activity context.
+                            val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(i)
+                        }
+
+                        "stop_screen_share" -> {
+                            context.stopService(android.content.Intent(context, com.familyguard.service.ScreenCaptureService::class.java))
+                        }
+
+                        "remote_tap", "remote_swipe", "remote_back" -> {
+                            // Diproses HP ANAK: teruskan ke AccessibilityService yang sedang
+                            // aktif untuk benar-benar men-simulasikan sentuhan di layar.
+                            com.familyguard.service.AppLockAccessibilityService.instance
+                                ?.executeRemoteInput(type, payload)
+                        }
                     }
 
                     cmdSnap.ref.child("done").setValue(true)
@@ -304,6 +353,78 @@ object FamilyLink {
     private fun devicesRef(code: String) = familyRef(code).child("devices")
     private fun deviceRef(code: String, deviceId: String) = devicesRef(code).child(deviceId)
     private fun commandsRef(code: String) = familyRef(code).child("commands")
+
+    // ===== Streaming layar (frame demi frame lewat RTDB) =====
+    // Cukup 1 node yang DITIMPA tiap frame baru (bukan ditambah/push), supaya
+    // data lama otomatis "hilang" dan tidak menumpuk di database.
+
+    /** Dipanggil dari HP ANAK (ScreenCaptureService) untuk mengirim 1 frame layar. */
+    fun uploadScreenFrame(context: Context, base64Jpeg: String, width: Int, height: Int) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).child("screen_stream").setValue(
+            mapOf(
+                "frame" to base64Jpeg,
+                "width" to width,
+                "height" to height,
+                "timestamp" to System.currentTimeMillis()
+            )
+        )
+    }
+
+    /** Dipanggil dari HP ORANG TUA (ChildScreenViewActivity) untuk memantau frame terbaru.
+     *
+     * PENTING (fix lag parah): sebelumnya listener dipasang di SELURUH node
+     * "devices" (semua data semua device -- lokasi, app list, dll), jadi tiap
+     * ada 1 frame baru, SELURUH pohon data ikut ke-download ulang, bukan cuma
+     * framenya. Sekarang: cari deviceId anak SEKALI (single read, ringan),
+     * lalu pasang listener LANGSUNG ke node screen_stream anak itu saja --
+     * jadi tiap update cuma ngirim payload frame doang, jauh lebih ringan &
+     * lebih cepat sampai. */
+    private var screenStreamRef: DatabaseReference? = null
+
+    fun observeScreenStream(
+        context: Context,
+        onFrame: (base64Jpeg: String, width: Int, height: Int) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val frame = snapshot.child("frame").getValue(String::class.java) ?: return
+                val width = snapshot.child("width").getValue(Int::class.java) ?: return
+                val height = snapshot.child("height").getValue(Int::class.java) ?: return
+                onFrame(frame, width, height)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "Screen stream observer cancelled: ${error.message}")
+            }
+        }
+
+        // Cari deviceId anak sekali saja (bukan tiap frame), baru pasang
+        // listener khusus di node screen_stream-nya.
+        devicesRef(code).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val childId = snapshot.children.firstOrNull {
+                    it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD
+                }?.key ?: return
+                val ref = deviceRef(code, childId).child("screen_stream")
+                screenStreamRef = ref
+                ref.addValueEventListener(listener)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "Gagal cari device anak: ${error.message}")
+            }
+        })
+
+        return listener
+    }
+
+    fun removeScreenStreamObserver(context: Context, listener: ValueEventListener) {
+        screenStreamRef?.removeEventListener(listener)
+        screenStreamRef = null
+    }
 }
 
 data class FamilyDevice(

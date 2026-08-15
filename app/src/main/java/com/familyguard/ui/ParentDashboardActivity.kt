@@ -58,7 +58,6 @@ class ParentDashboardActivity : AppCompatActivity() {
             startActivity(android.content.Intent(this, LocationMapActivity::class.java))
         }
     }
-
     private fun updateMapLocation(lat: Double, lng: Double) {
         binding.mapView.visibility = android.view.View.VISIBLE
         val point = GeoPoint(lat, lng)
@@ -124,6 +123,11 @@ class ParentDashboardActivity : AppCompatActivity() {
                 AppLockPrefs.saveFamilyCode(this, "")
                 android.os.Process.killProcess(android.os.Process.myPid())
             }
+        }
+
+        // Lihat & kontrol layar HP anak secara real-time
+        binding.btnViewScreen.setOnClickListener {
+            startActivity(android.content.Intent(this, ChildScreenViewActivity::class.java))
         }
     }
 

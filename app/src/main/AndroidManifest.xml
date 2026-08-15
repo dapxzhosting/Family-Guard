@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -67,6 +68,7 @@
             android:launchMode="singleInstance"
             android:excludeFromRecents="true"
             android:taskAffinity="com.familyguard.lock"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.FamilyGuard.LockScreen" />
 
         <activity
@@ -146,6 +148,23 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="family_guard_monitoring" />
         </service>
+
+        <!-- ========== SCREEN CAPTURE SERVICE (Lihat Layar Anak) ========== -->
+        <service
+            android:name=".service.ScreenCaptureService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
+        <activity
+            android:name=".ui.ScreenCaptureRequestActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name=".ui.ChildScreenViewActivity"
+            android:exported="false"
+            android:label="Layar HP Anak"
+            android:screenOrientation="portrait" />
 
     </application>
 </manifest>
