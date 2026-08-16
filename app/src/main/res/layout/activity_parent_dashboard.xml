@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- HEADER -->
+            <!-- ============ HEADER ============ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- KONTEN -->
+            <!-- ============ KONTEN ============ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -200,71 +200,97 @@
                         android:paddingTop="18dp"
                         android:paddingBottom="14dp">
 
-                        <!-- Baris 1: Lock / Unlock / Pesan / PIN -->
+                        <!-- Aksi Cepat: pakai MaterialButton asli (2x2 grid), lebih
+                             reliable ditekan daripada tile custom, karena widget bawaan
+                             Android sudah punya touch-handling teruji, tanpa perlu
+                             workaround requestDisallowInterceptTouchEvent segala. -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp">
 
-                            <LinearLayout
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnLockScreen"
-                                style="@style/DashQuickAction"
-                                android:foreground="?attr/selectableItemBackgroundBorderless"
-                                android:enabled="false">
-                                <FrameLayout style="@style/DashQuickAction.IconWrap"
-                                    android:background="@drawable/bg_icon_circle_danger">
-                                    <ImageView style="@style/DashQuickAction.Icon"
-                                        android:src="@drawable/ic_lock"
-                                        app:tint="@color/dash_danger"
-                                        android:contentDescription="Kunci Layar" />
-                                </FrameLayout>
-                                <TextView style="@style/DashQuickAction.Label" android:text="Kunci\nLayar" />
-                            </LinearLayout>
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="56dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:text="Kunci Layar"
+                                android:textAllCaps="false"
+                                android:textSize="12sp"
+                                android:enabled="false"
+                                app:icon="@drawable/ic_lock"
+                                app:iconGravity="textStart"
+                                app:iconSize="18dp"
+                                app:iconPadding="6dp"
+                                app:backgroundTint="@color/dash_danger"
+                                app:cornerRadius="12dp" />
 
-                            <LinearLayout
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnUnlockScreen"
-                                style="@style/DashQuickAction"
-                                android:foreground="?attr/selectableItemBackgroundBorderless"
-                                android:enabled="false">
-                                <FrameLayout style="@style/DashQuickAction.IconWrap"
-                                    android:background="@drawable/bg_icon_circle_success">
-                                    <ImageView style="@style/DashQuickAction.Icon"
-                                        android:src="@drawable/ic_unlock"
-                                        app:tint="@color/dash_success"
-                                        android:contentDescription="Buka Kunci" />
-                                </FrameLayout>
-                                <TextView style="@style/DashQuickAction.Label" android:text="Buka\nKunci" />
-                            </LinearLayout>
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="56dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="6dp"
+                                android:text="Buka Kunci"
+                                android:textAllCaps="false"
+                                android:textSize="12sp"
+                                android:enabled="false"
+                                app:icon="@drawable/ic_unlock"
+                                app:iconGravity="textStart"
+                                app:iconSize="18dp"
+                                app:iconPadding="6dp"
+                                app:backgroundTint="@color/dash_success"
+                                app:cornerRadius="12dp" />
+                        </LinearLayout>
 
-                            <LinearLayout
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp">
+
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSendMessage"
-                                style="@style/DashQuickAction"
-                                android:foreground="?attr/selectableItemBackgroundBorderless"
-                                android:enabled="false">
-                                <FrameLayout style="@style/DashQuickAction.IconWrap"
-                                    android:background="@drawable/bg_icon_circle_info">
-                                    <ImageView style="@style/DashQuickAction.Icon"
-                                        android:src="@drawable/ic_message"
-                                        app:tint="@color/dash_info"
-                                        android:contentDescription="Kirim Pesan" />
-                                </FrameLayout>
-                                <TextView style="@style/DashQuickAction.Label" android:text="Kirim\nPesan" />
-                            </LinearLayout>
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="56dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:text="Kirim Pesan"
+                                android:textAllCaps="false"
+                                android:textSize="12sp"
+                                android:enabled="false"
+                                app:icon="@drawable/ic_message"
+                                app:iconGravity="textStart"
+                                app:iconSize="18dp"
+                                app:iconPadding="6dp"
+                                app:backgroundTint="@color/dash_info"
+                                app:cornerRadius="12dp" />
 
-                            <LinearLayout
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSetPin"
-                                style="@style/DashQuickAction"
-                                android:foreground="?attr/selectableItemBackgroundBorderless"
-                                android:enabled="false">
-                                <FrameLayout style="@style/DashQuickAction.IconWrap"
-                                    android:background="@drawable/bg_icon_circle_purple">
-                                    <ImageView style="@style/DashQuickAction.Icon"
-                                        android:src="@drawable/ic_key"
-                                        app:tint="@color/dash_purple"
-                                        android:contentDescription="Atur PIN" />
-                                </FrameLayout>
-                                <TextView style="@style/DashQuickAction.Label" android:text="Atur\nPIN" />
-                            </LinearLayout>
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="56dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="6dp"
+                                android:text="Atur PIN"
+                                android:textAllCaps="false"
+                                android:textSize="12sp"
+                                android:enabled="false"
+                                app:icon="@drawable/ic_key"
+                                app:iconGravity="textStart"
+                                app:iconSize="18dp"
+                                app:iconPadding="6dp"
+                                app:backgroundTint="@color/dash_purple"
+                                app:cornerRadius="12dp" />
                         </LinearLayout>
 
                         <View

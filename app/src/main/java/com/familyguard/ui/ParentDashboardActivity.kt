@@ -90,6 +90,16 @@ class ParentDashboardActivity : AppCompatActivity() {
     // ─── TOMBOL PERINTAH ─────────────────────────────────────────
 
     private fun setupButtons() {
+        // Cegah NestedScrollView "mencuri" gesture tap sebagai scroll -- tanpa ini,
+        // sedikit saja jari bergeser saat menekan tile (sangat umum terjadi di
+        // layar sentuh), Android membatalkan klik dan menganggapnya scroll. Ini
+        // penyebab utama tombol terasa "susah dipencet" padahal listener sudah benar.
+        preventScrollInterceptOnTouch(
+            binding.btnLockScreen, binding.btnUnlockScreen,
+            binding.btnSendMessage, binding.btnSetPin,
+            binding.btnViewScreen, binding.btnResetRole, binding.btnOpenMap
+        )
+
         // Kunci layar HP anak
         binding.btnLockScreen.setOnClickListener {
             confirmAction("Kunci layar HP anak sekarang?") {
@@ -128,6 +138,23 @@ class ParentDashboardActivity : AppCompatActivity() {
         // Lihat & kontrol layar HP anak secara real-time
         binding.btnViewScreen.setOnClickListener {
             startActivity(android.content.Intent(this, ChildScreenViewActivity::class.java))
+        }
+    }
+
+    /** Beritahu parent (NestedScrollView) untuk tidak intercept touch begitu jari
+     * menyentuh salah satu view ini, sehingga klik pendek tidak dibatalkan gara-gara
+     * sedikit pergeseran jari yang biasanya dianggap gestur scroll. */
+    private fun preventScrollInterceptOnTouch(vararg views: android.view.View) {
+        views.forEach { v ->
+            v.setOnTouchListener { view, event ->
+                if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                    view.parent?.requestDisallowInterceptTouchEvent(true)
+                } else if (event.action == android.view.MotionEvent.ACTION_UP ||
+                    event.action == android.view.MotionEvent.ACTION_CANCEL) {
+                    view.parent?.requestDisallowInterceptTouchEvent(false)
+                }
+                false // tetap teruskan event supaya setOnClickListener tetap jalan normal
+            }
         }
     }
 
