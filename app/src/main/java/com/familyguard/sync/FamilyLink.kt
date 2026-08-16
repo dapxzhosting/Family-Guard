@@ -235,13 +235,22 @@ object FamilyLink {
                         }
 
                         "start_screen_share" -> {
-                            // Diproses HP ANAK: minta izin MediaProjection ke sistem (sekali,
-                            // wajib dari Android) lalu mulai capture layar. Lewat activity
-                            // transparan karena createScreenCaptureIntent() butuh Activity context.
-                            val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
-                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            // Kalau ScreenCaptureService sudah jalan (dari sesi sebelumnya),
+                            // cukup bikin peer connection baru -- TANPA dialog consent lagi.
+                            // Consent MediaProjection cuma perlu sekali selama service ini
+                            // belum benar-benar dimatikan (lihat ScreenCaptureService.instance).
+                            val running = com.familyguard.service.ScreenCaptureService.instance
+                            if (running != null) {
+                                running.reconnectPeer()
+                            } else {
+                                // Diproses HP ANAK: minta izin MediaProjection ke sistem (sekali,
+                                // wajib dari Android) lalu mulai capture layar. Lewat activity
+                                // transparan karena createScreenCaptureIntent() butuh Activity context.
+                                val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
+                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(i)
                             }
-                            context.startActivity(i)
                         }
 
                         "stop_screen_share" -> {
@@ -424,6 +433,113 @@ object FamilyLink {
     fun removeScreenStreamObserver(context: Context, listener: ValueEventListener) {
         screenStreamRef?.removeEventListener(listener)
         screenStreamRef = null
+    }
+
+    // ===== WebRTC signaling (SDP + ICE candidate lewat RTDB) =====
+    // RTDB di sini CUMA dipakai untuk tukar-menukar "alamat" koneksi (signaling),
+    // video sungguhan mengalir langsung peer-to-peer (atau lewat TURN relay kalau
+    // NAT strict) via WebRTC -- makanya bisa jauh lebih tinggi fps & rendah delay
+    // dibanding kirim tiap frame lewat RTDB.
+
+    private fun webrtcRef(code: String) = familyRef(code).child("webrtc")
+
+    /** Dipanggil HP ANAK setelah PeerConnection membuat SDP offer. */
+    fun sendWebRtcOffer(context: Context, sdp: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        webrtcRef(code).apply {
+            child("offer").setValue(sdp)
+            child("answer").removeValue()
+            child("candidates_child").removeValue()
+            child("candidates_parent").removeValue()
+        }
+    }
+
+    /** Dipanggil HP ORANG TUA setelah membuat SDP answer dari offer anak. */
+    fun sendWebRtcAnswer(context: Context, sdp: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        webrtcRef(code).child("answer").setValue(sdp)
+    }
+
+    fun sendIceCandidate(context: Context, fromChild: Boolean, sdpMid: String?, sdpMLineIndex: Int, candidate: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val node = if (fromChild) "candidates_child" else "candidates_parent"
+        webrtcRef(code).child(node).push().setValue(
+            mapOf("sdpMid" to sdpMid, "sdpMLineIndex" to sdpMLineIndex, "candidate" to candidate)
+        )
+    }
+
+    private var offerListener: ValueEventListener? = null
+    private var answerListener: ValueEventListener? = null
+    private var childCandidatesListener: ValueEventListener? = null
+    private var parentCandidatesListener: ValueEventListener? = null
+
+    /** HP ORANG TUA: dengarkan offer dari anak. */
+    fun observeWebRtcOffer(context: Context, onOffer: (String) -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        offerListener?.let { webrtcRef(code).child("offer").removeEventListener(it) }
+        offerListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.getValue(String::class.java)?.let(onOffer)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        webrtcRef(code).child("offer").addValueEventListener(offerListener!!)
+    }
+
+    /** HP ANAK: dengarkan answer dari orang tua. */
+    fun observeWebRtcAnswer(context: Context, onAnswer: (String) -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        answerListener?.let { webrtcRef(code).child("answer").removeEventListener(it) }
+        answerListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.getValue(String::class.java)?.let(onAnswer)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        webrtcRef(code).child("answer").addValueEventListener(answerListener!!)
+    }
+
+    fun observeIceCandidates(context: Context, fromChild: Boolean, onCandidate: (sdpMid: String?, sdpMLineIndex: Int, candidate: String) -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val node = if (fromChild) "candidates_child" else "candidates_parent"
+
+        // Hapus dulu listener LAMA di node yang SAMA (kalau ada, dari sesi sebelumnya)
+        // sebelum daftar yang baru -- supaya tidak ada 2 listener numpuk di node
+        // yang sama dan menyebabkan command lama (yang nunjuk ke PeerConnection
+        // yang sudah di-dispose) tetap ke-trigger dan crash (use-after-free native).
+        val oldListener = if (fromChild) childCandidatesListener else parentCandidatesListener
+        oldListener?.let { webrtcRef(code).child(node).removeEventListener(it) }
+
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (c in snapshot.children) {
+                    val mid = c.child("sdpMid").getValue(String::class.java)
+                    val idx = c.child("sdpMLineIndex").getValue(Int::class.java) ?: 0
+                    val cand = c.child("candidate").getValue(String::class.java) ?: continue
+                    onCandidate(mid, idx, cand)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        webrtcRef(code).child(node).addValueEventListener(listener)
+        // Simpan listener dikunci berdasarkan NODE tempat dia terdaftar (bukan
+        // "fromChild" yang gampang ketuker) supaya clearWebRtcSession() pasti
+        // menghapusnya dari node yang tepat.
+        if (fromChild) childCandidatesListener = listener else parentCandidatesListener = listener
+    }
+
+    /** Bersihkan seluruh sesi signaling (dipanggil saat mulai/berhenti berbagi layar). */
+    fun clearWebRtcSession(context: Context) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        offerListener?.let { webrtcRef(code).child("offer").removeEventListener(it) }
+        answerListener?.let { webrtcRef(code).child("answer").removeEventListener(it) }
+        // Node "candidates_child" didengarkan oleh listener yang didaftarkan dengan
+        // fromChild=true (childCandidatesListener), dan sebaliknya untuk "candidates_parent".
+        childCandidatesListener?.let { webrtcRef(code).child("candidates_child").removeEventListener(it) }
+        parentCandidatesListener?.let { webrtcRef(code).child("candidates_parent").removeEventListener(it) }
+        offerListener = null; answerListener = null
+        childCandidatesListener = null; parentCandidatesListener = null
+        webrtcRef(code).removeValue()
     }
 }
 

@@ -168,6 +168,42 @@ class AppLockAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * Versi cepat: dipanggil dari WebRTC DataChannel (bukan RTDB), payload berupa
+     * JSON string simple. Latency jauh lebih rendah daripada lewat RTDB karena
+     * data mengalir P2P langsung tanpa round-trip ke server Firebase.
+     * Format JSON: {"type":"remote_tap","x":0.5,"y":0.5}
+     *              {"type":"remote_swipe","x1":..,"y1":..,"x2":..,"y2":..,"duration":150}
+     *              {"type":"remote_back"}
+     */
+    fun executeRemoteInputJson(json: org.json.JSONObject) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) return
+
+        val w = com.familyguard.service.RemoteControlState.realScreenWidth.toFloat()
+        val h = com.familyguard.service.RemoteControlState.realScreenHeight.toFloat()
+
+        when (json.optString("type")) {
+            "remote_tap" -> {
+                val xNorm = json.optDouble("x", -1.0).toFloat()
+                val yNorm = json.optDouble("y", -1.0).toFloat()
+                if (xNorm < 0 || yNorm < 0) return
+                dispatchTap(xNorm * w, yNorm * h)
+            }
+            "remote_swipe" -> {
+                val x1 = json.optDouble("x1", -1.0).toFloat()
+                val y1 = json.optDouble("y1", -1.0).toFloat()
+                val x2 = json.optDouble("x2", -1.0).toFloat()
+                val y2 = json.optDouble("y2", -1.0).toFloat()
+                if (x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0) return
+                val duration = json.optLong("duration", 150L)
+                dispatchSwipe(x1 * w, y1 * h, x2 * w, y2 * h, duration.coerceIn(50L, 2000L))
+            }
+            "remote_back" -> {
+                performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+        }
+    }
+
     private fun dispatchTap(x: Float, y: Float) {
         val path = android.graphics.Path().apply { moveTo(x, y) }
         val stroke = android.accessibilityservice.GestureDescription.StrokeDescription(path, 0, 60)

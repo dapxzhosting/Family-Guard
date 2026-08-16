@@ -69,6 +69,9 @@ dependencies {
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
+    // WebRTC (screen streaming real-time, gantiin polling JPEG lewat RTDB)
+    implementation("io.getstream:stream-webrtc-android:1.3.9")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

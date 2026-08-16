@@ -51,13 +51,10 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <ImageView
-            android:id="@+id/ivScreen"
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/rendererScreen"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:contentDescription="Layar HP anak"
-            android:scaleType="fitCenter" />
+            android:layout_height="match_parent" />
 
         <ProgressBar
             android:id="@+id/progressLoading"

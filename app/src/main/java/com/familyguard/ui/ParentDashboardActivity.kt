@@ -41,7 +41,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
-        binding.tvFamilyCode.text = "Kode keluarga: ${formatCode(code)}"
+        binding.tvFamilyCode.text = formatCode(code)
 
         setupAppRecyclerView()
         setupButtons()
@@ -199,7 +199,7 @@ class ParentDashboardActivity : AppCompatActivity() {
                         val lat = loc.child("lat").getValue(Double::class.java)
                         val lng = loc.child("lng").getValue(Double::class.java)
                         if (lat != null && lng != null) {
-                            binding.tvLocation.text = "📍 Terakhir terlihat di: $lat, $lng"
+                            binding.tvLocation.text = "Terakhir terlihat di: $lat, $lng"
                             updateMapLocation(lat, lng)
                         }
 
@@ -224,27 +224,39 @@ class ParentDashboardActivity : AppCompatActivity() {
     private fun updateDeviceStatusUI(devices: List<FamilyDevice>) {
         val sb = StringBuilder()
         val children = devices.filter { it.role == AppLockPrefs.ROLE_CHILD }
+        val anyOnline = children.any { it.online }
+
+        // Dot + chip status di kartu status device
+        binding.dotDeviceStatus.setBackgroundResource(
+            if (anyOnline) com.familyguard.R.drawable.dot_online else com.familyguard.R.drawable.dot_offline
+        )
+        // Dot + chip status ringkas di header
+        binding.dotHeaderStatus.setBackgroundResource(
+            if (anyOnline) com.familyguard.R.drawable.dot_online else com.familyguard.R.drawable.dot_offline
+        )
+        binding.tvHeaderStatus.text = if (anyOnline) "Terhubung" else "Terputus"
 
         if (children.isEmpty()) {
-            binding.tvDeviceStatus.text = "⏳ Belum ada HP anak yang terhubung.\nBagikan kode keluarga ke HP anak."
+            binding.tvDeviceStatus.text = "Belum ada HP anak yang terhubung"
             setControlsEnabled(false)
             return
         }
 
         children.forEach { device ->
-            val status = if (device.online) "🟢 Online" else "⚫ Offline"
-            val lastSeen = if (!device.online) " (${sdf.format(Date(device.lastSeen))})" else ""
-            sb.appendLine("HP Anak $status$lastSeen")
+            val status = if (device.online) "Online" else "Offline"
+            val lastSeen = if (!device.online) " · terakhir ${sdf.format(Date(device.lastSeen))}" else ""
+            sb.appendLine("HP Anak · $status$lastSeen")
         }
         binding.tvDeviceStatus.text = sb.toString().trim()
         setControlsEnabled(true)
     }
 
     private fun setControlsEnabled(enabled: Boolean) {
-        binding.btnLockScreen.isEnabled = enabled
-        binding.btnUnlockScreen.isEnabled = enabled
-        binding.btnSendMessage.isEnabled = enabled
-        binding.btnSetPin.isEnabled = enabled
+        val alpha = if (enabled) 1.0f else 0.4f
+        listOf(binding.btnLockScreen, binding.btnUnlockScreen, binding.btnSendMessage, binding.btnSetPin).forEach {
+            it.isEnabled = enabled
+            it.alpha = alpha
+        }
     }
 
     // ─── HELPERS ─────────────────────────────────────────────────
