@@ -24,6 +24,8 @@ object AppLockPrefs {
     private const val KEY_DEVICE_LOCKED = "device_locked"
     private const val KEY_LAST_UNLOCKED_PACKAGE = "last_unlocked_pkg"
     private const val KEY_LAST_UNLOCKED_TIME = "last_unlocked_time"
+    private const val KEY_USER_NAME = "user_name"
+    private const val KEY_FAMILY_NAME = "family_name"
 
     const val ROLE_PARENT = "PARENT"
     const val ROLE_CHILD = "CHILD"
@@ -153,4 +155,22 @@ object AppLockPrefs {
         }
         return false
     }
+
+    // ──────────────────────────────────────────────
+    // USER NAME (dari layar setelah login Google) & NAMA KELUARGA
+    // ──────────────────────────────────────────────
+
+    fun saveUserName(context: Context, name: String) {
+        prefs(context).edit().putString(KEY_USER_NAME, name).apply()
+    }
+
+    fun getUserName(context: Context): String? =
+        prefs(context).getString(KEY_USER_NAME, null)
+
+    fun saveFamilyName(context: Context, name: String) {
+        prefs(context).edit().putString(KEY_FAMILY_NAME, name).apply()
+    }
+
+    fun getFamilyName(context: Context): String? =
+        prefs(context).getString(KEY_FAMILY_NAME, null)
 }

@@ -58,14 +58,27 @@ object FamilyLink {
         val id = AppLockPrefs.getDeviceId(context)
 
         val appData = apps.map { app ->
+            val iconB64 = try {
+                app.icon?.let { com.familyguard.utils.InstalledAppsHelper.iconToBase64(it) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal convert icon untuk ${app.packageName}: ${e.javaClass.simpleName} - ${e.message}", e)
+                null
+            }
             mapOf(
                 "packageName" to app.packageName,
                 "appName" to app.appName,
                 "isLocked" to app.isLocked,
-                "isNotifBlocked" to app.isNotifBlocked
+                "isNotifBlocked" to app.isNotifBlocked,
+                "icon" to (iconB64 ?: "")
             )
         }
+        val emptyIconCount = appData.count { (it["icon"] as? String).isNullOrEmpty() }
+        Log.d(TAG, "updateAppList: total=${appData.size}, gagal_icon=$emptyIconCount")
+
         deviceRef(code, id).child("appList").setValue(appData)
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Gagal upload appList ke Firebase: ${e.message}", e)
+            }
     }
 
     fun updateLocation(context: Context, lat: Double, lng: Double) {

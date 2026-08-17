@@ -25,6 +25,8 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:allowBackup="true"
@@ -36,7 +38,7 @@
 
         <!-- ========== ACTIVITIES ========== -->
         <activity
-            android:name=".ui.RoleSelectionActivity"
+            android:name=".ui.LoginActivity"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
@@ -44,6 +46,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ui.NameInputActivity" android:exported="false" />
+        <activity android:name=".ui.FamilyNameActivity" android:exported="false" />
+
+        <activity
+            android:name=".ui.RoleSelectionActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
 
         <activity
             android:name=".ui.MainActivity"
@@ -101,6 +111,11 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <!-- ========== GUARD WATCHDOG (restart GuardService kalau di-kill OS) ========== -->
+        <receiver
+            android:name=".receiver.GuardWatchdogReceiver"
+            android:exported="false" />
 
         <!-- ========== FIREBASE MESSAGING ========== -->
         <service

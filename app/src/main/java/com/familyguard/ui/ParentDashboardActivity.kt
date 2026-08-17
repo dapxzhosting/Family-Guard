@@ -236,8 +236,9 @@ class ParentDashboardActivity : AppCompatActivity() {
                             val name = appSnap.child("appName").getValue(String::class.java) ?: "App"
                             val locked = appSnap.child("isLocked").getValue(Boolean::class.java) ?: false
                             val notifBlocked = appSnap.child("isNotifBlocked").getValue(Boolean::class.java) ?: false
+                            val iconB64 = appSnap.child("icon").getValue(String::class.java)?.takeIf { it.isNotEmpty() }
 
-                            com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked)
+                            com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked, iconB64)
                         }
                         if (appListData.isNotEmpty()) {
                             appAdapter.submitList(appListData)

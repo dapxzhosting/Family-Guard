@@ -28,14 +28,22 @@ class AppListAdapter(
         fun bind(app: AppInfo) {
             val context = binding.root.context
             val pm = context.packageManager
-            
-            // Mencoba load icon, jika gagal gunakan default
-            val icon = app.icon ?: try {
-                pm.getApplicationIcon(app.packageName)
-            } catch (e: Exception) {
-                androidx.core.content.ContextCompat.getDrawable(context, com.familyguard.R.drawable.ic_family)
-            }
-            
+
+            // Urutan prioritas:
+            // 1. app.icon -> kalau list ini dari device lokal (mis. halaman anak sendiri)
+            // 2. app.iconBase64 -> hasil sync dari HP anak lewat Firebase (dashboard ortu)
+            // 3. coba PackageManager lokal (buat app yg kebetulan juga ada di HP ini)
+            // 4. default ic_family
+            val icon = app.icon
+                ?: app.iconBase64?.let {
+                    com.familyguard.utils.InstalledAppsHelper.base64ToDrawable(context, it)
+                }
+                ?: try {
+                    pm.getApplicationIcon(app.packageName)
+                } catch (e: Exception) {
+                    androidx.core.content.ContextCompat.getDrawable(context, com.familyguard.R.drawable.ic_family)
+                }
+
             binding.ivAppIcon.setImageDrawable(icon)
             binding.tvAppName.text = app.appName
             binding.tvPackageName.text = app.packageName
@@ -62,6 +70,8 @@ class AppListAdapter(
     class DiffCallback : DiffUtil.ItemCallback<AppInfo>() {
         override fun areItemsTheSame(old: AppInfo, new: AppInfo) = old.packageName == new.packageName
         override fun areContentsTheSame(old: AppInfo, new: AppInfo) =
-            old.isLocked == new.isLocked && old.isNotifBlocked == new.isNotifBlocked
+            old.isLocked == new.isLocked &&
+                    old.isNotifBlocked == new.isNotifBlocked &&
+                    old.iconBase64 == new.iconBase64
     }
 }

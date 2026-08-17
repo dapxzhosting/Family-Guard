@@ -22,6 +22,11 @@ class BootReceiver : BroadcastReceiver() {
                 // Restart guard service setelah reboot
                 GuardService.start(context)
             }
+
+            // Aktifkan lagi watchdog alarm setelah reboot (alarm tidak survive reboot)
+            if (AppLockPrefs.isGuardEnabled(context)) {
+                com.familyguard.receiver.GuardWatchdogReceiver.schedule(context)
+            }
         }
     }
 }

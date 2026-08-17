@@ -91,6 +91,9 @@ class ChildHomeActivity : AppCompatActivity() {
 
         checkPermissions()
         setupStatusButtons()
+        syncInstalledAppsToCloud()
+        com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
+        requestIgnoreBatteryOptimization()
 
         binding.root.setOnLongClickListener {
             AppLockPrefs.saveRole(this, "")
@@ -106,6 +109,71 @@ class ChildHomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateStatusIcons()
+    }
+
+    /**
+     * Ambil daftar app terinstall lalu kirim ke Firebase supaya dashboard
+     * orang tua bisa menampilkan & mengontrolnya. Sebelumnya fungsi ini
+     * cuma ada di MainActivity, padahal HP anak sebenarnya jalan lewat
+     * ChildHomeActivity -- jadi appList (dan iconnya) tidak pernah ke-sync.
+     */
+    private fun syncInstalledAppsToCloud() {
+        Thread {
+            try {
+                val locked = AppLockPrefs.getLockedApps(this)
+                val blockedNotif = AppLockPrefs.getBlockedNotificationApps(this)
+                val apps = com.familyguard.utils.InstalledAppsHelper.getInstalledApps(this).map { app ->
+                    app.copy(
+                        isLocked = locked.contains(app.packageName),
+                        isNotifBlocked = blockedNotif.contains(app.packageName)
+                    )
+                }
+                runOnUiThread {
+                    FamilyLink.updateAppList(this, apps)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ChildHomeActivity", "Gagal sync app list: ${e.message}", e)
+            }
+        }.start()
+    }
+
+    /**
+     * Minta izin supaya app dikecualikan dari battery optimization Android.
+     * PENTING: di HP dengan custom OS agresif (HiOS/itel, Tecno, Infinix,
+     * MIUI, ColorOS, dll), izin standar Android ini SAJA seringkali TIDAK
+     * CUKUP -- OEM tersebut punya "Autostart"/"Battery Manager" terpisah di
+     * luar API Android biasa yang harus diaktifkan manual oleh user lewat
+     * halaman pengaturan mereka sendiri (lihat dialog yang ditampilkan).
+     */
+    private fun requestIgnoreBatteryOptimization() {
+        val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            AlertDialog.Builder(this)
+                .setTitle("Izinkan Berjalan di Latar Belakang")
+                .setMessage(
+                    "Supaya FamilyGuard tidak dimatikan sistem dan perintah dari orang tua " +
+                            "selalu bisa diterima, aktifkan 'Izinkan' pada dialog berikutnya.\n\n" +
+                            "Kalau HP ini merk itel/Tecno/Infinix, tolong juga buka Pengaturan > " +
+                            "Baterai > Manajemen Aplikasi > FamilyGuard, lalu aktifkan 'Autostart' " +
+                            "dan set batasan baterai ke 'Tanpa batasan'."
+                )
+                .setPositiveButton("Lanjutkan") { _, _ ->
+                    try {
+                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        // Beberapa OEM tidak menyediakan dialog ini -- arahkan ke detail app manual
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
+                        startActivity(intent)
+                    }
+                }
+                .setNegativeButton("Nanti", null)
+                .show()
+        }
     }
 
     private fun setupStatusButtons() {

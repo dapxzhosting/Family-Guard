@@ -7,5 +7,6 @@ data class AppInfo(
     val appName: String,
     val icon: Drawable?,
     var isLocked: Boolean = false,
-    var isNotifBlocked: Boolean = false
+    var isNotifBlocked: Boolean = false,
+    val iconBase64: String? = null // hasil sync dari Firebase (dashboard ortu)
 )

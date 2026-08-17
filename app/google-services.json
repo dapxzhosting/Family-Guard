@@ -13,7 +13,20 @@
           "package_name": "com.familyguard"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "559660006066-qi22u1d2s22jfur3gh06f49ikvdkueb2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.familyguard",
+            "certificate_hash": "ccf2b5df5d2915b034444d561310319c3604e653"
+          }
+        },
+        {
+          "client_id": "559660006066-5joevkod2hao94p0hkn4bhgohql9nd1u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBIGi1qV9uW4PES75mXqYZ5OmCcrrIttsA"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "559660006066-5joevkod2hao94p0hkn4bhgohql9nd1u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

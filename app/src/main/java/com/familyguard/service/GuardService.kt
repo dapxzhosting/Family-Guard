@@ -42,6 +42,10 @@ class GuardService : Service() {
         }
 
         startPeriodicLocationUpdates()
+
+        // Re-arm watchdog setiap kali service ini hidup (baik start normal
+        // maupun di-restart otomatis oleh watchdog itu sendiri).
+        com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
     }
 
     private fun showDeviceLockScreen() {
