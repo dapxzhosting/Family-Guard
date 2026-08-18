@@ -14,6 +14,16 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
+/**
+ * Layar paling pertama yang dibuka user (launcher activity, gantiin posisi
+ * RoleSelectionActivity yang lama). Alurnya:
+ *
+ * LoginActivity (Google Sign-In)
+ *   -> NameInputActivity (isi nama, cuma sekali di login pertama)
+ *     -> RoleSelectionActivity (pilih Orang Tua / Anak, alur lama tidak berubah)
+ *       -> [khusus Orang Tua] FamilyNameActivity (isi nama keluarga)
+ *         -> FamilyCodeActivity (generate/masukkan kode, alur lama tidak berubah)
+ */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -37,15 +47,14 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Sudah pernah login sebelumnya -> lewati layar ini
         if (auth.currentUser != null) {
             routeNext()
             return
         }
-
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(com.familyguard.R.string.default_web_client_id))
@@ -76,14 +85,28 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    /** Setelah login sukses: kalau nama belum pernah diisi, ke NameInputActivity dulu. */
+    /**
+     * Setelah login sukses: cek dulu apakah akun ini sudah pernah setup di HP
+     * lain (nama/role/kode keluarga tersimpan di Firebase). Kalau ada, isi
+     * otomatis & lompat langsung ke home -- tidak perlu isi ulang dari nol.
+     */
     private fun routeNext() {
-        val target = if (AppLockPrefs.getUserName(this).isNullOrBlank()) {
-            NameInputActivity::class.java
-        } else {
-            RoleSelectionActivity::class.java
+        binding.progressBar.visibility = android.view.View.VISIBLE
+        com.familyguard.sync.FamilyLink.fetchUserProfile(this) { _ ->
+            val role = AppLockPrefs.getRole(this)
+            val code = AppLockPrefs.getFamilyCode(this)
+            val name = AppLockPrefs.getUserName(this)
+
+            val target = when {
+                name.isNullOrBlank() -> NameInputActivity::class.java
+                role.isNullOrBlank() -> RoleSelectionActivity::class.java
+                code.isNullOrBlank() && role == AppLockPrefs.ROLE_PARENT -> FamilyNameActivity::class.java
+                code.isNullOrBlank() -> FamilyCodeActivity::class.java
+                role == AppLockPrefs.ROLE_PARENT -> ParentDashboardActivity::class.java
+                else -> ChildHomeActivity::class.java
+            }
+            startActivity(Intent(this, target))
+            finish()
         }
-        startActivity(Intent(this, target))
-        finish()
     }
 }

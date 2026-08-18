@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="Family Guard By Dapxz">
         <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2026-08-15T10:15:27.745127400Z">
+        <DropdownSelection timestamp="2026-08-17T14:01:22.167753600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=106083741B102639" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=279aed4a7d79" />
             </handle>
           </Target>
         </DropdownSelection>

@@ -18,6 +18,13 @@ class RoleSelectionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Jaga-jaga kalau activity ini kebuka langsung tanpa lewat LoginActivity
+        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         val existingRole = AppLockPrefs.getRole(this)
         val existingCode = AppLockPrefs.getFamilyCode(this)
 
@@ -27,10 +34,9 @@ class RoleSelectionActivity : AppCompatActivity() {
             return
         }
 
-        // Jika sudah pilih role tapi belum ada kode, ke layar kode
+        // Jika sudah pilih role tapi belum ada kode, lanjutkan dari titik yang sesuai
         if (existingRole != null && existingCode == null) {
-            startActivity(Intent(this, FamilyCodeActivity::class.java))
-            finish()
+            goToNextStep(existingRole)
             return
         }
 
@@ -39,15 +45,26 @@ class RoleSelectionActivity : AppCompatActivity() {
 
         binding.btnRoleParent.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_PARENT)
-            startActivity(Intent(this, FamilyCodeActivity::class.java))
-            finish()
+            com.familyguard.sync.FamilyLink.saveUserProfile(this)
+            goToNextStep(AppLockPrefs.ROLE_PARENT)
         }
 
         binding.btnRoleChild.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_CHILD)
-            startActivity(Intent(this, FamilyCodeActivity::class.java))
-            finish()
+            com.familyguard.sync.FamilyLink.saveUserProfile(this)
+            goToNextStep(AppLockPrefs.ROLE_CHILD)
         }
+    }
+
+    /** Orang tua isi nama keluarga dulu; anak langsung ke layar kode seperti alur lama. */
+    private fun goToNextStep(role: String) {
+        val target = if (role == AppLockPrefs.ROLE_PARENT) {
+            FamilyNameActivity::class.java
+        } else {
+            FamilyCodeActivity::class.java
+        }
+        startActivity(Intent(this, target))
+        finish()
     }
 
     private fun goToRoleHome(role: String) {

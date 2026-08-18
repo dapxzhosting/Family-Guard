@@ -30,6 +30,21 @@ class ParentDashboardActivity : AppCompatActivity() {
     private lateinit var appAdapter: com.familyguard.ui.adapter.AppListAdapter
     private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
+    // Daftar HP anak yang terhubung & yang lagi dipilih untuk dikontrol/dilihat.
+    // Sebelumnya dashboard cuma nampilin/ngontrol device anak PERTAMA yang ketemu --
+    // sekarang bisa 2-10 anak, dipilih lewat spinnerChildSelector.
+    private var childDevices: List<FamilyDevice> = emptyList()
+    private var selectedChildId: String? = null
+    private var appListListener: ValueEventListener? = null
+
+    /** Device ID anak yang sedang dipilih di dashboard. Dipakai semua tombol kontrol. */
+    private fun requireSelectedChildId(): String? {
+        if (selectedChildId == null) {
+            toast("Belum ada HP anak yang dipilih")
+        }
+        return selectedChildId
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -75,11 +90,13 @@ class ParentDashboardActivity : AppCompatActivity() {
     private fun setupAppRecyclerView() {
         appAdapter = com.familyguard.ui.adapter.AppListAdapter(
             onLockToggle = { appInfo, locked ->
-                FamilyLink.sendLockApp(this, appInfo.packageName, locked)
+                val target = requireSelectedChildId() ?: return@AppListAdapter
+                FamilyLink.sendLockApp(this, appInfo.packageName, locked, target)
                 toast(if (locked) "Kunci ${appInfo.appName} dikirim" else "Buka ${appInfo.appName} dikirim")
             },
             onNotifToggle = { appInfo, blocked ->
-                FamilyLink.sendBlockNotif(this, appInfo.packageName, blocked)
+                val target = requireSelectedChildId() ?: return@AppListAdapter
+                FamilyLink.sendBlockNotif(this, appInfo.packageName, blocked, target)
                 toast(if (blocked) "Blokir notif ${appInfo.appName} dikirim" else "Buka notif ${appInfo.appName} dikirim")
             }
         )
@@ -102,16 +119,18 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         // Kunci layar HP anak
         binding.btnLockScreen.setOnClickListener {
+            val target = requireSelectedChildId() ?: return@setOnClickListener
             confirmAction("Kunci layar HP anak sekarang?") {
-                FamilyLink.sendLockScreen(this)
+                FamilyLink.sendLockScreen(this, target)
                 toast("Perintah kunci layar dikirim ✓")
             }
         }
 
         // Buka kunci layar HP anak
         binding.btnUnlockScreen.setOnClickListener {
+            val target = requireSelectedChildId() ?: return@setOnClickListener
             confirmAction("Buka kunci layar HP anak?") {
-                FamilyLink.sendUnlockScreen(this)
+                FamilyLink.sendUnlockScreen(this, target)
                 toast("Perintah buka kunci dikirim ✓")
             }
         }
@@ -137,7 +156,10 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         // Lihat & kontrol layar HP anak secara real-time
         binding.btnViewScreen.setOnClickListener {
-            startActivity(android.content.Intent(this, ChildScreenViewActivity::class.java))
+            val target = requireSelectedChildId() ?: return@setOnClickListener
+            startActivity(android.content.Intent(this, ChildScreenViewActivity::class.java).apply {
+                putExtra(ChildScreenViewActivity.EXTRA_DEVICE_ID, target)
+            })
         }
     }
 
@@ -168,8 +190,9 @@ class ParentDashboardActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Kirim") { _, _ ->
                 val msg = input.text.toString().trim()
-                if (msg.isNotBlank()) {
-                    FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg)
+                val target = requireSelectedChildId()
+                if (msg.isNotBlank() && target != null) {
+                    FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg, target)
                     toast("Pesan dikirim ✓")
                 }
             }
@@ -190,10 +213,11 @@ class ParentDashboardActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Simpan") { _, _ ->
                 val pin = input.text.toString().trim()
-                if (pin.length == 4) {
-                    FamilyLink.sendSetPin(this, pin)
+                val target = requireSelectedChildId()
+                if (pin.length == 4 && target != null) {
+                    FamilyLink.sendSetPin(this, pin, target)
                     toast("Perintah atur PIN dikirim ✓")
-                } else {
+                } else if (pin.length != 4) {
                     toast("PIN harus 4 digit!")
                 }
             }
@@ -204,49 +228,94 @@ class ParentDashboardActivity : AppCompatActivity() {
     // ─── OBSERVE PERANGKAT TERHUBUNG ──────────────────────────────
 
     private fun observeConnectedDevices() {
-        // Observer dasar untuk status online
+        // Observer dasar untuk status online + isi spinner pilihan anak
         deviceObserver = FamilyLink.observeDevices(this) { devices ->
             updateDeviceStatusUI(devices)
+            updateChildSelector(devices)
+        }
+    }
+
+    /** Isi spinner dengan semua HP anak (role CHILD) yang terhubung ke family ini. */
+    private fun updateChildSelector(devices: List<FamilyDevice>) {
+        childDevices = devices.filter { it.role == AppLockPrefs.ROLE_CHILD }
+
+        if (childDevices.isEmpty()) {
+            binding.layoutChildSelector.visibility = android.view.View.GONE
+            selectedChildId = null
+            return
         }
 
-        // Observer detail untuk app list dan lokasi (ambil dari anak pertama yang ditemukan)
+        // Spinner cuma ditampilkan kalau lebih dari 1 anak -- kalau cuma 1, langsung
+        // dipilih otomatis tanpa perlu user pilih apa-apa.
+        binding.layoutChildSelector.visibility =
+            if (childDevices.size > 1) android.view.View.VISIBLE else android.view.View.GONE
+
+        val labels = childDevices.map { device ->
+            val name = device.userName?.takeIf { it.isNotBlank() } ?: "HP Anak (${device.deviceId.take(6)})"
+            val status = if (device.online) "🟢" else "⚪"
+            "$status $name"
+        }
+
+        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerChildSelector.adapter = adapter
+
+        // Pertahankan pilihan sebelumnya kalau device itu masih ada di list terbaru,
+        // supaya spinner gak "reset" ke device pertama tiap kali Firebase update.
+        val previousIndex = childDevices.indexOfFirst { it.deviceId == selectedChildId }
+        val indexToSelect = if (previousIndex >= 0) previousIndex else 0
+        binding.spinnerChildSelector.setSelection(indexToSelect, false)
+        selectChild(childDevices[indexToSelect].deviceId)
+
+        binding.spinnerChildSelector.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                selectChild(childDevices[position].deviceId)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    /** Pindah tampilan appList & lokasi ke HP anak tertentu. */
+    private fun selectChild(deviceId: String) {
+        if (selectedChildId == deviceId && appListListener != null) return
+        selectedChildId = deviceId
+
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
+        val deviceRef = db.child("families").child(code).child("devices").child(deviceId)
 
-        db.child("families").child(code).child("devices")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
-                    val childNode = snapshot.children.firstOrNull {
-                        it.child("role").getValue(String::class.java) == AppLockPrefs.ROLE_CHILD
-                    }
+        // Lepas listener device sebelumnya (kalau ada) sebelum pasang yang baru,
+        // supaya appList/lokasi anak lama gak "nyampur" ke tampilan anak yang baru dipilih.
+        appListListener?.let { deviceRef.removeEventListener(it) }
 
-                    childNode?.let { node ->
-                        // Update Lokasi
-                        val loc = node.child("location")
-                        val lat = loc.child("lat").getValue(Double::class.java)
-                        val lng = loc.child("lng").getValue(Double::class.java)
-                        if (lat != null && lng != null) {
-                            binding.tvLocation.text = "Terakhir terlihat di: $lat, $lng"
-                            updateMapLocation(lat, lng)
-                        }
-
-                        // Update App List
-                        val appListData = node.child("appList").children.mapNotNull { appSnap ->
-                            val pkg = appSnap.child("packageName").getValue(String::class.java) ?: return@mapNotNull null
-                            val name = appSnap.child("appName").getValue(String::class.java) ?: "App"
-                            val locked = appSnap.child("isLocked").getValue(Boolean::class.java) ?: false
-                            val notifBlocked = appSnap.child("isNotifBlocked").getValue(Boolean::class.java) ?: false
-                            val iconB64 = appSnap.child("icon").getValue(String::class.java)?.takeIf { it.isNotEmpty() }
-
-                            com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked, iconB64)
-                        }
-                        if (appListData.isNotEmpty()) {
-                            appAdapter.submitList(appListData)
-                        }
-                    }
+        appListListener = object : ValueEventListener {
+            override fun onDataChange(node: com.google.firebase.database.DataSnapshot) {
+                // Update Lokasi
+                val loc = node.child("location")
+                val lat = loc.child("lat").getValue(Double::class.java)
+                val lng = loc.child("lng").getValue(Double::class.java)
+                if (lat != null && lng != null) {
+                    binding.tvLocation.text = "Terakhir terlihat di: $lat, $lng"
+                    updateMapLocation(lat, lng)
                 }
-                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
-            })
+
+                // Update App List
+                val appListData = node.child("appList").children.mapNotNull { appSnap ->
+                    val pkg = appSnap.child("packageName").getValue(String::class.java) ?: return@mapNotNull null
+                    val name = appSnap.child("appName").getValue(String::class.java) ?: "App"
+                    val locked = appSnap.child("isLocked").getValue(Boolean::class.java) ?: false
+                    val notifBlocked = appSnap.child("isNotifBlocked").getValue(Boolean::class.java) ?: false
+                    val iconB64 = appSnap.child("icon").getValue(String::class.java)?.takeIf { it.isNotEmpty() }
+
+                    com.familyguard.model.AppInfo(pkg, name, null, locked, notifBlocked, iconB64)
+                }
+                if (appListData.isNotEmpty()) {
+                    appAdapter.submitList(appListData)
+                }
+            }
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        deviceRef.addValueEventListener(appListListener!!)
     }
 
     private fun updateDeviceStatusUI(devices: List<FamilyDevice>) {
@@ -306,5 +375,14 @@ class ParentDashboardActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         deviceObserver?.let { FamilyLink.removeDeviceObserver(this, it) }
+        appListListener?.let { listener ->
+            val code = AppLockPrefs.getFamilyCode(this)
+            val id = selectedChildId
+            if (code != null && id != null) {
+                com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                    .child("families").child(code).child("devices").child(id)
+                    .removeEventListener(listener)
+            }
+        }
     }
 }

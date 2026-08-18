@@ -15,13 +15,69 @@ object FamilyLink {
     private const val TAG = "FamilyLink"
     private val db = FirebaseDatabase.getInstance().reference
 
+    // ──────────────────────────────────────────────
+    // PROFIL USER (disimpan per akun Google/UID, BUKAN per HP -- supaya
+    // login akun yang sama di HP lain tidak perlu isi ulang nama/role/kode)
+    // ──────────────────────────────────────────────
+
+    private fun userRef(uid: String) = db.child("users").child(uid)
+
+    fun saveUserProfile(context: Context) {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val name = AppLockPrefs.getUserName(context)
+        val role = AppLockPrefs.getRole(context)
+        val code = AppLockPrefs.getFamilyCode(context)
+
+        val updates = mutableMapOf<String, Any>()
+        if (!name.isNullOrBlank()) updates["userName"] = name
+        if (!role.isNullOrBlank()) updates["role"] = role
+        if (!code.isNullOrBlank()) updates["familyCode"] = code
+        if (updates.isNotEmpty()) {
+            userRef(uid).updateChildren(updates)
+        }
+    }
+
+    /**
+     * Cek apakah akun Google ini sudah pernah setup sebelumnya (di HP lain).
+     * Kalau ada, isi SharedPreferences lokal dari data Firebase supaya user
+     * tidak perlu isi nama/pilih role/masukkan kode keluarga lagi.
+     */
+    fun fetchUserProfile(context: Context, onResult: (found: Boolean) -> Unit) {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            onResult(false)
+            return
+        }
+        userRef(uid).get()
+            .addOnSuccessListener { snapshot ->
+                val name = snapshot.child("userName").getValue(String::class.java)
+                val role = snapshot.child("role").getValue(String::class.java)
+                val code = snapshot.child("familyCode").getValue(String::class.java)
+
+                if (!name.isNullOrBlank()) AppLockPrefs.saveUserName(context, name)
+                if (!role.isNullOrBlank()) AppLockPrefs.saveRole(context, role)
+                if (!code.isNullOrBlank()) {
+                    AppLockPrefs.saveFamilyCode(context, code)
+                    // Register ulang device ini (device ID beda per HP) ke family yang sama
+                    registerDevice(context)
+                }
+                onResult(!name.isNullOrBlank())
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Gagal ambil profil user: ${it.message}", it)
+                onResult(false)
+            }
+    }
+
     fun registerDevice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         val role = AppLockPrefs.getRole(context) ?: return
+        val userName = AppLockPrefs.getUserName(context) ?: ""
 
         deviceRef(code, id).apply {
             child("role").setValue(role)
+            child("userName").setValue(userName)
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
@@ -61,7 +117,6 @@ object FamilyLink {
             val iconB64 = try {
                 app.icon?.let { com.familyguard.utils.InstalledAppsHelper.iconToBase64(it) }
             } catch (e: Exception) {
-                Log.e(TAG, "Gagal convert icon untuk ${app.packageName}: ${e.javaClass.simpleName} - ${e.message}", e)
                 null
             }
             mapOf(
@@ -72,13 +127,7 @@ object FamilyLink {
                 "icon" to (iconB64 ?: "")
             )
         }
-        val emptyIconCount = appData.count { (it["icon"] as? String).isNullOrEmpty() }
-        Log.d(TAG, "updateAppList: total=${appData.size}, gagal_icon=$emptyIconCount")
-
         deviceRef(code, id).child("appList").setValue(appData)
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Gagal upload appList ke Firebase: ${e.message}", e)
-            }
     }
 
     fun updateLocation(context: Context, lat: Double, lng: Double) {
@@ -93,28 +142,30 @@ object FamilyLink {
         deviceRef(code, id).child("location").setValue(locData)
     }
 
-    fun sendLockScreen(context: Context) =
-        sendCommand(context, "lock_screen", emptyMap())
+    fun sendLockScreen(context: Context, targetDeviceId: String) =
+        sendCommand(context, "lock_screen", emptyMap(), targetDeviceId)
 
-    fun sendUnlockScreen(context: Context) =
-        sendCommand(context, "unlock_screen", emptyMap())
+    fun sendUnlockScreen(context: Context, targetDeviceId: String) =
+        sendCommand(context, "unlock_screen", emptyMap(), targetDeviceId)
 
-    fun sendSetPin(context: Context, pin: String) =
-        sendCommand(context, "set_pin", mapOf("pin" to pin))
+    fun sendSetPin(context: Context, pin: String, targetDeviceId: String) =
+        sendCommand(context, "set_pin", mapOf("pin" to pin), targetDeviceId)
 
-    fun sendMessage(context: Context, title: String, message: String) =
-        sendCommand(context, "send_message", mapOf("title" to title, "message" to message))
+    fun sendMessage(context: Context, title: String, message: String, targetDeviceId: String) =
+        sendCommand(context, "send_message", mapOf("title" to title, "message" to message), targetDeviceId)
 
-    fun sendLockApp(context: Context, packageName: String, lock: Boolean) =
+    fun sendLockApp(context: Context, packageName: String, lock: Boolean, targetDeviceId: String) =
         sendCommand(
             context, "lock_app",
-            mapOf("package_name" to packageName, "action" to if (lock) "add" else "remove")
+            mapOf("package_name" to packageName, "action" to if (lock) "add" else "remove"),
+            targetDeviceId
         )
 
-    fun sendBlockNotif(context: Context, packageName: String, block: Boolean) =
+    fun sendBlockNotif(context: Context, packageName: String, block: Boolean, targetDeviceId: String) =
         sendCommand(
             context, "block_notif",
-            mapOf("package_name" to packageName, "action" to if (block) "add" else "remove")
+            mapOf("package_name" to packageName, "action" to if (block) "add" else "remove"),
+            targetDeviceId
         )
 
     // ===== Lihat Layar & Kontrol Jarak Jauh =====
@@ -123,29 +174,30 @@ object FamilyLink {
     /** Minta HP anak mulai membagikan layarnya. Anak akan melihat dialog izin
      * "Mulai merekam layar?" dari sistem Android sekali (ini WAJIB dari Android,
      * tidak bisa dilewati oleh aplikasi manapun tanpa akses Device Owner). */
-    fun sendRequestScreenShare(context: Context) =
-        sendCommand(context, "start_screen_share", emptyMap())
+    fun sendRequestScreenShare(context: Context, targetDeviceId: String) =
+        sendCommand(context, "start_screen_share", emptyMap(), targetDeviceId)
 
-    fun sendStopScreenShare(context: Context) =
-        sendCommand(context, "stop_screen_share", emptyMap())
+    fun sendStopScreenShare(context: Context, targetDeviceId: String) =
+        sendCommand(context, "stop_screen_share", emptyMap(), targetDeviceId)
 
     /** Kirim tap jarak jauh. x, y dinormalisasi 0.0-1.0 relatif terhadap lebar/tinggi
      * layar HP anak (bukan pixel absolut), supaya rasio tetap benar walau resolusi beda. */
-    fun sendRemoteTap(context: Context, xNorm: Float, yNorm: Float) =
-        sendCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm))
+    fun sendRemoteTap(context: Context, xNorm: Float, yNorm: Float, targetDeviceId: String) =
+        sendCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm), targetDeviceId)
 
     /** Kirim swipe/drag jarak jauh (dipakai untuk scroll, swipe, dsb saat Mode Kontrol aktif). */
-    fun sendRemoteSwipe(context: Context, x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long) =
+    fun sendRemoteSwipe(context: Context, x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long, targetDeviceId: String) =
         sendCommand(
             context, "remote_swipe",
-            mapOf("x1" to x1, "y1" to y1, "x2" to x2, "y2" to y2, "duration" to durationMs)
+            mapOf("x1" to x1, "y1" to y1, "x2" to x2, "y2" to y2, "duration" to durationMs),
+            targetDeviceId
         )
 
     /** Kirim tombol back jarak jauh (tidak bisa lewat dispatchGesture biasa). */
-    fun sendRemoteBack(context: Context) =
-        sendCommand(context, "remote_back", emptyMap())
+    fun sendRemoteBack(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_back", emptyMap(), targetDeviceId)
 
-    private fun sendCommand(context: Context, type: String, payload: Map<String, Any>) {
+    private fun sendCommand(context: Context, type: String, payload: Map<String, Any>, targetDeviceId: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val deviceId = AppLockPrefs.getDeviceId(context)
 
@@ -155,6 +207,7 @@ object FamilyLink {
                 "type" to type,
                 "payload" to payload,
                 "from" to deviceId,
+                "target" to targetDeviceId,
                 "timestamp" to System.currentTimeMillis(),
                 "done" to false
             )
@@ -186,9 +239,16 @@ object FamilyLink {
 
         commandListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                val myDeviceId = AppLockPrefs.getDeviceId(context)
                 for (cmdSnap in snapshot.children) {
                     val done = cmdSnap.child("done").getValue(Boolean::class.java) ?: true
                     if (done) continue
+
+                    // Command yang ditarget ke device lain (multi-anak) -- biarkan
+                    // saja, jangan diproses & jangan dihapus, supaya device yang
+                    // dituju masih bisa membacanya.
+                    val target = cmdSnap.child("target").getValue(String::class.java)
+                    if (target != null && target != myDeviceId) continue
 
                     val type = cmdSnap.child("type").getValue(String::class.java) ?: continue
                     val payload = cmdSnap.child("payload")
@@ -313,7 +373,8 @@ object FamilyLink {
                     val role = snap.child("role").getValue(String::class.java) ?: return@mapNotNull null
                     val online = snap.child("online").getValue(Boolean::class.java) ?: false
                     val lastSeen = snap.child("lastSeen").getValue(Long::class.java) ?: 0L
-                    FamilyDevice(id, role, online, lastSeen)
+                    val userName = snap.child("userName").getValue(String::class.java)?.takeIf { it.isNotBlank() }
+                    FamilyDevice(id, role, online, lastSeen, userName)
                 }
                 onChange(list)
             }
@@ -560,5 +621,6 @@ data class FamilyDevice(
     val deviceId: String,
     val role: String,
     val online: Boolean,
-    val lastSeen: Long
+    val lastSeen: Long,
+    val userName: String? = null
 )

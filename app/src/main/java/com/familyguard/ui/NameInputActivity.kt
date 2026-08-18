@@ -31,6 +31,7 @@ class NameInputActivity : AppCompatActivity() {
             }
 
             AppLockPrefs.saveUserName(this, name)
+            com.familyguard.sync.FamilyLink.saveUserProfile(this)
 
             // Sinkronkan juga ke profil Firebase Auth (opsional tapi berguna)
             val user = FirebaseAuth.getInstance().currentUser

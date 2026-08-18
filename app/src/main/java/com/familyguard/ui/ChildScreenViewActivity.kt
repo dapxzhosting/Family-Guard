@@ -34,8 +34,13 @@ import org.webrtc.VideoTrack
  */
 class ChildScreenViewActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_DEVICE_ID = "extra_device_id"
+    }
+
     private lateinit var binding: ActivityChildScreenViewBinding
     private var controlModeOn = false
+    private lateinit var targetDeviceId: String
 
     private var eglBase: EglBase? = null
     private var peerConnectionFactory: PeerConnectionFactory? = null
@@ -59,11 +64,17 @@ class ChildScreenViewActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        targetDeviceId = intent.getStringExtra(EXTRA_DEVICE_ID) ?: run {
+            Toast.makeText(this, "HP anak belum dipilih", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         setupRenderer()
         setupWebRtc()
 
         // Minta HP anak mulai membagikan layarnya begitu activity ini dibuka.
-        FamilyLink.sendRequestScreenShare(this)
+        FamilyLink.sendRequestScreenShare(this, targetDeviceId)
         binding.tvStatus.text = "Meminta izin ke HP anak…"
 
         binding.switchControlMode.setOnCheckedChangeListener { _, isChecked ->
@@ -196,12 +207,12 @@ class ChildScreenViewActivity : AppCompatActivity() {
             ch.send(org.webrtc.DataChannel.Buffer(java.nio.ByteBuffer.wrap(bytes), false))
         } else {
             when (json.optString("type")) {
-                "remote_tap" -> FamilyLink.sendRemoteTap(this, json.getDouble("x").toFloat(), json.getDouble("y").toFloat())
+                "remote_tap" -> FamilyLink.sendRemoteTap(this, json.getDouble("x").toFloat(), json.getDouble("y").toFloat(), targetDeviceId)
                 "remote_swipe" -> FamilyLink.sendRemoteSwipe(
                     this, json.getDouble("x1").toFloat(), json.getDouble("y1").toFloat(),
-                    json.getDouble("x2").toFloat(), json.getDouble("y2").toFloat(), json.optLong("duration", 150L)
+                    json.getDouble("x2").toFloat(), json.getDouble("y2").toFloat(), json.optLong("duration", 150L), targetDeviceId
                 )
-                "remote_back" -> FamilyLink.sendRemoteBack(this)
+                "remote_back" -> FamilyLink.sendRemoteBack(this, targetDeviceId)
             }
         }
     }

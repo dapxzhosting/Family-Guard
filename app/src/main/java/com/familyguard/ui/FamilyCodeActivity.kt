@@ -81,6 +81,22 @@ class FamilyCodeActivity : AppCompatActivity() {
     private fun saveCodeAndContinue(code: String) {
         AppLockPrefs.saveFamilyCode(this, code)
         FamilyLink.registerDevice(this)
+        FamilyLink.saveUserProfile(this)
+
+        // Simpan nama keluarga & nama user ke node keluarga di Firebase (khusus
+        // Orang Tua, karena mereka yang membuat kodenya / node families/{code} ini)
+        if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_PARENT) {
+            val familyName = AppLockPrefs.getFamilyName(this)
+            val userName = AppLockPrefs.getUserName(this)
+            val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
+            val updates = mutableMapOf<String, Any>()
+            if (!familyName.isNullOrBlank()) updates["familyName"] = familyName
+            if (!userName.isNullOrBlank()) updates["parentName"] = userName
+            if (updates.isNotEmpty()) {
+                db.child("families").child(code).updateChildren(updates)
+            }
+        }
+
         goToHome()
     }
 
