@@ -134,7 +134,6 @@ object AppLockPrefs {
     fun setDeviceLocked(context: Context, locked: Boolean) {
         prefs(context).edit().putBoolean(KEY_DEVICE_LOCKED, locked).apply()
     }
-
     fun isDeviceLocked(context: Context): Boolean =
         prefs(context).getBoolean(KEY_DEVICE_LOCKED, false)
 
@@ -173,4 +172,34 @@ object AppLockPrefs {
 
     fun getFamilyName(context: Context): String? =
         prefs(context).getString(KEY_FAMILY_NAME, null)
+
+    // ──────────────────────────────────────────────
+    // RESET / GANTI KELUARGA / LOGOUT
+    // ──────────────────────────────────────────────
+
+    /**
+     * Hapus role & kode keluarga LOKAL saja (dipakai untuk "Reset Role" dan
+     * "Ganti Keluarga"). Nama user & akun Google TIDAK ikut dihapus -- masih
+     * bisa lanjut pakai app sebagai user yang sama, cuma pilih role/keluarga
+     * dari awal lagi. Family name juga ikut dihapus karena itu melekat ke
+     * keluarga lama, bukan ke user-nya.
+     */
+    fun clearRoleAndFamily(context: Context) {
+        prefs(context).edit()
+            .remove(KEY_ROLE)
+            .remove(KEY_FAMILY_CODE)
+            .remove(KEY_FAMILY_NAME)
+            .remove(KEY_DEVICE_LOCKED)
+            .apply()
+    }
+
+    /**
+     * Hapus SEMUA data lokal FamilyGuard (dipakai untuk "Keluar Akun"/logout).
+     * Dipanggil SETELAH FirebaseAuth.signOut() supaya sesi berikutnya benar-benar
+     * mulai dari nol -- kalau tidak, LoginActivity.routeNext() bisa salah lompat
+     * pakai data user SEBELUMNYA yang masih nyangkut di SharedPreferences ini.
+     */
+    fun clearAllForLogout(context: Context) {
+        prefs(context).edit().clear().apply()
+    }
 }

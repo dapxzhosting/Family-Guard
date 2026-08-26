@@ -90,6 +90,44 @@ object FamilyLink {
             }
     }
 
+    /**
+     * Hapus entri device ini dari node keluarga LAMA di Firebase (best-effort,
+     * dipanggil SEBELUM role/kode lokal dihapus). Tanpa ini, kalau anak/ortu
+     * pindah/ganti keluarga, device lama jadi "hantu" yang masih nongol di
+     * dashboard keluarga sebelumnya padahal sudah tidak dipakai lagi di sana.
+     */
+    fun removeDeviceFromCurrentFamily(context: Context, onComplete: (() -> Unit)? = null) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete?.invoke()
+            return
+        }
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).removeValue()
+            .addOnCompleteListener { onComplete?.invoke() }
+    }
+
+    /**
+     * Hapus role & kode keluarga dari profil REMOTE (/users/{uid}). PENTING:
+     * kalau ini tidak dipanggil, fetchUserProfile() di LoginActivity bakal
+     * "mengembalikan" role & kode keluarga LAMA dari Firebase pas user login
+     * lagi (di HP yang sama maupun HP lain) -- bikin fitur Reset Role/Ganti
+     * Keluarga kelihatan seperti tidak berfungsi sama sekali.
+     */
+    fun clearRemoteRoleAndFamily(context: Context, onComplete: (() -> Unit)? = null) {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            onComplete?.invoke()
+            return
+        }
+        val updates = mapOf<String, Any?>(
+            "role" to null,
+            "familyCode" to null
+        )
+        userRef(uid).updateChildren(updates)
+            .addOnCompleteListener { onComplete?.invoke() }
+    }
+
     fun registerDevice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)

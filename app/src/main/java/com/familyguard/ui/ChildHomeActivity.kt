@@ -95,14 +95,19 @@ class ChildHomeActivity : AppCompatActivity() {
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
         requestIgnoreBatteryOptimization()
 
-        binding.root.setOnLongClickListener {
-            AppLockPrefs.saveRole(this, "")
-            AppLockPrefs.saveFamilyCode(this, "")
-            Toast.makeText(this, "Data reset. App akan tertutup.", Toast.LENGTH_SHORT).show()
-            binding.root.postDelayed({
-                android.os.Process.killProcess(android.os.Process.myPid())
-            }, 1000)
-            true
+        // FIX: sebelumnya "reset" cuma bisa dipicu lewat long-press tersembunyi
+        // di root view (tidak ada indikasi visual apapun, gampang ke-trigger
+        // tidak sengaja, dan cuma hapus data lokal tanpa bersih-bersih remote).
+        // Sekarang pakai tombol jelas di menu "Lainnya", lewat AccountActions
+        // yang sama dengan dashboard orang tua (lihat AccountActions.kt).
+        binding.btnResetRoleChild.setOnClickListener {
+            com.familyguard.utils.AccountActions.resetRole(this)
+        }
+        binding.btnChangeFamilyChild.setOnClickListener {
+            com.familyguard.utils.AccountActions.changeFamily(this)
+        }
+        binding.btnLogoutChild.setOnClickListener {
+            com.familyguard.utils.AccountActions.logout(this)
         }
     }
 

@@ -21,7 +21,7 @@ class FamilyCodeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (AppLockPrefs.getFamilyCode(this) != null) {
+        if (!AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
             goToHome()
             return
         }

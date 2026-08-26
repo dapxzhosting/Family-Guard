@@ -145,7 +145,8 @@ class ParentDashboardActivity : AppCompatActivity() {
         preventScrollInterceptOnTouch(
             binding.btnLockScreen, binding.btnUnlockScreen,
             binding.btnSendMessage, binding.btnSetPin,
-            binding.btnViewScreen, binding.btnResetRole, binding.btnOpenMap
+            binding.btnViewScreen, binding.btnResetRole, binding.btnOpenMap,
+            binding.btnChangeFamily, binding.btnLogout
         )
 
         // Kunci layar HP anak
@@ -178,11 +179,17 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         // Reset Role (untuk testing/pindah device)
         binding.btnResetRole.setOnClickListener {
-            confirmAction("Reset semua data dan kembali ke awal?") {
-                AppLockPrefs.saveRole(this, "")
-                AppLockPrefs.saveFamilyCode(this, "")
-                android.os.Process.killProcess(android.os.Process.myPid())
-            }
+            com.familyguard.utils.AccountActions.resetRole(this)
+        }
+
+        // Ganti / gabung ke keluarga lain (role tetap sama)
+        binding.btnChangeFamily.setOnClickListener {
+            com.familyguard.utils.AccountActions.changeFamily(this)
+        }
+
+        // Keluar dari akun Google sepenuhnya
+        binding.btnLogout.setOnClickListener {
+            com.familyguard.utils.AccountActions.logout(this)
         }
 
         // Lihat & kontrol layar HP anak secara real-time
