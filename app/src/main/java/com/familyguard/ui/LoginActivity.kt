@@ -2,6 +2,7 @@ package com.familyguard.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -92,10 +93,29 @@ class LoginActivity : AppCompatActivity() {
      */
     private fun routeNext() {
         binding.progressBar.visibility = android.view.View.VISIBLE
-        com.familyguard.sync.FamilyLink.fetchUserProfile(this) { _ ->
+        com.familyguard.sync.FamilyLink.fetchUserProfile(this) { found ->
             val role = AppLockPrefs.getRole(this)
             val code = AppLockPrefs.getFamilyCode(this)
             val name = AppLockPrefs.getUserName(this)
+
+            // Kalau fetch profil dari Firebase gagal TAPI ternyata memang belum ada
+            // apa-apa tersimpan lokal juga -> kemungkinan besar ini akun yang benar-benar
+            // baru pertama kali pakai app, arahkan ke NameInputActivity seperti biasa
+            // tanpa perlu kasih tahu apa-apa (ini kasus normal, bukan bug).
+            //
+            // Tapi kalau HP ini SUDAH pernah setup sebelumnya di sesi yang sama (name
+            // sudah ada dari onCreate awal misalnya) dan tiba-tiba butuh isi ulang, atau
+            // developer lagi nge-test cross-device dan yakin akun ini sudah pernah
+            // setup di HP lain -- Toast ini bantu bedain "memang belum pernah setup"
+            // vs "gagal fetch" tanpa perlu buka Logcat.
+            if (!found && name.isNullOrBlank()) {
+                Log.d(
+                    "LoginActivity",
+                    "Tidak ada profil ditemukan untuk akun ini di Firebase -- kalau " +
+                            "seharusnya akun ini SUDAH pernah setup di HP lain, cek Firebase " +
+                            "Realtime Database Rules untuk path /users/{uid} (lihat log tag FamilyLink)."
+                )
+            }
 
             val target = when {
                 name.isNullOrBlank() -> NameInputActivity::class.java

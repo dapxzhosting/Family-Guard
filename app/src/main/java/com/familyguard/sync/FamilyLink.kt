@@ -34,6 +34,18 @@ object FamilyLink {
         if (!code.isNullOrBlank()) updates["familyCode"] = code
         if (updates.isNotEmpty()) {
             userRef(uid).updateChildren(updates)
+                .addOnFailureListener { e ->
+                    // FIX: sebelumnya kegagalan di sini (paling sering PERMISSION_DENIED
+                    // kalau Firebase Realtime Database Rules belum mengizinkan baca/tulis
+                    // ke path /users/{uid}) DIAM-DIAM tidak kelihatan sama sekali --
+                    // efeknya profil (nama/role/kode keluarga) tidak pernah benar-benar
+                    // tersimpan ke Firebase, jadi login akun yang sama di HP lain tidak
+                    // punya apa-apa untuk di-fetch balik, dan user diminta isi ulang dari
+                    // nol seolah-olah fiturnya tidak ada.
+                    Log.e(TAG, "GAGAL simpan profil user ke /users/$uid -- kemungkinan besar " +
+                            "Firebase Realtime Database Rules belum izinkan path ini. " +
+                            "Error: ${e.message}", e)
+                }
         }
     }
 
@@ -63,8 +75,17 @@ object FamilyLink {
                 }
                 onResult(!name.isNullOrBlank())
             }
-            .addOnFailureListener {
-                Log.e(TAG, "Gagal ambil profil user: ${it.message}", it)
+            .addOnFailureListener { e ->
+                // FIX: sebelumnya kegagalan fetch (paling sering PERMISSION_DENIED kalau
+                // Firebase Rules belum izinkan baca /users/{uid}) cuma di-log ke Logcat --
+                // dari sudut pandang user, ini KELIHATAN PERSIS SAMA seperti "memang belum
+                // pernah setup akun ini", padahal sebenarnya beda kasus (data ADA tapi
+                // GAGAL diambil). onResult(false) di bawah bikin LoginActivity lanjut ke
+                // alur onboarding dari nol (isi nama, pilih role lagi) -- makanya perlu
+                // penanda jelas di log supaya gampang dibedakan dari kasus "memang baru".
+                Log.e(TAG, "GAGAL ambil profil user dari /users/$uid -- kemungkinan besar " +
+                        "Firebase Realtime Database Rules belum izinkan path ini (bukan " +
+                        "berarti user memang belum pernah setup). Error: ${e.message}", e)
                 onResult(false)
             }
     }

@@ -57,11 +57,42 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = formatCode(code)
+        setupFamilyNameHeader(code)
 
         setupAppRecyclerView()
         setupButtons()
         setupMap()
         observeConnectedDevices()
+    }
+
+    /**
+     * Tampilkan nama keluarga di header dashboard (di bawah judul "FamilyGuard").
+     * Nama keluarga diisi orang tua sekali di awal lewat FamilyNameActivity dan
+     * tersimpan lokal di device orang tua itu sendiri -- jadi cukup dibaca dari
+     * situ. Fallback ambil dari Firebase families/{code}/familyName kalau
+     * ternyata belum ada di lokal (mis. app di-reinstall / ganti HP).
+     */
+    private fun setupFamilyNameHeader(code: String) {
+        val localFamilyName = AppLockPrefs.getFamilyName(this)
+        if (!localFamilyName.isNullOrBlank()) {
+            binding.tvFamilyName.text = "Keluarga $localFamilyName"
+            binding.tvFamilyName.visibility = android.view.View.VISIBLE
+            return
+        }
+
+        if (code == "—") return
+        com.google.firebase.database.FirebaseDatabase.getInstance().reference
+            .child("families").child(code).child("familyName")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val remoteFamilyName = snapshot.getValue(String::class.java)
+                if (!remoteFamilyName.isNullOrBlank()) {
+                    binding.tvFamilyName.text = "Keluarga $remoteFamilyName"
+                    binding.tvFamilyName.visibility = android.view.View.VISIBLE
+                    // Simpan lokal juga supaya kunjungan berikutnya tidak perlu fetch lagi.
+                    AppLockPrefs.saveFamilyName(this, remoteFamilyName)
+                }
+            }
     }
 
     private fun setupMap() {
@@ -339,10 +370,19 @@ class ParentDashboardActivity : AppCompatActivity() {
             return
         }
 
+        // FIX: sebelumnya baris ini SELALU pakai teks generik "HP Anak", walau
+        // nama asli anak (yang diisi di NameInputActivity pas login pertama
+        // kali) sudah tersimpan di device.userName -- jadi orang tua tidak
+        // pernah lihat nama anaknya di kartu status ini, cuma di spinner
+        // pemilih anak yang JUSTRU disembunyikan kalau anaknya cuma 1 (kasus
+        // paling umum). Sekarang pakai nama asli anak, dengan fallback ke
+        // label generik hanya kalau memang belum ada nama tersimpan.
         children.forEach { device ->
+            val childName = device.userName?.takeIf { it.isNotBlank() }
+                ?: "HP Anak (${device.deviceId.take(6)})"
             val status = if (device.online) "Online" else "Offline"
             val lastSeen = if (!device.online) " · terakhir ${sdf.format(Date(device.lastSeen))}" else ""
-            sb.appendLine("HP Anak · $status$lastSeen")
+            sb.appendLine("$childName · $status$lastSeen")
         }
         binding.tvDeviceStatus.text = sb.toString().trim()
         setControlsEnabled(true)
