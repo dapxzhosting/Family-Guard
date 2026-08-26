@@ -300,11 +300,7 @@ class LockScreenActivity : Activity() {
                 // ini benar-benar SUDAH KEHILANGAN FOKUS (artinya ada yang berhasil
                 // menutupi/mengalihkan layar ini) -- bukan proaktif tiap 2 detik.
                 if (!isFinishing && mode == MODE_DEVICE_LOCK && !hasWindowFocus()) {
-                    val intent = android.content.Intent(this@LockScreenActivity, LockScreenActivity::class.java).apply {
-                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                        putExtra(EXTRA_MODE, mode)
-                    }
-                    startActivity(intent)
+                    requestDeviceLock(this@LockScreenActivity)
                 }
                 if (!isFinishing && mode == MODE_DEVICE_LOCK) {
                     handler.postDelayed(this, 2000) // Cek setiap 2 detik
@@ -363,12 +359,7 @@ class LockScreenActivity : Activity() {
         // Service), bukan exit dari layar kunci ini. Kalau MODE_APP_LOCK ikut di-relaunch
         // di sini, anak jadi terjebak selamanya di layar kunci walau sudah "keluar".
         if (!isFinishing && mode == MODE_DEVICE_LOCK) {
-            val intent = android.content.Intent(this, LockScreenActivity::class.java).apply {
-                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                putExtra(EXTRA_MODE, mode)
-                putExtra(EXTRA_LOCKED_PACKAGE, lockedPackage)
-            }
-            startActivity(intent)
+            requestDeviceLock(this)
         }
     }
 
@@ -415,12 +406,7 @@ class LockScreenActivity : Activity() {
         // Sama seperti onPause(): hanya kejar-kejar balik untuk MODE_DEVICE_LOCK.
         // MODE_APP_LOCK harus dibiarkan pergi ke Home tanpa dipaksa balik.
         if (mode == MODE_DEVICE_LOCK) {
-            val intent = android.content.Intent(this, LockScreenActivity::class.java).apply {
-                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                putExtra(EXTRA_MODE, mode)
-                putExtra(EXTRA_LOCKED_PACKAGE, lockedPackage)
-            }
-            startActivity(intent)
+            requestDeviceLock(this)
         }
     }
 
@@ -452,6 +438,50 @@ class LockScreenActivity : Activity() {
         // supaya tidak ada beban tambahan ke main thread pas anak mengetik PIN.
         @Volatile
         var isForeground: Boolean = false
+
+        // FIX ANR "FamilyGuard tidak menanggapi": sebelumnya ada 4 sumber yang
+        // masing-masing bisa manggil startActivity() ke LockScreenActivity secara
+        // independen -- activity ini sendiri (persistence timer tiap 2 detik),
+        // AppLockAccessibilityService (watchdog tiap 600ms), GuardService
+        // (watchdog tiap 1 detik), dan ScreenStateReceiver (SCREEN_ON/USER_PRESENT).
+        // Kalau lockscreen gagal langsung dapat fokus (misal ada app lain yang juga
+        // ngotot minta fokus, seperti kamera yang kebuka dari shortcut tombol),
+        // keempatnya jadi rebutan manggil startActivity() beruntun TANPA JEDA --
+        // tiap panggilan itu adalah transaksi IPC ke ActivityTaskManager sistem,
+        // dan kalau numpuk terus-menerus di main thread, sistem anggap app hang
+        // -> ANR ("tidak menanggapi").
+        //
+        // Fix: satu pintu masuk terpusat dengan cooldown minimum di ANTARA
+        // percobaan relaunch, dipakai SEMUA sumber di atas -- jadi walau 4
+        // pemicu itu nyala bersamaan, yang benar-benar sampai ke startActivity()
+        // cuma satu per periode cooldown.
+        @Volatile
+        private var lastRelaunchAttemptMs: Long = 0L
+        private const val RELAUNCH_COOLDOWN_MS = 1500L
+
+        @Synchronized
+        fun requestDeviceLock(context: android.content.Context) {
+            if (isForeground) return
+            val now = android.os.SystemClock.elapsedRealtime()
+            if (now - lastRelaunchAttemptMs < RELAUNCH_COOLDOWN_MS) return
+            lastRelaunchAttemptMs = now
+
+            try {
+                val intent = android.content.Intent(context, LockScreenActivity::class.java).apply {
+                    addFlags(
+                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    )
+                    putExtra(EXTRA_MODE, MODE_DEVICE_LOCK)
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                // Jangan biarkan kegagalan startActivity (mis. sistem lagi sibuk /
+                // rate-limited) melempar exception yang bisa bikin proses crash.
+                android.util.Log.w("LockScreenActivity", "requestDeviceLock gagal: ${e.message}")
+            }
+        }
 
         const val EXTRA_LOCKED_PACKAGE = "locked_package"
         const val EXTRA_MODE = "mode"

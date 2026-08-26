@@ -23,9 +23,21 @@ import com.familyguard.utils.LocationHelper
 
 class GuardService : Service() {
 
+    private var screenStateReceiver: com.familyguard.receiver.ScreenStateReceiver? = null
+    private val lockWatchHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var lockWatchRunnable: Runnable? = null
+
     override fun onCreate() {
         super.onCreate()
         startForeground(NOTIF_ID, buildNotification())
+
+        // FIX: pasang listener SCREEN_ON/USER_PRESENT selama GuardService hidup,
+        // supaya begitu layar dinyalakan lagi (habis dimatiin sebentar lewat
+        // tombol power), LockScreenActivity (mode DEVICE_LOCK) langsung muncul
+        // lagi otomatis kalau memang statusnya sedang locked. Sebelumnya lock
+        // screen cuma dimunculkan sekali waktu service ini pertama dibuat,
+        // jadi begitu layar off/on, anak langsung nyampe ke homescreen tanpa PIN.
+        screenStateReceiver = com.familyguard.receiver.ScreenStateReceiver.register(this)
 
         // Registrasi ulang device setiap kali service start (bukan cuma sekali pas
         // pairing) supaya status "online" & onDisconnect handler selalu ter-arm dengan
@@ -41,6 +53,21 @@ class GuardService : Service() {
             showDeviceLockScreen()
         }
 
+        // FIX: "tinggal hapus/swipe jendela LockScreen dari recents malah bisa
+        // kebuka". Sebelumnya LockScreenActivity cuma relaunch dirinya sendiri
+        // lewat onPause()/onUserLeaveHint() -- tapi kalau task-nya di-remove
+        // paksa dari recents (swipe di overview, atau "close" di multi-window),
+        // activity langsung ke onDestroy dan TIDAK ADA yang munculin lagi
+        // (proses relaunch dari dalam activity yang sedang dihancurkan sendiri
+        // gampang gagal/ke-cancel bareng task-nya).
+        //
+        // Makanya pengecekan "apakah lock screen masih tampil" dipindah ke SINI,
+        // di GuardService yang berjalan independen (foreground service, task
+        // terpisah dari LockScreenActivity) -- polling ketat tiap 1 detik selama
+        // status masih locked, dan langsung relaunch begitu terdeteksi hilang,
+        // dari LUAR activity itu sendiri, jadi tidak ikut mati kalau task-nya
+        // di-swipe/dihapus.
+        startLockWatchdog()
         startPeriodicLocationUpdates()
 
         // Re-arm watchdog setiap kali service ini hidup (baik start normal
@@ -49,11 +76,30 @@ class GuardService : Service() {
     }
 
     private fun showDeviceLockScreen() {
-        val intent = Intent(this, LockScreenActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            putExtra(LockScreenActivity.EXTRA_MODE, LockScreenActivity.MODE_DEVICE_LOCK)
+        LockScreenActivity.requestDeviceLock(this)
+    }
+
+    /**
+     * Polling ketat dari dalam Service (bukan dari Activity) yang memastikan
+     * LockScreenActivity SELALU tampil selama AppLockPrefs.isDeviceLocked==true.
+     * Dicek tiap 1 detik -- cukup rapat supaya celah waktu anak bisa pakai HP
+     * setelah swipe/hapus jendela lock screen dari recents jadi sangat singkat,
+     * tapi tidak terlalu rapat untuk baterai/CPU.
+     */
+    private fun startLockWatchdog() {
+        // Hindari dobel loop kalau onCreate ke-trigger lagi tanpa onDestroy dulu
+        lockWatchRunnable?.let { lockWatchHandler.removeCallbacks(it) }
+
+        val runnable = object : Runnable {
+            override fun run() {
+                if (AppLockPrefs.isDeviceLocked(this@GuardService) && !LockScreenActivity.isForeground) {
+                    showDeviceLockScreen()
+                }
+                lockWatchHandler.postDelayed(this, 1000L)
+            }
         }
-        startActivity(intent)
+        lockWatchRunnable = runnable
+        lockWatchHandler.postDelayed(runnable, 1000L)
     }
 
     private fun startPeriodicLocationUpdates() {
@@ -81,6 +127,10 @@ class GuardService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this)
+        com.familyguard.receiver.ScreenStateReceiver.unregister(this, screenStateReceiver)
+        screenStateReceiver = null
+        lockWatchRunnable?.let { lockWatchHandler.removeCallbacks(it) }
+        lockWatchRunnable = null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

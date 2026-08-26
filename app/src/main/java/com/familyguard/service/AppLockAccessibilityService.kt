@@ -92,7 +92,11 @@ class AppLockAccessibilityService : AccessibilityService() {
         // Periksa apakah perangkat sedang dikunci total (Device Lock)
         if (AppLockPrefs.isDeviceLocked(this)) {
             if (packageName != "com.familyguard") {
-                showLockScreen("", true)
+                // FIX ANR: pakai pintu terpusat dgn cooldown (lihat
+                // LockScreenActivity.requestDeviceLock) supaya watchdog service
+                // ini tidak rebutan startActivity() bareng GuardService/
+                // ScreenStateReceiver/activity itu sendiri saat device lock.
+                mainHandler.post { LockScreenActivity.requestDeviceLock(this) }
                 return
             }
         }
