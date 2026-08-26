@@ -36,6 +36,16 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvFamilyName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Keluarga: ---"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
                     android:id="@+id/tvFamilyCode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -53,6 +63,31 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Anggota Keluarga -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:text="Anggota Keluarga"
+            android:textColor="#424242"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFamilyMembers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
         </androidx.cardview.widget.CardView>
 
         <!-- Status Izin (PENTING) -->
@@ -131,48 +166,6 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Izin Lokasi" android:textColor="#212121"/>
                     <Button android:id="@+id/btnLocation" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- PIN Settings -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pengaturan PIN"
-                    android:textColor="#212121"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvPinStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="PIN belum diset"
-                    android:textColor="#D32F2F"
-                    android:textSize="13sp" />
-
-                <Button
-                    android:id="@+id/btnSetPinLocal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="#4527A0"
-                    android:text="Atur PIN (Lokal)"
-                    android:textColor="#FFFFFF" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

@@ -66,6 +66,8 @@ class FamilyCodeActivity : AppCompatActivity() {
         binding.cardParent.visibility = View.GONE
         binding.cardChild.visibility = View.VISIBLE
 
+        binding.etFamilyCode.addTextChangedListener(FamilyCodeTextWatcher(binding.etFamilyCode))
+
         binding.btnConnect.setOnClickListener {
             val inputCode = binding.etFamilyCode.text.toString()
                 .trim().replace("-", "").uppercase()
@@ -117,4 +119,46 @@ class FamilyCodeActivity : AppCompatActivity() {
     }
 
     private fun formatCode(code: String) = "${code.take(3)}-${code.drop(3)}"
+}
+
+/**
+ * TextWatcher untuk input kode keluarga: otomatis huruf besar semua (bukan
+ * cuma tampilan keyboard lewat inputType) dan otomatis nyisipin "-" setelah
+ * 3 karakter, mis. user ngetik "abc123" -> jadi "ABC-123" di layar.
+ *
+ * Pakai flag `isEditing` supaya perubahan yang kita lakukan sendiri di
+ * afterTextChanged (setText ulang) tidak memicu infinite loop / callback
+ * berulang, dan `setSelection` di akhir supaya kursor tetap di posisi yang
+ * wajar (di akhir teks) walau teksnya baru saja kita format ulang.
+ */
+class FamilyCodeTextWatcher(
+    private val editText: android.widget.EditText
+) : android.text.TextWatcher {
+
+    private var isEditing = false
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+    override fun afterTextChanged(s: android.text.Editable?) {
+        if (isEditing || s == null) return
+        isEditing = true
+
+        // Ambil karakter huruf/angka saja (buang "-" lama & apapun selain
+        // huruf/angka), lalu uppercase, maksimal 6 karakter kode asli.
+        val raw = s.toString().uppercase().filter { it.isLetterOrDigit() }.take(6)
+
+        val formatted = if (raw.length > 3) {
+            "${raw.substring(0, 3)}-${raw.substring(3)}"
+        } else {
+            raw
+        }
+
+        if (formatted != s.toString()) {
+            editText.setText(formatted)
+            editText.setSelection(formatted.length)
+        }
+
+        isEditing = false
+    }
 }

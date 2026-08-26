@@ -30,6 +30,8 @@ import com.familyguard.service.GuardService
 class ChildHomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChildHomeBinding
+    private lateinit var memberAdapter: FamilyMemberAdapter
+    private var devicesListener: com.google.firebase.database.ValueEventListener? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -83,6 +85,9 @@ class ChildHomeActivity : AppCompatActivity() {
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = "Kode keluarga: ${formatCode(code)}"
+        setupFamilyNameHeader(code)
+
+        setupFamilyMembersList()
 
         FamilyLink.startListening(this) { title, message ->
             showMessageNotification(title, message)
@@ -181,6 +186,49 @@ class ChildHomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Tampilkan daftar anggota keluarga (Orang Tua & Anak) di dashboard anak,
+     * dengan ikon berbeda per role, nama, dan status online -- pakai sumber
+     * data yang sama (FamilyLink.observeDevices) dengan yang dipakai dashboard
+     * orang tua untuk daftar HP anak, jadi datanya selalu konsisten.
+     */
+    /**
+     * Tampilkan nama keluarga di header dashboard anak. Nama keluarga cuma
+     * diisi & tersimpan lokal di device ORANG TUA (lewat FamilyNameActivity),
+     * jadi di HP anak harus fetch dari Firebase families/{code}/familyName --
+     * sama seperti ParentDashboardActivity.setupFamilyNameHeader().
+     */
+    private fun setupFamilyNameHeader(code: String) {
+        val localFamilyName = AppLockPrefs.getFamilyName(this)
+        if (!localFamilyName.isNullOrBlank()) {
+            binding.tvFamilyName.text = "Keluarga: $localFamilyName"
+            return
+        }
+
+        if (code == "—") return
+        com.google.firebase.database.FirebaseDatabase.getInstance().reference
+            .child("families").child(code).child("familyName")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val remoteFamilyName = snapshot.getValue(String::class.java)
+                if (!remoteFamilyName.isNullOrBlank()) {
+                    binding.tvFamilyName.text = "Keluarga: $remoteFamilyName"
+                    AppLockPrefs.saveFamilyName(this, remoteFamilyName)
+                }
+            }
+    }
+
+    private fun setupFamilyMembersList() {
+        memberAdapter = FamilyMemberAdapter(myDeviceId = AppLockPrefs.getDeviceId(this))
+        binding.rvFamilyMembers.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvFamilyMembers.adapter = memberAdapter
+        binding.rvFamilyMembers.isNestedScrollingEnabled = false
+
+        devicesListener = FamilyLink.observeDevices(this) { devices ->
+            memberAdapter.submitList(devices)
+        }
+    }
+
     private fun setupStatusButtons() {
         binding.btnActivateAdmin.setOnClickListener {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
@@ -217,10 +265,6 @@ class ChildHomeActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-
-        binding.btnSetPinLocal.setOnClickListener {
-            startActivity(Intent(this, LockScreenActivity::class.java))
-        }
     }
 
     private fun updateStatusIcons() {
@@ -250,17 +294,6 @@ class ChildHomeActivity : AppCompatActivity() {
             this, Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
         setStatus(binding.statusLocation, binding.btnLocation, isLocationActive)
-
-        // PIN Status
-        if (AppLockPrefs.hasPin(this)) {
-            binding.tvPinStatus.text = "PIN Aktif ✓"
-            binding.tvPinStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
-            binding.btnSetPinLocal.text = "Ubah PIN"
-        } else {
-            binding.tvPinStatus.text = "PIN belum diset"
-            binding.tvPinStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-            binding.btnSetPinLocal.text = "Atur PIN (Lokal)"
-        }
     }
 
     private fun setStatus(icon: android.widget.ImageView, button: android.widget.Button, active: Boolean) {
@@ -306,6 +339,7 @@ class ChildHomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this)
+        devicesListener?.let { FamilyLink.removeDeviceObserver(this, it) }
     }
 
     private fun showMessageDialog(title: String, message: String) {

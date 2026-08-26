@@ -7,6 +7,8 @@
         <item name="colorSecondary">#00695C</item>
         <item name="colorOnSecondary">#FFFFFF</item>
         <item name="android:statusBarColor">#1A237E</item>
+        <item name="android:fontFamily">@font/skynight_family</item>
+        <item name="fontFamily">@font/skynight_family</item>
     </style>
 
     <!--
@@ -25,6 +27,8 @@
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#00695C</item>
         <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="android:fontFamily">@font/skynight_family</item>
+        <item name="fontFamily">@font/skynight_family</item>
     </style>
 
     <!-- Ukuran label hint di TextInputLayout LockScreen dibesarkan (default MaterialComponents
