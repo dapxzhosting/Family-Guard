@@ -145,8 +145,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         preventScrollInterceptOnTouch(
             binding.btnLockScreen, binding.btnUnlockScreen,
             binding.btnSendMessage, binding.btnSetPin,
-            binding.btnViewScreen, binding.btnResetRole, binding.btnOpenMap,
-            binding.btnChangeFamily, binding.btnLogout
+            binding.btnViewScreen, binding.btnOpenMap
         )
 
         // Kunci layar HP anak
@@ -154,7 +153,7 @@ class ParentDashboardActivity : AppCompatActivity() {
             val target = requireSelectedChildId() ?: return@setOnClickListener
             confirmAction("Kunci layar HP anak sekarang?") {
                 FamilyLink.sendLockScreen(this, target)
-                toast("Perintah kunci layar dikirim ✓")
+                toast("Perintah kunci layar dikirim")
             }
         }
 
@@ -163,7 +162,7 @@ class ParentDashboardActivity : AppCompatActivity() {
             val target = requireSelectedChildId() ?: return@setOnClickListener
             confirmAction("Buka kunci layar HP anak?") {
                 FamilyLink.sendUnlockScreen(this, target)
-                toast("Perintah buka kunci dikirim ✓")
+                toast("Perintah buka kunci dikirim")
             }
         }
 
@@ -177,20 +176,8 @@ class ParentDashboardActivity : AppCompatActivity() {
             showSetPinDialog()
         }
 
-        // Reset Role (untuk testing/pindah device)
-        binding.btnResetRole.setOnClickListener {
-            com.familyguard.utils.AccountActions.resetRole(this)
-        }
-
-        // Ganti / gabung ke keluarga lain (role tetap sama)
-        binding.btnChangeFamily.setOnClickListener {
-            com.familyguard.utils.AccountActions.changeFamily(this)
-        }
-
-        // Keluar dari akun Google sepenuhnya
-        binding.btnLogout.setOnClickListener {
-            com.familyguard.utils.AccountActions.logout(this)
-        }
+        // Reset Role, Ganti Keluarga & Keluar Akun sekarang terpusat di
+        // DashboardActivity (menu utama Orang Tua) -- lihat AccountActions.kt.
 
         // Lihat & kontrol layar HP anak secara real-time
         binding.btnViewScreen.setOnClickListener {
@@ -231,7 +218,7 @@ class ParentDashboardActivity : AppCompatActivity() {
                 val target = requireSelectedChildId()
                 if (msg.isNotBlank() && target != null) {
                     FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg, target)
-                    toast("Pesan dikirim ✓")
+                    toast("Pesan dikirim")
                 }
             }
             .setNegativeButton("Batal", null)
@@ -254,7 +241,7 @@ class ParentDashboardActivity : AppCompatActivity() {
                 val target = requireSelectedChildId()
                 if (pin.length == 4 && target != null) {
                     FamilyLink.sendSetPin(this, pin, target)
-                    toast("Perintah atur PIN dikirim ✓")
+                    toast("Perintah atur PIN dikirim")
                 } else if (pin.length != 4) {
                     toast("PIN harus 4 digit!")
                 }
@@ -290,8 +277,8 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         val labels = childDevices.map { device ->
             val name = device.userName?.takeIf { it.isNotBlank() } ?: "HP Anak (${device.deviceId.take(6)})"
-            val status = if (device.online) "🟢" else "⚪"
-            "$status $name"
+            val status = if (device.online) "Online" else "Offline"
+            "$name ($status)"
         }
 
         val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)

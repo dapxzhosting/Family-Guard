@@ -105,7 +105,7 @@ class FamilyCodeActivity : AppCompatActivity() {
     private fun goToHome() {
         val role = AppLockPrefs.getRole(this)
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
-            ParentDashboardActivity::class.java
+            DashboardActivity::class.java
         } else {
             ChildHomeActivity::class.java
         }

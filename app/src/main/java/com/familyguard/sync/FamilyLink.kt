@@ -128,6 +128,23 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
+    /**
+     * Hapus SELURUH data keluarga (node families/{code}) dari Firebase --
+     * bukan cuma device ini seperti removeDeviceFromCurrentFamily(). Dipakai
+     * saat orang tua menghapus keluarga secara permanen: semua HP anak yang
+     * masih terhubung otomatis "terputus" karena node keluarganya sudah
+     * tidak ada lagi di database (listener mereka akan dapat null).
+     */
+    fun deleteFamilyEntirely(context: Context, onComplete: (() -> Unit)? = null) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete?.invoke()
+            return
+        }
+        familyRef(code).removeValue()
+            .addOnCompleteListener { onComplete?.invoke() }
+    }
+
     fun registerDevice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)

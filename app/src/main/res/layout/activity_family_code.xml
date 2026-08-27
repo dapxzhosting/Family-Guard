@@ -16,10 +16,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="🔗 Hubungkan Keluarga"
+            android:text="Hubungkan Keluarga"
             android:textColor="#1A237E"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_link"
+            android:drawableTint="#1A237E"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -50,10 +54,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📱 Kode Keluarga Anda"
+                    android:text="Kode Keluarga Anda"
                     android:textColor="#212121"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawableTint="#212121"
+                    android:drawablePadding="6dp"
+                    android:gravity="center_vertical" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -90,7 +98,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        android:text="📋 Salin" />
+                        android:text="Salin"
+                        app:icon="@drawable/ic_copy"
+                        app:iconTint="#1A237E" />
 
                     <Button
                         android:id="@+id/btnShareCode"
@@ -98,7 +108,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📤 Bagikan" />
+                        android:text="Bagikan"
+                        app:icon="@drawable/ic_share"
+                        app:iconTint="#1A237E" />
                 </LinearLayout>
 
                 <Button
@@ -132,10 +144,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔑 Masukkan Kode Keluarga"
+                    android:text="Masukkan Kode Keluarga"
                     android:textColor="#212121"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_key"
+                    android:drawableTint="#212121"
+                    android:drawablePadding="6dp"
+                    android:gravity="center_vertical" />
 
                 <TextView
                     android:layout_width="wrap_content"

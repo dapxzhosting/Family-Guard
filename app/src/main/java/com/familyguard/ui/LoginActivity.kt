@@ -120,9 +120,9 @@ class LoginActivity : AppCompatActivity() {
             val target = when {
                 name.isNullOrBlank() -> NameInputActivity::class.java
                 role.isNullOrBlank() -> RoleSelectionActivity::class.java
-                code.isNullOrBlank() && role == AppLockPrefs.ROLE_PARENT -> FamilyNameActivity::class.java
+                code.isNullOrBlank() && role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
                 code.isNullOrBlank() -> FamilyCodeActivity::class.java
-                role == AppLockPrefs.ROLE_PARENT -> ParentDashboardActivity::class.java
+                role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
                 else -> ChildHomeActivity::class.java
             }
             startActivity(Intent(this, target))

@@ -3,11 +3,11 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
       <SelectionState runConfigName="Family Guard By Dapxz">
-        <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2026-08-17T14:01:22.167753600Z">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2026-08-27T21:58:06.793298300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=279aed4a7d79" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=106083741B102639" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,12 +15,12 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=12910334AR004901" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=106083741B102639" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=106083741B102639" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=12910334AR004901" />
               </handle>
             </Target>
           </targets>

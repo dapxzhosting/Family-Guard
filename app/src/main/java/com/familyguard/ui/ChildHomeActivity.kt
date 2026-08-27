@@ -114,6 +114,19 @@ class ChildHomeActivity : AppCompatActivity() {
         binding.btnLogoutChild.setOnClickListener {
             com.familyguard.utils.AccountActions.logout(this)
         }
+
+        setupAnimations()
+    }
+
+    /**
+     * Animasi native Android (ViewPropertyAnimator, tanpa library eksternal)
+     * supaya dashboard terasa smooth: card-card muncul staggered fade+slide-up
+     * saat dashboard dibuka, dan semua tombol/card punya feedback "press"
+     * (mengecil dikit saat ditekan, balik dengan overshoot saat dilepas).
+     */
+    private fun setupAnimations() {
+        com.familyguard.utils.AnimUtils.staggerFadeSlideIn(binding.rootContent)
+        com.familyguard.utils.AnimUtils.attachPressAnimationRecursively(binding.rootContent)
     }
 
     override fun onResume() {
@@ -223,6 +236,7 @@ class ChildHomeActivity : AppCompatActivity() {
         binding.rvFamilyMembers.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         binding.rvFamilyMembers.adapter = memberAdapter
         binding.rvFamilyMembers.isNestedScrollingEnabled = false
+        com.familyguard.utils.AnimUtils.applySlideInItemAnimator(binding.rvFamilyMembers)
 
         devicesListener = FamilyLink.observeDevices(this) { devices ->
             memberAdapter.submitList(devices)
@@ -344,7 +358,7 @@ class ChildHomeActivity : AppCompatActivity() {
 
     private fun showMessageDialog(title: String, message: String) {
         AlertDialog.Builder(this)
-            .setTitle("📩 $title")
+            .setTitle("Pesan: $title")
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()

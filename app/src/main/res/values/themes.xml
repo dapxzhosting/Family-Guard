@@ -31,6 +31,21 @@
         <item name="fontFamily">@font/skynight_family</item>
     </style>
 
+    <!-- Theme khusus SplashActivity: fullscreen tanpa title bar, status bar
+         menyatu dengan warna gradient splash supaya transisinya mulus. -->
+    <style name="Theme.FamilyGuard.Splash" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:statusBarColor">#1A237E</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@drawable/bg_splash_gradient</item>
+        <item name="colorPrimary">#1A237E</item>
+        <item name="colorPrimaryVariant">#0D47A1</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:fontFamily">@font/skynight_family</item>
+        <item name="fontFamily">@font/skynight_family</item>
+    </style>
+
     <!-- Ukuran label hint di TextInputLayout LockScreen dibesarkan (default MaterialComponents
          terlalu kecil ~12sp saat mengecil ke atas box, kelihatan "kecil banget" di kolom PIN). -->
     <style name="LockScreen.HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">

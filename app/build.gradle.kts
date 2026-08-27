@@ -72,6 +72,7 @@ dependencies {
 
     // WebRTC (screen streaming real-time, gantiin polling JPEG lewat RTDB)
     implementation("io.getstream:stream-webrtc-android:1.3.9")
+    implementation(libs.androidx.activity)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

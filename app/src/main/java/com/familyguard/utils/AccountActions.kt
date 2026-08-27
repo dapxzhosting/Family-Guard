@@ -110,6 +110,49 @@ object AccountActions {
             .show()
     }
 
+    /**
+     * HAPUS KELUARGA: berbeda dari changeFamily() -- ini menghapus SELURUH
+     * node keluarga di Firebase (families/{code}), bukan cuma device ini
+     * yang keluar. Semua HP anak yang masih terhubung otomatis kehilangan
+     * koneksi karena keluarganya sudah tidak ada lagi. Role tetap Orang Tua,
+     * cuma kode & nama keluarga lokal ikut dibersihkan supaya bisa langsung
+     * "Buat Keluarga" baru dari menu. Dipakai khusus dari DashboardActivity
+     * (menu utama Orang Tua).
+     */
+    fun deleteFamily(activity: Activity, onDone: (() -> Unit)? = null) {
+        AlertDialog.Builder(activity)
+            .setTitle("Hapus Keluarga?")
+            .setMessage(
+                "Seluruh data keluarga ini akan dihapus permanen, termasuk semua " +
+                        "HP anak yang terhubung -- mereka akan otomatis terputus. " +
+                        "Tindakan ini tidak bisa dibatalkan."
+            )
+            .setPositiveButton("Hapus") { _, _ ->
+                Toast.makeText(activity, "Menghapus keluarga...", Toast.LENGTH_SHORT).show()
+                FamilyLink.deleteFamilyEntirely(activity) {
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+                    if (uid != null) {
+                        com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                            .child("users").child(uid).child("familyCode").removeValue()
+                            .addOnCompleteListener {
+                                AppLockPrefs.saveFamilyCode(activity, "")
+                                AppLockPrefs.saveFamilyName(activity, "")
+                                AppLockPrefs.setDeviceLocked(activity, false)
+                                Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
+                                onDone?.invoke()
+                            }
+                    } else {
+                        AppLockPrefs.saveFamilyCode(activity, "")
+                        AppLockPrefs.saveFamilyName(activity, "")
+                        Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        onDone?.invoke()
+                    }
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
     private fun doLogout(activity: Activity) {
         val googleSignInClient = GoogleSignIn.getClient(
             activity,

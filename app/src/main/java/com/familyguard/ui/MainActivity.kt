@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showLocalMessage(title: String, message: String) {
         AlertDialog.Builder(this)
-            .setTitle("📩 $title")
+            .setTitle("Pesan: $title")
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()

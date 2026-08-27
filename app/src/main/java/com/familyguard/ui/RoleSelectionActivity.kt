@@ -56,10 +56,11 @@ class RoleSelectionActivity : AppCompatActivity() {
         }
     }
 
-    /** Orang tua isi nama keluarga dulu; anak langsung ke layar kode seperti alur lama. */
+    /** Orang tua masuk ke menu utama dulu (Dashboard/Pengaturan/Buat Keluarga/Logout);
+     *  anak langsung ke layar kode seperti alur lama. */
     private fun goToNextStep(role: String) {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
-            FamilyNameActivity::class.java
+            DashboardActivity::class.java
         } else {
             FamilyCodeActivity::class.java
         }
@@ -69,7 +70,7 @@ class RoleSelectionActivity : AppCompatActivity() {
 
     private fun goToRoleHome(role: String) {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
-            ParentDashboardActivity::class.java
+            DashboardActivity::class.java
         } else {
             ChildHomeActivity::class.java
         }

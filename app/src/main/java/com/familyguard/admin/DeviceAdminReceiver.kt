@@ -9,7 +9,7 @@ class DeviceAdminReceiver : DeviceAdminReceiver() {
 
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        Toast.makeText(context, "FamilyGuard: Device Admin aktif ✓", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "FamilyGuard: Device Admin aktif", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDisabled(context: Context, intent: Intent) {

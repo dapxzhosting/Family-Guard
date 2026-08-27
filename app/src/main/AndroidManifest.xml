@@ -38,14 +38,20 @@
 
         <!-- ========== ACTIVITIES ========== -->
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.SplashActivity"
             android:exported="true"
+            android:theme="@style/Theme.FamilyGuard.Splash"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
 
         <activity android:name=".ui.NameInputActivity" android:exported="false" />
         <activity android:name=".ui.FamilyNameActivity" android:exported="false" />
@@ -63,6 +69,14 @@
         <activity android:name=".ui.FamilyCodeActivity" android:exported="false" />
         <activity android:name=".ui.ChildHomeActivity" android:exported="false" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
+        <activity android:name=".ui.DashboardActivity" android:exported="false" />
+
+        <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
+        <activity
+            android:name=".ui.PrivacyPolicyActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FamilyGuard" />
 
         <activity
             android:name=".ui.LocationMapActivity"
@@ -180,6 +194,13 @@
             android:exported="false"
             android:label="Layar HP Anak"
             android:screenOrientation="portrait" />
+
+        <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
+        <activity
+            android:name=".ui.PrivacyPolicyActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FamilyGuard" />
 
     </application>
 </manifest>

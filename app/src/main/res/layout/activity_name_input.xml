@@ -9,9 +9,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="👋 Siapa nama Anda?"
+        android:text="Siapa nama Anda?"
         android:textSize="22sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_wave"
+        android:drawableTint="#1A237E"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical" />
 
     <TextView
         android:layout_width="wrap_content"

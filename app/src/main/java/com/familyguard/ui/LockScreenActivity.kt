@@ -81,7 +81,7 @@ class LockScreenActivity : Activity() {
 
         when (mode) {
             MODE_DEVICE_LOCK -> {
-                binding.tvTitle.text = "Perangkat Terkunci 🛑"
+                binding.tvTitle.text = "Perangkat Terkunci"
                 binding.tvSubtitle.text = "Gunakan PIN Orang Tua untuk Membuka Sesi"
                 binding.btnGoHome.visibility = android.view.View.GONE
                 binding.btnUnlock.visibility = android.view.View.GONE
@@ -89,7 +89,7 @@ class LockScreenActivity : Activity() {
             MODE_MESSAGE -> {
                 val title = intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "Pesan"
                 val body = intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: ""
-                binding.tvTitle.text = "📩 $title"
+                binding.tvTitle.text = "Pesan: $title"
                 binding.tvSubtitle.text = body
                 binding.btnUnlock.text = "Tutup Pesan"
                 binding.pinInputArea.visibility = android.view.View.GONE
@@ -102,7 +102,7 @@ class LockScreenActivity : Activity() {
                     binding.btnUnlock.text = "Simpan PIN"
                     binding.btnUnlock.setOnClickListener { setFirstPin() }
                 } else {
-                    binding.tvTitle.text = "Aplikasi Dikunci 🔒"
+                    binding.tvTitle.text = "Aplikasi Dikunci"
                     binding.tvSubtitle.text = "Masukkan PIN orang tua untuk membuka"
                     // Tombol "Buka Aplikasi" dihapus -- PIN akan diverifikasi
                     // OTOMATIS begitu jumlah digit yang diketik sudah pas
@@ -271,13 +271,13 @@ class LockScreenActivity : Activity() {
             if (mode == MODE_APP_LOCK && lockedPackage != null) {
                 // Beri waktu 30 detik akses
                 AppLockPrefs.setPackageUnlocked(this, lockedPackage!!)
-                Toast.makeText(this, "✓ Berhasil dibuka", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Berhasil dibuka", Toast.LENGTH_SHORT).show()
                 finish() // Kembali ke aplikasi yang sedang dibuka
             } else {
                 if (mode == MODE_DEVICE_LOCK) {
                     AppLockPrefs.setDeviceLocked(this, false)
                 }
-                Toast.makeText(this, "✓ Perangkat dibuka", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Perangkat dibuka", Toast.LENGTH_SHORT).show()
                 finish() // Jika device lock, kembali ke apa yang ada di belakangnya
             }
         } else {
