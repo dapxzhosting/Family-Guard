@@ -165,6 +165,29 @@ object FamilyLink {
         onComplete?.invoke()
     }
 
+    /**
+     * Tandai device ini "sudah logout" di Firebase SEBELUM benar-benar sign
+     * out -- supaya anggota keluarga lain (terutama Orang Tua yang lihat
+     * dashboard) tahu device ini bukan cuma offline biasa (mati/no internet),
+     * tapi memang akunnya sengaja logout. Ditulis SEBELUM FirebaseAuth.signOut()
+     * dipanggil, karena rules Firebase kemungkinan butuh user masih ter-auth
+     * untuk bisa nulis. Beda dari changeFamily()/resetRole() yang HAPUS
+     * device node -- di sini device node TETAP ADA (anak masih anggota
+     * keluarga), cuma statusnya yang berubah, dan otomatis kebersihkan lagi
+     * begitu device ini login ulang (lihat registerDevice() -> loggedOut=false).
+     */
+    fun markLoggedOut(context: Context, onComplete: (() -> Unit)? = null) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete?.invoke()
+            return
+        }
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).updateChildren(
+            mapOf("loggedOut" to true, "online" to false)
+        ).addOnCompleteListener { onComplete?.invoke() }
+    }
+
     fun registerDevice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
@@ -178,6 +201,11 @@ object FamilyLink {
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
             child("hasPin").setValue(AppLockPrefs.hasPin(context))
+            // Device ini baru saja login/registrasi ulang -- pastikan tanda
+            // "sudah logout" (kalau ada dari sesi sebelumnya) dibersihkan,
+            // supaya dashboard Orang Tua/Anak berhenti nampilin status
+            // "telah logout dari akun ini" begitu akun ini login lagi.
+            child("loggedOut").setValue(false)
             child("online").onDisconnect().setValue(false)
             child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
         }
@@ -486,7 +514,8 @@ object FamilyLink {
                     val userName = snap.child("userName").getValue(String::class.java)?.takeIf { it.isNotBlank() }
                     val hasPin = snap.child("hasPin").getValue(Boolean::class.java) ?: false
                     val currentPin = snap.child("currentPin").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin)
+                    val loggedOut = snap.child("loggedOut").getValue(Boolean::class.java) ?: false
+                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin, loggedOut)
                 }
                 onChange(list)
             }
@@ -736,5 +765,6 @@ data class FamilyDevice(
     val lastSeen: Long,
     val userName: String? = null,
     val hasPin: Boolean = false,
-    val currentPin: String? = null
+    val currentPin: String? = null,
+    val loggedOut: Boolean = false
 )

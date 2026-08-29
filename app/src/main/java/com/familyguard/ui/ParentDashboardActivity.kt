@@ -28,11 +28,13 @@ class ParentDashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityParentDashboardBinding
     private var deviceObserver: ValueEventListener? = null
     private lateinit var appAdapter: com.familyguard.ui.adapter.AppListAdapter
+    private lateinit var memberAdapter: FamilyMemberAdapter
     private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     // Daftar HP anak yang terhubung & yang lagi dipilih untuk dikontrol/dilihat.
     // Sebelumnya dashboard cuma nampilin/ngontrol device anak PERTAMA yang ketemu --
-    // sekarang bisa 2-10 anak, dipilih lewat spinnerChildSelector.
+    // sekarang bisa 2-10 anak, dipilih lewat list "Anggota Keluarga" (rvFamilyMembers),
+    // tap nama anak untuk pindah kontrol ke HP itu (menggantikan spinner lama).
     private var childDevices: List<FamilyDevice> = emptyList()
     private var selectedChildId: String? = null
     private var appListListener: ValueEventListener? = null
@@ -92,6 +94,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         setupFamilyNameHeader(code)
 
         setupAppRecyclerView()
+        setupMemberRecyclerView()
         setupButtons()
         setupMap()
         observeConnectedDevices()
@@ -148,6 +151,29 @@ class ParentDashboardActivity : AppCompatActivity() {
         marker.title = "Lokasi Anak"
         binding.mapView.overlays.add(marker)
         binding.mapView.invalidate()
+    }
+
+    /** RecyclerView "Anggota Keluarga" -- tap nama anak = pindah kontrol ke
+     *  HP itu (selectChild). Tap Orang Tua (termasuk device sendiri) cuma
+     *  kasih toast, karena Orang Tua tidak bisa "dikontrol". */
+    private fun setupMemberRecyclerView() {
+        memberAdapter = FamilyMemberAdapter(
+            myDeviceId = AppLockPrefs.getDeviceId(this),
+            selectedDeviceId = selectedChildId,
+            onMemberClick = { member ->
+                when {
+                    member.role != AppLockPrefs.ROLE_CHILD -> toast("Orang Tua tidak bisa dikontrol")
+                    member.loggedOut -> toast("Anak ini sedang logout, tidak bisa dikontrol sampai login lagi")
+                    else -> {
+                        selectChild(member.deviceId)
+                        memberAdapter.setSelectedDeviceId(member.deviceId)
+                    }
+                }
+            }
+        )
+        binding.rvFamilyMembers.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvFamilyMembers.adapter = memberAdapter
+        binding.rvFamilyMembers.isNestedScrollingEnabled = false
     }
 
     private fun setupAppRecyclerView() {
@@ -314,50 +340,77 @@ class ParentDashboardActivity : AppCompatActivity() {
         }
     }
 
-    /** Isi spinner dengan semua HP anak (role CHILD) yang terhubung ke family ini. */
+    /** Isi list "Anggota Keluarga" dengan SEMUA device (Orang Tua + semua
+     *  Anak) supaya orang tua bisa lihat siapa saja yang tergabung -- tapi
+     *  cuma baris Anak yang bisa di-tap untuk pindah kontrol (lihat
+     *  setupMemberRecyclerView -> onMemberClick). Menggantikan spinner lama
+     *  yang cuma nampilin nama anak dalam bentuk dropdown teks.
+     *
+     * PENTING: TIDAK auto-select anak pertama lagi (beda dari versi lama).
+     * Tombol-tombol kontrol (layoutDeviceControls) baru muncul setelah
+     * orang tua SENGAJA ketuk nama anak di list ini -- lihat
+     * updateControlsVisibility() untuk 3 kondisi tampilannya. */
     private fun updateChildSelector(devices: List<FamilyDevice>) {
         childDevices = devices.filter { it.role == AppLockPrefs.ROLE_CHILD }
 
-        if (childDevices.isEmpty()) {
-            binding.layoutChildSelector.visibility = android.view.View.GONE
-            selectedChildId = null
-            return
-        }
-
-        // Spinner cuma ditampilkan kalau lebih dari 1 anak -- kalau cuma 1, langsung
-        // dipilih otomatis tanpa perlu user pilih apa-apa.
-        binding.layoutChildSelector.visibility =
-            if (childDevices.size > 1) android.view.View.VISIBLE else android.view.View.GONE
-
-        val labels = childDevices.map { device ->
-            val name = device.userName?.takeIf { it.isNotBlank() } ?: "HP Anak (${device.deviceId.take(6)})"
-            val status = if (device.online) "Online" else "Offline"
-            "$name ($status)"
-        }
-
-        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerChildSelector.adapter = adapter
-
-        // Pertahankan pilihan sebelumnya kalau device itu masih ada di list terbaru,
-        // supaya spinner gak "reset" ke device pertama tiap kali Firebase update.
-        val previousIndex = childDevices.indexOfFirst { it.deviceId == selectedChildId }
-        val indexToSelect = if (previousIndex >= 0) previousIndex else 0
-        binding.spinnerChildSelector.setSelection(indexToSelect, false)
-        selectChild(childDevices[indexToSelect].deviceId)
-
-        binding.spinnerChildSelector.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                selectChild(childDevices[position].deviceId)
+        // Kalau anak yang lagi dikontrol ternyata sudah tidak ada lagi di list
+        // terbaru (mis. keluar dari keluarga) ATAU baru saja logout dari
+        // akunnya, otomatis kembali ke state "belum pilih" -- daripada tombol
+        // kontrol nyangkut ke device yang sudah tidak bisa dikontrol lagi.
+        val selected = childDevices.firstOrNull { it.deviceId == selectedChildId }
+        if (selectedChildId != null && (selected == null || selected.loggedOut)) {
+            val code = AppLockPrefs.getFamilyCode(this)
+            if (code != null && appListListener != null) {
+                com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                    .child("families").child(code).child("devices").child(selectedChildId!!)
+                    .removeEventListener(appListListener!!)
             }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            selectedChildId = null
+            appListListener = null
         }
+
+        binding.layoutChildSelector.visibility =
+            if (childDevices.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE
+
+        // Urutan tampilan: Orang Tua dulu (termasuk device ini sendiri), baru semua Anak --
+        // supaya konsisten dengan urutan yang sama dipakai di ChildHomeActivity.
+        val ordered = devices.sortedBy { it.role != AppLockPrefs.ROLE_PARENT }
+        memberAdapter.submitList(ordered)
+        memberAdapter.setSelectedDeviceId(selectedChildId)
+
+        // Nama di banner "Sedang mengontrol: ..." perlu ikut ter-update kalau
+        // datanya berubah (mis. anak baru saja ganti nama dari SettingsActivity).
+        selectedChildId?.let { id ->
+            val name = childDevices.firstOrNull { it.deviceId == id }?.userName
+                ?.takeIf { it.isNotBlank() } ?: "HP Anak"
+            binding.tvControllingChildName.text = name
+        }
+
+        updateControlsVisibility()
+    }
+
+    /** 3 kondisi tampilan dashboard:
+     *  1. Belum ada HP anak yang terhubung sama sekali -> layoutNoChildYet
+     *  2. Ada HP anak, tapi orang tua belum ketuk nama siapa pun -> layoutNoChildSelected
+     *  3. Sudah ketuk nama anak -> layoutDeviceControls (semua tombol fitur) */
+    private fun updateControlsVisibility() {
+        val hasChild = childDevices.isNotEmpty()
+        val hasSelection = selectedChildId != null
+
+        binding.layoutNoChildYet.visibility = if (!hasChild) android.view.View.VISIBLE else android.view.View.GONE
+        binding.layoutNoChildSelected.visibility = if (hasChild && !hasSelection) android.view.View.VISIBLE else android.view.View.GONE
+        binding.layoutDeviceControls.visibility = if (hasSelection) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     /** Pindah tampilan appList & lokasi ke HP anak tertentu. */
     private fun selectChild(deviceId: String) {
         if (selectedChildId == deviceId && appListListener != null) return
         selectedChildId = deviceId
+
+        val childName = childDevices.firstOrNull { it.deviceId == deviceId }?.userName
+            ?.takeIf { it.isNotBlank() } ?: "HP Anak"
+        binding.tvControllingChildName.text = childName
+        updateControlsVisibility()
 
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference

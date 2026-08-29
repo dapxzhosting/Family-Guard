@@ -154,18 +154,20 @@ object AccountActions {
     }
 
     private fun doLogout(activity: Activity) {
-        val googleSignInClient = GoogleSignIn.getClient(
-            activity,
-            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-        )
-        FirebaseAuth.getInstance().signOut()
-        googleSignInClient.signOut().addOnCompleteListener {
-            AppLockPrefs.clearAllForLogout(activity)
-            val intent = Intent(activity, LoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        FamilyLink.markLoggedOut(activity) {
+            val googleSignInClient = GoogleSignIn.getClient(
+                activity,
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+            )
+            FirebaseAuth.getInstance().signOut()
+            googleSignInClient.signOut().addOnCompleteListener {
+                AppLockPrefs.clearAllForLogout(activity)
+                val intent = Intent(activity, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                activity.startActivity(intent)
+                activity.finish()
             }
-            activity.startActivity(intent)
-            activity.finish()
         }
     }
 
