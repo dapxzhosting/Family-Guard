@@ -499,6 +499,19 @@
                         android:clipToPadding="false" />
                 </com.google.android.material.card.MaterialCardView>
 
+                <Button
+                    android:id="@+id/btnViewAllApps"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Lihat Semua Aplikasi"
+                    android:textAllCaps="false"
+                    app:strokeColor="@color/dash_primary"
+                    android:textColor="@color/dash_primary"
+                    app:icon="@drawable/ic_menu_dashboard"
+                    app:iconTint="@color/dash_primary" />
+
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

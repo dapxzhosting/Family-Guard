@@ -70,6 +70,8 @@
         <activity android:name=".ui.ChildHomeActivity" android:exported="false" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
         <activity android:name=".ui.DashboardActivity" android:exported="false" />
+        <activity android:name=".ui.SettingsActivity" android:exported="false" />
+        <activity android:name=".ui.AppListActivity" android:exported="false" />
 
         <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
         <activity
@@ -194,13 +196,6 @@
             android:exported="false"
             android:label="Layar HP Anak"
             android:screenOrientation="portrait" />
-
-        <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
-        <activity
-            android:name=".ui.PrivacyPolicyActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.FamilyGuard" />
 
     </application>
 </manifest>

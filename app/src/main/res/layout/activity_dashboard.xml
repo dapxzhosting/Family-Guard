@@ -240,7 +240,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Segera hadir"
+                        android:text="Info akun &amp; lainnya"
                         android:textColor="#757575"
                         android:textSize="12sp" />
                 </LinearLayout>

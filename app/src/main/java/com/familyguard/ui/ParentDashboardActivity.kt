@@ -45,6 +45,38 @@ class ParentDashboardActivity : AppCompatActivity() {
         return selectedChildId
     }
 
+    /**
+     * Cegah kunci layar / kunci aplikasi dikirim SEBELUM PIN pernah diset ke
+     * HP anak tersebut. Kalau tidak dicegah, HP anak akan tampil layar kunci
+     * (LockScreenActivity) yang minta PIN, padahal PIN-nya belum pernah ada
+     * -- anak (dan orang tua) jadi tidak tahu PIN apa yang harus dimasukkan,
+     * dan HP anak bisa "terkunci permanen" tanpa jalan keluar.
+     *
+     * Statusnya diambil dari FamilyDevice.hasPin, yang disinkron oleh HP
+     * anak ke Firebase setiap kali PIN berhasil diterima & disimpan lokal
+     * (lihat FamilyLink.kt -- command "set_pin" & registerDevice()).
+     *
+     * Return true kalau aman lanjut (PIN sudah ada), false kalau diblokir
+     * (dialog sudah ditampilkan, memberi jalan pintas ke "Atur PIN").
+     */
+    private fun requirePinSet(targetDeviceId: String): Boolean {
+        val hasPin = childDevices.firstOrNull { it.deviceId == targetDeviceId }?.hasPin ?: false
+        if (hasPin) return true
+
+        AlertDialog.Builder(this)
+            .setTitle("PIN Belum Diset")
+            .setMessage(
+                "HP anak ini belum punya PIN. Kunci layar/aplikasi butuh PIN " +
+                        "supaya anak bisa membuka kuncinya sendiri -- kalau dikunci " +
+                        "sekarang tanpa PIN, anak tidak akan tahu kode apa yang harus " +
+                        "dimasukkan. Atur PIN dulu sebelum mengunci."
+            )
+            .setPositiveButton("Atur PIN Sekarang") { _, _ -> showSetPinDialog() }
+            .setNegativeButton("Batal", null)
+            .show()
+        return false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -122,6 +154,9 @@ class ParentDashboardActivity : AppCompatActivity() {
         appAdapter = com.familyguard.ui.adapter.AppListAdapter(
             onLockToggle = { appInfo, locked ->
                 val target = requireSelectedChildId() ?: return@AppListAdapter
+                // Cuma perlu jaga-jaga PIN kalau MENGUNCI (locked=true) -- buka
+                // kunci (locked=false) selalu aman dikirim kapan saja.
+                if (locked && !requirePinSet(target)) return@AppListAdapter
                 FamilyLink.sendLockApp(this, appInfo.packageName, locked, target)
                 toast(if (locked) "Kunci ${appInfo.appName} dikirim" else "Buka ${appInfo.appName} dikirim")
             },
@@ -133,6 +168,17 @@ class ParentDashboardActivity : AppCompatActivity() {
         )
         binding.rvChildApps.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         binding.rvChildApps.adapter = appAdapter
+
+        binding.btnViewAllApps.setOnClickListener {
+            val target = requireSelectedChildId() ?: return@setOnClickListener
+            val childName = childDevices.firstOrNull { it.deviceId == target }?.userName
+                ?.takeIf { it.isNotBlank() } ?: "HP Anak"
+            val intent = android.content.Intent(this, AppListActivity::class.java).apply {
+                putExtra(AppListActivity.EXTRA_DEVICE_ID, target)
+                putExtra(AppListActivity.EXTRA_CHILD_NAME, childName)
+            }
+            startActivity(intent)
+        }
     }
 
     // ─── TOMBOL PERINTAH ─────────────────────────────────────────
@@ -151,6 +197,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         // Kunci layar HP anak
         binding.btnLockScreen.setOnClickListener {
             val target = requireSelectedChildId() ?: return@setOnClickListener
+            if (!requirePinSet(target)) return@setOnClickListener
             confirmAction("Kunci layar HP anak sekarang?") {
                 FamilyLink.sendLockScreen(this, target)
                 toast("Perintah kunci layar dikirim")
@@ -226,15 +273,22 @@ class ParentDashboardActivity : AppCompatActivity() {
     }
 
     private fun showSetPinDialog() {
+        val currentPin = childDevices.firstOrNull { it.deviceId == selectedChildId }?.currentPin
+
         val input = android.widget.EditText(this).apply {
             hint = "Masukkan 4 digit PIN baru"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
             filters = arrayOf(android.text.InputFilter.LengthFilter(4))
             setPadding(48, 32, 48, 16)
         }
+        val message = if (currentPin != null) {
+            "PIN saat ini: $currentPin\n\nPIN baru akan menggantikan PIN ini dan digunakan anak untuk membuka aplikasi yang dikunci."
+        } else {
+            "PIN ini akan digunakan anak untuk membuka aplikasi yang dikunci."
+        }
         AlertDialog.Builder(this)
             .setTitle("Atur PIN HP Anak")
-            .setMessage("PIN ini akan digunakan anak untuk membuka aplikasi yang dikunci.")
+            .setMessage(message)
             .setView(input)
             .setPositiveButton("Simpan") { _, _ ->
                 val pin = input.text.toString().trim()

@@ -18,7 +18,7 @@ import com.familyguard.utils.AppLockPrefs
  *                        Kartu ini disembunyikan sama sekali kalau belum
  *                        ada keluarga (lihat updateFamilyStatus()).
  * - Buat Keluarga    -> FamilyNameActivity (alur bikin nama + kode keluarga)
- * - Pengaturan       -> belum diimplementasi, placeholder dulu ("nanti aja")
+ * - Pengaturan       -> SettingsActivity (info akun: nama & email)
  * - Kebijakan Privasi -> PrivacyPolicyActivity (tampilan untuk dibaca)
  * - Hapus Keluarga   -> AccountActions.deleteFamily() (hanya tampil kalau
  *                        sudah ada keluarga)
@@ -57,8 +57,9 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         binding.btnMenuSettings.setOnClickListener {
-            // TODO: activity_pengaturan menyusul -- untuk sekarang placeholder dulu.
-            Toast.makeText(this, "Pengaturan segera hadir", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.slide_up_in, R.anim.stay_dim)
         }
 
         // Aksi klik untuk membuka halaman Kebijakan Privasi dari Dashboard
@@ -107,6 +108,12 @@ class DashboardActivity : AppCompatActivity() {
         binding.ivMenuFamilyChevron.visibility = View.VISIBLE
         binding.btnMenuCreateFamily.isClickable = true
         binding.btnMenuCreateFamily.isFocusable = true
+        binding.btnMenuCreateFamily.cardElevation = resources.displayMetrics.density * 3
+        binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.WHITE)
+        val outValue = android.util.TypedValue()
+        theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+        binding.btnMenuCreateFamily.foreground = androidx.core.content.ContextCompat.getDrawable(this, outValue.resourceId)
+        AnimUtils.attachPressAnimation(binding.btnMenuCreateFamily)
         AnimUtils.collapseAndHide(binding.btnMenuDashboard)
         AnimUtils.collapseAndHide(binding.btnMenuDeleteFamily)
     }
@@ -142,6 +149,13 @@ class DashboardActivity : AppCompatActivity() {
             binding.ivMenuFamilyChevron.visibility = View.GONE
             binding.btnMenuCreateFamily.isClickable = false
             binding.btnMenuCreateFamily.isFocusable = false
+            // Bukan cuma dimatikan kliknya -- tampilannya juga diratain jadi
+            // info biasa (bukan elevasi/warna kartu ala tombol), supaya
+            // gak kelihatan lagi seperti sesuatu yang bisa dipencet.
+            binding.btnMenuCreateFamily.cardElevation = 0f
+            binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.parseColor("#EDEFF7"))
+            binding.btnMenuCreateFamily.foreground = null
+            binding.btnMenuCreateFamily.setOnTouchListener(null)
         } else {
             binding.tvMenuFamilyTitle.text = "Buat Keluarga"
             binding.tvMenuFamilyStatus.text = "Belum ada keluarga"
@@ -149,6 +163,12 @@ class DashboardActivity : AppCompatActivity() {
             binding.ivMenuFamilyChevron.visibility = View.VISIBLE
             binding.btnMenuCreateFamily.isClickable = true
             binding.btnMenuCreateFamily.isFocusable = true
+            binding.btnMenuCreateFamily.cardElevation = resources.displayMetrics.density * 3
+            binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.WHITE)
+            val outValue = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+            binding.btnMenuCreateFamily.foreground = androidx.core.content.ContextCompat.getDrawable(this, outValue.resourceId)
+            AnimUtils.attachPressAnimation(binding.btnMenuCreateFamily)
         }
     }
 }

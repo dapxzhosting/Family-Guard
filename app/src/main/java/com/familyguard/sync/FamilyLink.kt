@@ -145,6 +145,26 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
+    /**
+     * Ganti nama user dari SettingsActivity: simpan lokal, sinkron ke profil
+     * /users/{uid} (supaya kebawa kalau login di HP lain), dan kalau device
+     * ini sudah tergabung di keluarga, update juga record device-nya lewat
+     * registerDevice() supaya nama yang tampil di list "Anggota Keluarga"
+     * (dashboard anak) ikut berubah -- bukan cuma nama lokal doang.
+     */
+    fun updateUserName(context: Context, newName: String, onComplete: (() -> Unit)? = null) {
+        AppLockPrefs.saveUserName(context, newName)
+
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            userRef(uid).child("userName").setValue(newName)
+        }
+        if (!AppLockPrefs.getFamilyCode(context).isNullOrBlank()) {
+            registerDevice(context)
+        }
+        onComplete?.invoke()
+    }
+
     fun registerDevice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
@@ -157,6 +177,7 @@ object FamilyLink {
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
+            child("hasPin").setValue(AppLockPrefs.hasPin(context))
             child("online").onDisconnect().setValue(false)
             child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
         }
@@ -359,6 +380,19 @@ object FamilyLink {
                             val pin = payload.child("pin").getValue(String::class.java) ?: ""
                             if (pin.isNotEmpty()) {
                                 AppLockPrefs.savePin(context, pin)
+                                // Sinkron status "sudah ada PIN" + nilai PIN aktual ke
+                                // Firebase supaya dashboard Orang Tua tahu device ini AMAN
+                                // untuk dikunci (lihat guard di ParentDashboardActivity/
+                                // AppListActivity), dan supaya orang tua bisa lihat lagi
+                                // PIN yang sedang aktif kalau lupa (fitur "PIN saat ini").
+                                val code = AppLockPrefs.getFamilyCode(context)
+                                val id = AppLockPrefs.getDeviceId(context)
+                                if (!code.isNullOrBlank()) {
+                                    deviceRef(code, id).apply {
+                                        child("hasPin").setValue(true)
+                                        child("currentPin").setValue(pin)
+                                    }
+                                }
                             }
                         }
 
@@ -450,7 +484,9 @@ object FamilyLink {
                     val online = snap.child("online").getValue(Boolean::class.java) ?: false
                     val lastSeen = snap.child("lastSeen").getValue(Long::class.java) ?: 0L
                     val userName = snap.child("userName").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    FamilyDevice(id, role, online, lastSeen, userName)
+                    val hasPin = snap.child("hasPin").getValue(Boolean::class.java) ?: false
+                    val currentPin = snap.child("currentPin").getValue(String::class.java)?.takeIf { it.isNotBlank() }
+                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin)
                 }
                 onChange(list)
             }
@@ -698,5 +734,7 @@ data class FamilyDevice(
     val role: String,
     val online: Boolean,
     val lastSeen: Long,
-    val userName: String? = null
+    val userName: String? = null,
+    val hasPin: Boolean = false,
+    val currentPin: String? = null
 )
