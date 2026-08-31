@@ -61,16 +61,11 @@
             android:exported="false"
             android:launchMode="singleTop" />
 
-        <activity
-            android:name=".ui.MainActivity"
-            android:exported="false"
-            android:launchMode="singleTop" />
-
         <activity android:name=".ui.FamilyCodeActivity" android:exported="false" android:theme="@style/Theme.FamilyGuard.Plain" />
-        <activity android:name=".ui.ChildHomeActivity" android:exported="false" />
+        <activity android:name=".ui.ChildDashboardActivity" android:exported="false" />
         <activity android:name=".ui.ChildMenuActivity" android:exported="false" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
-        <activity android:name=".ui.DashboardActivity" android:exported="false" />
+        <activity android:name=".ui.ParentMenuActivity" android:exported="false" />
         <activity android:name=".ui.SettingsActivity" android:exported="false" />
         <activity android:name=".ui.AppListActivity" android:exported="false" />
         <activity android:name=".ui.ScreenTimeReportActivity" android:exported="false" />

@@ -93,7 +93,7 @@ class LoginActivity : AppCompatActivity() {
             val target = when {
                 name.isNullOrBlank() -> NameInputActivity::class.java
                 role.isNullOrBlank() -> RoleSelectionActivity::class.java
-                role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
+                role == AppLockPrefs.ROLE_PARENT -> ParentMenuActivity::class.java
                 else -> ChildMenuActivity::class.java
             }
             startActivity(Intent(this, target))

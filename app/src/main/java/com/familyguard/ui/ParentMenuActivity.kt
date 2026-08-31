@@ -6,18 +6,18 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.R
-import com.familyguard.databinding.ActivityDashboardBinding
+import com.familyguard.databinding.ActivityParentMenuBinding
 import com.familyguard.utils.AccountActions
 import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
 
-class DashboardActivity : AppCompatActivity() {
+class ParentMenuActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityDashboardBinding
+    private lateinit var binding: ActivityParentMenuBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDashboardBinding.inflate(layoutInflater)
+        binding = ActivityParentMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         updateFamilyStatus()

@@ -351,6 +351,38 @@ class ParentDashboardActivity : AppCompatActivity() {
         }
 
         updateControlsVisibility()
+        updatePermissionWarning()
+    }
+
+    /**
+     * Tampilkan banner peringatan kalau HP anak yang sedang dikontrol belum
+     * mengaktifkan salah satu izin keamanan (Device Admin, Accessibility,
+     * Overlay, Notification Listener, Lokasi) -- supaya orang tua langsung
+     * tahu kenapa fitur seperti Kunci Aplikasi/Layar mungkin belum berfungsi
+     * penuh, tanpa harus menebak-nebak sendiri. Statusnya disinkron dari
+     * ChildDashboardActivity.updateStatusIcons() lewat FamilyLink.syncPermissionStatus().
+     */
+    private fun updatePermissionWarning() {
+        val device = childDevices.firstOrNull { it.deviceId == selectedChildId }
+        if (device == null) {
+            binding.cardPermissionWarning.visibility = android.view.View.GONE
+            return
+        }
+
+        val missing = mutableListOf<String>()
+        if (!device.deviceAdminActive) missing.add("Device Admin")
+        if (!device.accessibilityEnabled) missing.add("Accessibility")
+        if (!device.overlayActive) missing.add("Tampil di Atas Aplikasi Lain")
+        if (!device.notifListenerActive) missing.add("Akses Notifikasi")
+        if (!device.locationActive) missing.add("Lokasi")
+
+        if (missing.isEmpty()) {
+            binding.cardPermissionWarning.visibility = android.view.View.GONE
+        } else {
+            binding.cardPermissionWarning.visibility = android.view.View.VISIBLE
+            binding.tvPermissionWarningDetail.text =
+                "Belum aktif: ${missing.joinToString(", ")}. Minta anak buka Dashboard-nya dan izinkan semua status keamanan."
+        }
     }
 
     private fun updateControlsVisibility() {
@@ -370,6 +402,7 @@ class ParentDashboardActivity : AppCompatActivity() {
             ?.takeIf { it.isNotBlank() } ?: "HP Anak"
         binding.tvControllingChildName.text = childName
         updateControlsVisibility()
+        updatePermissionWarning()
 
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference

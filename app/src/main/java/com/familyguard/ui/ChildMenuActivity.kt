@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.databinding.ActivityChildMenuBinding
+import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AccountActions
 import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
@@ -21,11 +22,18 @@ class ChildMenuActivity : AppCompatActivity() {
 
         updateFamilyStatus()
 
+        FamilyLink.listenFamilyDeletion(this) {
+            AppLockPrefs.saveFamilyCode(this, "")
+            AppLockPrefs.saveFamilyName(this, "")
+            binding.tvFamilyDeletedNotice.visibility = View.VISIBLE
+            updateFamilyStatus()
+        }
+
         binding.btnMenuDashboard.setOnClickListener {
             if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
                 Toast.makeText(this, "Gabung keluarga dulu sebelum buka dashboard", Toast.LENGTH_SHORT).show()
             } else {
-                startActivity(Intent(this, ChildHomeActivity::class.java))
+                startActivity(Intent(this, ChildDashboardActivity::class.java))
             }
         }
 
@@ -64,12 +72,21 @@ class ChildMenuActivity : AppCompatActivity() {
         updateFamilyStatus()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        FamilyLink.stopListeningFamilyDeletion()
+    }
+
     private fun updateFamilyStatus() {
         val code = AppLockPrefs.getFamilyCode(this)
         val name = AppLockPrefs.getFamilyName(this)
         val hasFamily = !code.isNullOrBlank()
 
         binding.btnMenuDashboard.visibility = if (hasFamily) View.VISIBLE else View.GONE
+
+        if (hasFamily) {
+            binding.tvFamilyDeletedNotice.visibility = View.GONE
+        }
 
         if (hasFamily) {
             binding.tvMenuFamilyTitle.text = "Sudah Terhubung"

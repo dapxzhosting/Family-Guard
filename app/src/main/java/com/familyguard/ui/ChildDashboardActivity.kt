@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.familyguard.R
-import com.familyguard.databinding.ActivityChildHomeBinding
+import com.familyguard.databinding.ActivityChildDashboardBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import com.familyguard.utils.LocationHelper
@@ -28,12 +28,11 @@ import com.familyguard.admin.DeviceAdminReceiver
 import com.familyguard.service.AppLockAccessibilityService
 import com.familyguard.service.GuardService
 
-class ChildHomeActivity : AppCompatActivity() {
+class ChildDashboardActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityChildHomeBinding
+    private lateinit var binding: ActivityChildDashboardBinding
     private lateinit var memberAdapter: FamilyMemberAdapter
     private var devicesListener: com.google.firebase.database.ValueEventListener? = null
-    private var lastSyncedAccessibilityStatus: Boolean? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -79,7 +78,7 @@ class ChildHomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityChildHomeBinding.inflate(layoutInflater)
+        binding = ActivityChildDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
@@ -91,6 +90,14 @@ class ChildHomeActivity : AppCompatActivity() {
 
         binding.btnOpenChildMenu.setOnClickListener {
             startActivity(Intent(this, ChildMenuActivity::class.java))
+        }
+
+        FamilyLink.listenFamilyDeletion(this) {
+            AppLockPrefs.saveFamilyCode(this, "")
+            AppLockPrefs.saveFamilyName(this, "")
+            Toast.makeText(this, "Keluarga telah dihapus oleh orang tua", Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, ChildMenuActivity::class.java))
+            finish()
         }
 
         FamilyLink.startListening(this) { title, message ->
@@ -142,7 +149,7 @@ class ChildHomeActivity : AppCompatActivity() {
                     FamilyLink.updateAppList(this, apps)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ChildHomeActivity", "Gagal sync app list: ${e.message}", e)
+                android.util.Log.e("ChildDashboardActivity", "Gagal sync app list: ${e.message}", e)
             }
         }.start()
     }
@@ -213,7 +220,7 @@ class ChildHomeActivity : AppCompatActivity() {
     private fun setupStatusButtons() {
         binding.btnActivateAdmin.setOnClickListener {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, DeviceAdminReceiver.getComponentName(this@ChildHomeActivity))
+                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, DeviceAdminReceiver.getComponentName(this@ChildDashboardActivity))
                 putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Dibutuhkan untuk mengunci perangkat dari jauh.")
             }
             startActivity(intent)
@@ -257,11 +264,6 @@ class ChildHomeActivity : AppCompatActivity() {
         val isAccessibilityActive = isAccessibilityServiceEnabled()
         setStatus(binding.statusAccessibility, binding.btnAccessibility, isAccessibilityActive)
 
-        if (isAccessibilityActive != lastSyncedAccessibilityStatus) {
-            lastSyncedAccessibilityStatus = isAccessibilityActive
-            com.familyguard.sync.FamilyLink.updateAccessibilityStatus(this, isAccessibilityActive)
-        }
-
         val isOverlayActive = Settings.canDrawOverlays(this)
         setStatus(binding.statusOverlay, binding.btnOverlay, isOverlayActive)
 
@@ -274,7 +276,28 @@ class ChildHomeActivity : AppCompatActivity() {
             this, Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
         setStatus(binding.statusLocation, binding.btnLocation, isLocationActive)
+
+        // Kirim SEMUA status izin ke Firebase (bukan cuma accessibility) supaya
+        // dashboard Orang Tua bisa kasih tahu izin mana saja yang belum aktif
+        // di HP anak -- cuma nulis kalau ada yang beneran berubah, hemat write.
+        val combined = Statuses(isAdminActive, isAccessibilityActive, isOverlayActive, isNotifActive, isLocationActive)
+        if (combined != lastSyncedStatuses) {
+            lastSyncedStatuses = combined
+            com.familyguard.sync.FamilyLink.syncPermissionStatus(
+                this, isAdminActive, isAccessibilityActive, isOverlayActive, isNotifActive, isLocationActive
+            )
+        }
     }
+
+    private data class Statuses(
+        val admin: Boolean,
+        val accessibility: Boolean,
+        val overlay: Boolean,
+        val notif: Boolean,
+        val location: Boolean
+    )
+
+    private var lastSyncedStatuses: Statuses? = null
 
     private fun setStatus(icon: android.widget.ImageView, button: android.widget.Button, active: Boolean) {
         if (active) {
@@ -299,6 +322,15 @@ class ChildHomeActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
+
+        // GuardService (listener command Firebase: set_pin, lock_screen,
+        // lock_app, dll) HARUS selalu jalan begitu dashboard anak dibuka,
+        // TIDAK BOLEH menunggu izin lokasi di-grant dulu -- kalau tidak,
+        // command dari orang tua bisa nyangkut tidak pernah diproses selama
+        // anak belum kasih izin lokasi (lihat LocationHelper, yang sudah
+        // punya pengecekan izin sendiri dan aman dipanggil kapan saja).
+        startGuardService()
+
         val permissions = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -310,7 +342,6 @@ class ChildHomeActivity : AppCompatActivity() {
 
         if (missing.isEmpty()) {
             LocationHelper.updateCurrentLocation(this)
-            startGuardService()
         } else {
             requestPermissionLauncher.launch(missing.toTypedArray())
         }
@@ -319,6 +350,7 @@ class ChildHomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this)
+        FamilyLink.stopListeningFamilyDeletion()
         devicesListener?.let { FamilyLink.removeDeviceObserver(this, it) }
     }
 

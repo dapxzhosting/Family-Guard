@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.familyguard.R
 import com.familyguard.admin.LockManager
-import com.familyguard.ui.MainActivity
+import com.familyguard.ui.RoleSelectionActivity
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -93,7 +93,7 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         }
         nm.createNotificationChannel(channel)
 
-        val intent = Intent(this, MainActivity::class.java).apply {
+        val intent = Intent(this, RoleSelectionActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val pi = PendingIntent.getActivity(

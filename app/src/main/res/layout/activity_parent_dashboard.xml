@@ -383,6 +383,59 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- Peringatan: sebagian izin keamanan belum diaktifkan di HP anak -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPermissionWarning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/dash_warning"
+                    app:cardBackgroundColor="@color/dash_warning_soft">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_status_error"
+                            app:tint="@color/dash_warning"
+                            android:contentDescription="Peringatan" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Sebagian Izin Keamanan Belum Aktif"
+                                android:textColor="@color/dash_text_primary"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvPermissionWarningDetail"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Memuat status izin..."
+                                android:textColor="@color/dash_text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Kartu Status Perangkat -->
                 <com.google.android.material.card.MaterialCardView

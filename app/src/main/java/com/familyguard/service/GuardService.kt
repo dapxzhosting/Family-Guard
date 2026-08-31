@@ -10,7 +10,7 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.familyguard.R
-import com.familyguard.ui.MainActivity
+import com.familyguard.ui.RoleSelectionActivity
 
 import com.familyguard.sync.FamilyLink
 import com.familyguard.ui.LockScreenActivity
@@ -115,7 +115,7 @@ class GuardService : Service() {
         }
         nm.createNotificationChannel(channel)
 
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, RoleSelectionActivity::class.java)
         val pi = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_IMMUTABLE

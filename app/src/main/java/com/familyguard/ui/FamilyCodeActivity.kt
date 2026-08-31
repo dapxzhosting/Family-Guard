@@ -25,7 +25,9 @@ class FamilyCodeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
+        val isChangeFamily = intent.getBooleanExtra(EXTRA_IS_CHANGE_FAMILY, false)
+
+        if (!isChangeFamily && !AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
             goToHome()
             return
         }
@@ -74,7 +76,7 @@ class FamilyCodeActivity : AppCompatActivity() {
             binding.btnBackToDashboardChild.visibility = View.VISIBLE
             binding.btnBackToDashboardChild.setOnClickListener {
                 startActivity(
-                    Intent(this, ChildHomeActivity::class.java).apply {
+                    Intent(this, ChildDashboardActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     }
                 )
@@ -129,9 +131,9 @@ class FamilyCodeActivity : AppCompatActivity() {
     private fun goToHome() {
         val role = AppLockPrefs.getRole(this)
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
-            DashboardActivity::class.java
+            ParentMenuActivity::class.java
         } else {
-            ChildHomeActivity::class.java
+            ChildDashboardActivity::class.java
         }
         startActivity(
             Intent(this, target).apply {

@@ -15,7 +15,49 @@ object FamilyLink {
     private const val TAG = "FamilyLink"
     private val db = FirebaseDatabase.getInstance().reference
 
+    private var familyDeletionListener: ValueEventListener? = null
+    private var familyDeletionListenerCode: String? = null
+
     private fun userRef(uid: String) = db.child("users").child(uid)
+
+    /**
+     * Memantau node families/{code} secara realtime. Kalau orang tua
+     * menghapus keluarga (families/{code} dihapus dari Firebase), node ini
+     * jadi tidak ada lagi -- callback [onDeleted] dipanggil supaya UI bisa
+     * kasih tau anak & sembunyiin akses ke dashboard. Listener otomatis
+     * langsung dicek juga saat dipasang, jadi kasus "keluarga sudah
+     * dihapus sebelum app dibuka lagi" ikut ketangkep.
+     */
+    fun listenFamilyDeletion(context: Context, onDeleted: () -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) return
+
+        stopListeningFamilyDeletion()
+
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    onDeleted()
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "listenFamilyDeletion cancelled: ${error.message}")
+            }
+        }
+        familyDeletionListener = listener
+        familyDeletionListenerCode = code
+        familyRef(code).addValueEventListener(listener)
+    }
+
+    fun stopListeningFamilyDeletion() {
+        val code = familyDeletionListenerCode
+        val listener = familyDeletionListener
+        if (code != null && listener != null) {
+            familyRef(code).removeEventListener(listener)
+        }
+        familyDeletionListener = null
+        familyDeletionListenerCode = null
+    }
 
     fun saveUserProfile(context: Context) {
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -128,10 +170,25 @@ object FamilyLink {
         ).addOnCompleteListener { onComplete?.invoke() }
     }
 
-    fun updateAccessibilityStatus(context: Context, enabled: Boolean) {
+    fun syncPermissionStatus(
+        context: Context,
+        deviceAdminActive: Boolean,
+        accessibilityActive: Boolean,
+        overlayActive: Boolean,
+        notifListenerActive: Boolean,
+        locationActive: Boolean
+    ) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
-        deviceRef(code, id).child("accessibilityEnabled").setValue(enabled)
+        deviceRef(code, id).updateChildren(
+            mapOf(
+                "deviceAdminActive" to deviceAdminActive,
+                "accessibilityEnabled" to accessibilityActive,
+                "overlayActive" to overlayActive,
+                "notifListenerActive" to notifListenerActive,
+                "locationActive" to locationActive
+            )
+        )
     }
 
     /**
@@ -495,7 +552,14 @@ object FamilyLink {
                     val currentPin = snap.child("currentPin").getValue(String::class.java)?.takeIf { it.isNotBlank() }
                     val loggedOut = snap.child("loggedOut").getValue(Boolean::class.java) ?: false
                     val accessibilityEnabled = snap.child("accessibilityEnabled").getValue(Boolean::class.java) ?: false
-                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin, loggedOut, accessibilityEnabled)
+                    val deviceAdminActive = snap.child("deviceAdminActive").getValue(Boolean::class.java) ?: false
+                    val overlayActive = snap.child("overlayActive").getValue(Boolean::class.java) ?: false
+                    val notifListenerActive = snap.child("notifListenerActive").getValue(Boolean::class.java) ?: false
+                    val locationActive = snap.child("locationActive").getValue(Boolean::class.java) ?: false
+                    FamilyDevice(
+                        id, role, online, lastSeen, userName, hasPin, currentPin, loggedOut,
+                        accessibilityEnabled, deviceAdminActive, overlayActive, notifListenerActive, locationActive
+                    )
                 }
                 onChange(list)
             }
@@ -709,5 +773,9 @@ data class FamilyDevice(
     val hasPin: Boolean = false,
     val currentPin: String? = null,
     val loggedOut: Boolean = false,
-    val accessibilityEnabled: Boolean = false
+    val accessibilityEnabled: Boolean = false,
+    val deviceAdminActive: Boolean = false,
+    val overlayActive: Boolean = false,
+    val notifListenerActive: Boolean = false,
+    val locationActive: Boolean = false
 )
