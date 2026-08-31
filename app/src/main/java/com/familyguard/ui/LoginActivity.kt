@@ -15,16 +15,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
-/**
- * Layar paling pertama yang dibuka user (launcher activity, gantiin posisi
- * RoleSelectionActivity yang lama). Alurnya:
- *
- * LoginActivity (Google Sign-In)
- *   -> NameInputActivity (isi nama, cuma sekali di login pertama)
- *     -> RoleSelectionActivity (pilih Orang Tua / Anak, alur lama tidak berubah)
- *       -> [khusus Orang Tua] FamilyNameActivity (isi nama keluarga)
- *         -> FamilyCodeActivity (generate/masukkan kode, alur lama tidak berubah)
- */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -51,7 +41,6 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Sudah pernah login sebelumnya -> lewati layar ini
         if (auth.currentUser != null) {
             routeNext()
             return
@@ -86,28 +75,12 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    /**
-     * Setelah login sukses: cek dulu apakah akun ini sudah pernah setup di HP
-     * lain (nama/role/kode keluarga tersimpan di Firebase). Kalau ada, isi
-     * otomatis & lompat langsung ke home -- tidak perlu isi ulang dari nol.
-     */
     private fun routeNext() {
         binding.progressBar.visibility = android.view.View.VISIBLE
         com.familyguard.sync.FamilyLink.fetchUserProfile(this) { found ->
             val role = AppLockPrefs.getRole(this)
-            val code = AppLockPrefs.getFamilyCode(this)
             val name = AppLockPrefs.getUserName(this)
 
-            // Kalau fetch profil dari Firebase gagal TAPI ternyata memang belum ada
-            // apa-apa tersimpan lokal juga -> kemungkinan besar ini akun yang benar-benar
-            // baru pertama kali pakai app, arahkan ke NameInputActivity seperti biasa
-            // tanpa perlu kasih tahu apa-apa (ini kasus normal, bukan bug).
-            //
-            // Tapi kalau HP ini SUDAH pernah setup sebelumnya di sesi yang sama (name
-            // sudah ada dari onCreate awal misalnya) dan tiba-tiba butuh isi ulang, atau
-            // developer lagi nge-test cross-device dan yakin akun ini sudah pernah
-            // setup di HP lain -- Toast ini bantu bedain "memang belum pernah setup"
-            // vs "gagal fetch" tanpa perlu buka Logcat.
             if (!found && name.isNullOrBlank()) {
                 Log.d(
                     "LoginActivity",
@@ -120,10 +93,8 @@ class LoginActivity : AppCompatActivity() {
             val target = when {
                 name.isNullOrBlank() -> NameInputActivity::class.java
                 role.isNullOrBlank() -> RoleSelectionActivity::class.java
-                code.isNullOrBlank() && role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
-                code.isNullOrBlank() -> FamilyCodeActivity::class.java
                 role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
-                else -> ChildHomeActivity::class.java
+                else -> ChildMenuActivity::class.java
             }
             startActivity(Intent(this, target))
             finish()

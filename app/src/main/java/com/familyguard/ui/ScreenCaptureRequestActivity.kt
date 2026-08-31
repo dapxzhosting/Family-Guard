@@ -7,18 +7,6 @@ import android.os.Bundle
 import android.widget.Toast
 import com.familyguard.service.ScreenCaptureService
 
-/**
- * Activity transparan (tidak ada UI) yang HANYA bertugas memunculkan dialog izin
- * sistem "Mulai merekam atau transmisikan layar?" -- ini WAJIB dari Android
- * sendiri untuk fitur MediaProjection (screen capture), TIDAK BISA dilewati oleh
- * aplikasi manapun tanpa akses Device Owner penuh. Anak/siapapun yang pegang HP
- * perlu tap "Mulai Sekarang" satu kali setiap sesi lihat-layar dimulai.
- *
- * Alurnya: orang tua kirim command "start_screen_share" -> FamilyLink di HP anak
- * membuka activity ini -> dialog sistem muncul -> hasil izin diteruskan ke
- * ScreenCaptureService lewat Intent (data hasil izin TIDAK BOLEH disimpan lama,
- * cukup dipakai sekali untuk startForegroundService).
- */
 class ScreenCaptureRequestActivity : Activity() {
 
     private lateinit var projectionManager: MediaProjectionManager

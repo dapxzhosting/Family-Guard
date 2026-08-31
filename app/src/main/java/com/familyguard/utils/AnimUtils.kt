@@ -9,21 +9,38 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.recyclerview.widget.RecyclerView
 
-/**
- * Kumpulan animasi native Android (pakai ViewPropertyAnimator, bukan library
- * eksternal) supaya dashboard terasa smooth mirip Framer Motion/GSAP di web:
- * - Entrance animation (fade + slide-up) yang staggered per card
- * - Press feedback (scale down sedikit saat ditekan) buat tombol & item
- * - Staggered fade+slide untuk item RecyclerView (dipakai di list anggota keluarga)
- */
 object AnimUtils {
 
-    /**
-     * Animasikan semua direct child dari [container] satu per satu (staggered):
-     * mulai dari transparan + turun sedikit dari atas, lalu fade-in + slide ke
-     * posisi asli. [staggerDelayMs] adalah jeda antar child supaya urutannya
-     * kelihatan "mengalir" dari atas ke bawah, bukan muncul bareng semua.
-     */
+    fun startSkeletonPulse(view: View): android.animation.ObjectAnimator {
+        val animator = android.animation.ObjectAnimator.ofFloat(view, "alpha", 1f, 0.4f, 1f)
+        animator.duration = 900L
+        animator.repeatCount = android.animation.ValueAnimator.INFINITE
+        animator.start()
+        return animator
+    }
+
+    fun crossFadeToContent(
+        skeleton: View,
+        content: View,
+        skeletonAnimator: android.animation.ObjectAnimator?,
+        durationMs: Long = 250L
+    ) {
+        skeletonAnimator?.cancel()
+        skeleton.animate()
+            .alpha(0f)
+            .setDuration(durationMs)
+            .withEndAction { skeleton.visibility = View.GONE }
+            .start()
+
+        content.alpha = 0f
+        content.visibility = View.VISIBLE
+        content.animate()
+            .alpha(1f)
+            .setDuration(durationMs)
+            .setStartDelay(80L)
+            .start()
+    }
+
     fun staggerFadeSlideIn(
         container: ViewGroup,
         staggerDelayMs: Long = 80L,
@@ -43,12 +60,6 @@ object AnimUtils {
         }
     }
 
-    /**
-     * Pasang efek "press" (scale down halus saat ditekan, kembali membesar
-     * dengan sedikit overshoot saat dilepas) ke sebuah View -- biasanya
-     * dipakai untuk Button atau CardView yang clickable, supaya ada feedback
-     * visual yang smooth setiap kali disentuh.
-     */
     fun attachPressAnimation(view: View, scaleDown: Float = 0.96f) {
         view.setOnTouchListener { v, event ->
             when (event.action) {
@@ -69,16 +80,11 @@ object AnimUtils {
                         .start()
                 }
             }
-            // return false supaya click listener/ripple bawaan tetap jalan normal
+
             false
         }
     }
 
-    /**
-     * Terapkan attachPressAnimation ke semua Button & CardView di dalam
-     * [root] secara rekursif -- jadi tidak perlu pasang manual satu-satu ke
-     * setiap tombol di layout yang isinya banyak card.
-     */
     fun attachPressAnimationRecursively(root: View) {
         if (root is android.widget.Button || root is androidx.cardview.widget.CardView) {
             attachPressAnimation(root)
@@ -90,17 +96,6 @@ object AnimUtils {
         }
     }
 
-    /**
-     * Sembunyikan sebuah View dengan animasi smooth: fade-out + sedikit
-     * mengecil (scaleY), lalu tinggi View-nya di-collapse pelan-pelan ke 0
-     * (bukan langsung GONE tiba-tiba) supaya card di bawahnya "naik" mengisi
-     * ruang kosong secara halus. Dipakai misalnya saat kartu "Dashboard"/
-     * "Hapus Keluarga" harus hilang setelah keluarga dihapus.
-     *
-     * Kalau View ini nanti perlu dimunculkan lagi (mis. user bikin keluarga
-     * baru), height dikembalikan ke WRAP_CONTENT di akhir supaya tidak
-     * "nyangkut" di tinggi 0 selamanya.
-     */
     fun collapseAndHide(view: View, durationMs: Long = 260L) {
         if (view.visibility != View.VISIBLE) return
 
@@ -123,7 +118,7 @@ object AnimUtils {
                 heightAnimator.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         view.visibility = View.GONE
-                        // Reset supaya kalau di-VISIBLE-kan lagi nanti, tingginya normal.
+
                         params.height = ViewGroup.LayoutParams.WRAP_CONTENT
                         view.layoutParams = params
                         view.alpha = 1f
@@ -135,12 +130,6 @@ object AnimUtils {
             .start()
     }
 
-    /**
-     * RecyclerView.ItemAnimator kustom yang bikin item baru muncul dengan
-     * fade + slide dari kanan (bukan langsung "muncul" begitu saja) --
-     * dipakai di daftar anggota keluarga supaya kelihatan hidup tiap kali
-     * data online/offline berubah dari Firebase.
-     */
     fun applySlideInItemAnimator(recyclerView: RecyclerView) {
         recyclerView.itemAnimator = object : androidx.recyclerview.widget.DefaultItemAnimator() {
             override fun animateAdd(holder: RecyclerView.ViewHolder): Boolean {

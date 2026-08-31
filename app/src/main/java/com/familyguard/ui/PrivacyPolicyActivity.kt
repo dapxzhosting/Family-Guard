@@ -16,7 +16,6 @@ class PrivacyPolicyActivity : AppCompatActivity() {
 
         val isFromSettings = intent.getBooleanExtra(EXTRA_IS_FROM_SETTINGS, false)
 
-        // Jika dibuka dari menu Dashboard/Pengaturan, sembunyikan tombol "Setuju" di bawah
         if (isFromSettings) {
             binding.bottomActionContainer.visibility = View.GONE
         }
@@ -26,7 +25,7 @@ class PrivacyPolicyActivity : AppCompatActivity() {
         }
 
         binding.btnAccept.setOnClickListener {
-            // Logika ketika user menekan tombol setuju (berguna jika dipanggil saat pertama kali registrasi)
+
             setResult(RESULT_OK)
             finish()
         }

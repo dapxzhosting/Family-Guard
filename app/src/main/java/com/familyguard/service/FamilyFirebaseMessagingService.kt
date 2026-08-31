@@ -14,19 +14,12 @@ import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-/**
- * Firebase Cloud Messaging Service untuk menerima perintah remote:
- * - CMD_LOCK_SCREEN : kunci layar
- * - CMD_SEND_MESSAGE : tampilkan pesan dari orang tua
- * - CMD_LOCK_APP : tambah/hapus app dari daftar terkunci
- * - CMD_BLOCK_NOTIF : tambah/hapus app dari blokir notifikasi
- */
 class FamilyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "FCM Token refreshed: $token")
-        // Simpan token ke Firestore agar parent bisa kirim perintah
+
         AppLockPrefs.saveFcmToken(this, token)
     }
 
@@ -36,7 +29,7 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
 
         val data = remoteMessage.data
         val command = data["command"] ?: run {
-            // Jika tidak ada command, tampilkan sebagai notifikasi biasa
+
             remoteMessage.notification?.let { showMessageNotification(it.title, it.body) }
             return
         }
@@ -50,11 +43,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // COMMAND HANDLERS
-    // ──────────────────────────────────────────────────────────────
-
-    /** Kunci layar menggunakan Device Admin */
     private fun handleLockScreen() {
         Log.d(TAG, "Executing: LOCK_SCREEN")
         val lockManager = LockManager(this)
@@ -65,7 +53,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    /** Tampilkan pesan dari parent sebagai notifikasi priority tinggi */
     private fun handleSendMessage(title: String?, message: String?) {
         Log.d(TAG, "Executing: SEND_MESSAGE → $title: $message")
         showMessageNotification(
@@ -74,7 +61,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         )
     }
 
-    /** Tambah/hapus aplikasi dari daftar terkunci */
     private fun handleLockApp(packageName: String?, action: String?) {
         packageName ?: return
         Log.d(TAG, "Executing: LOCK_APP → $action on $packageName")
@@ -84,7 +70,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    /** Tambah/hapus aplikasi dari daftar blokir notifikasi */
     private fun handleBlockNotif(packageName: String?, action: String?) {
         packageName ?: return
         Log.d(TAG, "Executing: BLOCK_NOTIF → $action on $packageName")
@@ -93,10 +78,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
             ACTION_REMOVE -> AppLockPrefs.removeBlockedNotifApp(this, packageName)
         }
     }
-
-    // ──────────────────────────────────────────────────────────────
-    // NOTIFICATION HELPER
-    // ──────────────────────────────────────────────────────────────
 
     private fun showMessageNotification(title: String?, body: String?) {
         val channelId = "family_message_channel"
@@ -136,13 +117,11 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
     companion object {
         private const val TAG = "FCMService"
 
-        // Commands
         const val CMD_LOCK_SCREEN = "lock_screen"
         const val CMD_SEND_MESSAGE = "send_message"
         const val CMD_LOCK_APP = "lock_app"
         const val CMD_BLOCK_NOTIF = "block_notif"
 
-        // Actions
         const val ACTION_ADD = "add"
         const val ACTION_REMOVE = "remove"
     }

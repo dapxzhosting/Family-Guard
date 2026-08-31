@@ -6,11 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.databinding.ActivityRoleSelectionBinding
 import com.familyguard.utils.AppLockPrefs
 
-/**
- * Layar pertama yang muncul saat app dibuka. APK yang sama dipakai di HP
- * orang tua maupun HP anak — bedanya cuma role yang dipilih di sini.
- * Setelah role dipilih sekali, layar ini dilewati di kunjungan berikutnya.
- */
 class RoleSelectionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRoleSelectionBinding
@@ -18,7 +13,6 @@ class RoleSelectionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Jaga-jaga kalau activity ini kebuka langsung tanpa lewat LoginActivity
         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -28,13 +22,11 @@ class RoleSelectionActivity : AppCompatActivity() {
         val existingRole = AppLockPrefs.getRole(this)
         val existingCode = AppLockPrefs.getFamilyCode(this)
 
-        // Jika sudah ada role DAN sudah ada kode, langsung ke Dashboard
         if (existingRole != null && existingCode != null) {
             goToRoleHome(existingRole)
             return
         }
 
-        // Jika sudah pilih role tapi belum ada kode, lanjutkan dari titik yang sesuai
         if (existingRole != null && existingCode == null) {
             goToNextStep(existingRole)
             return
@@ -56,13 +48,18 @@ class RoleSelectionActivity : AppCompatActivity() {
         }
     }
 
-    /** Orang tua masuk ke menu utama dulu (Dashboard/Pengaturan/Buat Keluarga/Logout);
-     *  anak langsung ke layar kode seperti alur lama. */
+    /** Baik Orang Tua maupun Anak sekarang sama-sama masuk ke menu dulu
+     *  (DashboardActivity / ChildMenuActivity) -- BUKAN langsung dipaksa
+     *  masukkan kode keluarga. Kalau anak dipaksa ke FamilyCodeActivity
+     *  duluan tanpa kode yang valid di tangan, dia kejebak di situ tanpa
+     *  jalan keluar (dulu tidak ada tombol Logout/Reset Role di layar itu).
+     *  Sekarang "Gabung Keluarga" jadi salah satu kartu di ChildMenuActivity,
+     *  sama seperti "Buat Keluarga" di menu Orang Tua. */
     private fun goToNextStep(role: String) {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
             DashboardActivity::class.java
         } else {
-            FamilyCodeActivity::class.java
+            ChildMenuActivity::class.java
         }
         startActivity(Intent(this, target))
         finish()
@@ -72,7 +69,7 @@ class RoleSelectionActivity : AppCompatActivity() {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
             DashboardActivity::class.java
         } else {
-            ChildHomeActivity::class.java
+            ChildMenuActivity::class.java
         }
         startActivity(Intent(this, target))
         finish()

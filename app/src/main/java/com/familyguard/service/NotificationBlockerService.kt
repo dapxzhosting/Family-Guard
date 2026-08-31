@@ -5,10 +5,6 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.familyguard.utils.AppLockPrefs
 
-/**
- * NotificationListenerService untuk intercept dan suppress
- * notifikasi dari aplikasi yang dikunci/diblokir.
- */
 class NotificationBlockerService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -28,7 +24,7 @@ class NotificationBlockerService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        // Not needed
+
     }
 
     override fun onListenerConnected() {

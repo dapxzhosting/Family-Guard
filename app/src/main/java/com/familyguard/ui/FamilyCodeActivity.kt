@@ -85,8 +85,6 @@ class FamilyCodeActivity : AppCompatActivity() {
         FamilyLink.registerDevice(this)
         FamilyLink.saveUserProfile(this)
 
-        // Simpan nama keluarga & nama user ke node keluarga di Firebase (khusus
-        // Orang Tua, karena mereka yang membuat kodenya / node families/{code} ini)
         if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_PARENT) {
             val familyName = AppLockPrefs.getFamilyName(this)
             val userName = AppLockPrefs.getUserName(this)
@@ -109,7 +107,11 @@ class FamilyCodeActivity : AppCompatActivity() {
         } else {
             ChildHomeActivity::class.java
         }
-        startActivity(Intent(this, target))
+        startActivity(
+            Intent(this, target).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+        )
         finish()
     }
 
@@ -121,16 +123,6 @@ class FamilyCodeActivity : AppCompatActivity() {
     private fun formatCode(code: String) = "${code.take(3)}-${code.drop(3)}"
 }
 
-/**
- * TextWatcher untuk input kode keluarga: otomatis huruf besar semua (bukan
- * cuma tampilan keyboard lewat inputType) dan otomatis nyisipin "-" setelah
- * 3 karakter, mis. user ngetik "abc123" -> jadi "ABC-123" di layar.
- *
- * Pakai flag `isEditing` supaya perubahan yang kita lakukan sendiri di
- * afterTextChanged (setText ulang) tidak memicu infinite loop / callback
- * berulang, dan `setSelection` di akhir supaya kursor tetap di posisi yang
- * wajar (di akhir teks) walau teksnya baru saja kita format ulang.
- */
 class FamilyCodeTextWatcher(
     private val editText: android.widget.EditText
 ) : android.text.TextWatcher {
@@ -144,8 +136,6 @@ class FamilyCodeTextWatcher(
         if (isEditing || s == null) return
         isEditing = true
 
-        // Ambil karakter huruf/angka saja (buang "-" lama & apapun selain
-        // huruf/angka), lalu uppercase, maksimal 6 karakter kode asli.
         val raw = s.toString().uppercase().filter { it.isLetterOrDigit() }.take(6)
 
         val formatted = if (raw.length > 3) {

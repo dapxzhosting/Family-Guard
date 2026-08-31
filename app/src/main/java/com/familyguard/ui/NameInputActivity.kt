@@ -18,7 +18,6 @@ class NameInputActivity : AppCompatActivity() {
         binding = ActivityNameInputBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Pre-fill nama dari akun Google kalau ada, biar user tinggal konfirmasi
         FirebaseAuth.getInstance().currentUser?.displayName?.let {
             binding.etName.setText(it)
         }
@@ -33,7 +32,6 @@ class NameInputActivity : AppCompatActivity() {
             AppLockPrefs.saveUserName(this, name)
             com.familyguard.sync.FamilyLink.saveUserProfile(this)
 
-            // Sinkronkan juga ke profil Firebase Auth (opsional tapi berguna)
             val user = FirebaseAuth.getInstance().currentUser
             user?.updateProfile(userProfileChangeRequest { displayName = name })
 

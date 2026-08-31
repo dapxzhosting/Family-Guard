@@ -20,18 +20,6 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
 
-/**
- * Layar orang tua untuk MEMANTAU layar HP anak secara real-time lewat WebRTC
- * (video langsung, 30fps+), dengan toggle "Mode Kontrol": kalau OFF, ini murni
- * tampilan (view-only). Kalau ON, setiap tap/geser di renderer diteruskan
- * sebagai sentuhan SUNGGUHAN di HP anak (lewat AccessibilityService.dispatchGesture
- * di sisi anak).
- *
- * Sebelumnya activity ini decode Base64 JPEG dari Firebase RTDB tiap frame
- * (~4fps, delay terasa). Sekarang cuma jadi WebRTC "answerer": terima SDP
- * offer dari HP anak lewat FamilyLink (signaling via RTDB), balas answer,
- * tukar ICE candidate, lalu video mengalir langsung P2P ke SurfaceViewRenderer.
- */
 class ChildScreenViewActivity : AppCompatActivity() {
 
     companion object {
@@ -46,9 +34,6 @@ class ChildScreenViewActivity : AppCompatActivity() {
     private var peerConnectionFactory: PeerConnectionFactory? = null
     private var peerConnection: PeerConnection? = null
 
-    // Resolusi ASLI layar HP anak -- dipakai untuk menormalisasi koordinat tap.
-    // Diisi manual dari RemoteControlState kalau tersedia, kalau tidak fallback
-    // ke rasio video yang diterima.
     private var remoteWidth = 1080
     private var remoteHeight = 2400
 
@@ -73,26 +58,72 @@ class ChildScreenViewActivity : AppCompatActivity() {
         setupRenderer()
         setupWebRtc()
 
-        // Minta HP anak mulai membagikan layarnya begitu activity ini dibuka.
         FamilyLink.sendRequestScreenShare(this, targetDeviceId)
         binding.tvStatus.text = "Meminta izin ke HP anak…"
 
-        binding.switchControlMode.setOnCheckedChangeListener { _, isChecked ->
-            controlModeOn = isChecked
-            binding.controlBar.visibility = if (isChecked) android.view.View.VISIBLE else android.view.View.GONE
-            Toast.makeText(
-                this,
-                if (isChecked) "Mode Kontrol AKTIF — sentuhan akan diteruskan ke HP anak"
-                else "Mode Kontrol nonaktif — hanya melihat",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        setupControlModeSwitch()
 
         binding.btnRemoteBack.setOnClickListener {
             sendControlCommand(org.json.JSONObject().apply { put("type", "remote_back") })
         }
 
         setupRemoteTouchHandling()
+    }
+
+    private fun setupControlModeSwitch() {
+        binding.switchControlMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                checkAccessibilityBeforeEnablingControl()
+            } else {
+                controlModeOn = false
+                binding.controlBar.visibility = android.view.View.GONE
+                Toast.makeText(this, "Mode Kontrol nonaktif — hanya melihat", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun checkAccessibilityBeforeEnablingControl() {
+        val code = com.familyguard.utils.AppLockPrefs.getFamilyCode(this)
+        if (code == null) {
+            enableControlMode()
+            return
+        }
+        com.google.firebase.database.FirebaseDatabase.getInstance().reference
+            .child("families").child(code).child("devices").child(targetDeviceId)
+            .child("accessibilityEnabled")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val enabled = snapshot.getValue(Boolean::class.java) ?: false
+                if (enabled) {
+                    enableControlMode()
+                } else {
+
+                    binding.switchControlMode.setOnCheckedChangeListener(null)
+                    binding.switchControlMode.isChecked = false
+                    setupControlModeSwitch()
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Accessibility Belum Aktif")
+                        .setMessage(
+                            "HP anak belum mengaktifkan Accessibility Service, jadi " +
+                                    "sentuhan dari sini TIDAK akan sampai ke HP anak. Minta " +
+                                    "anak buka Dashboard di HP-nya dan aktifkan Accessibility " +
+                                    "dulu, baru coba lagi."
+                        )
+                        .setPositiveButton("Mengerti", null)
+                        .show()
+                }
+            }
+            .addOnFailureListener {
+
+                enableControlMode()
+            }
+    }
+
+    private fun enableControlMode() {
+        controlModeOn = true
+        binding.switchControlMode.isChecked = true
+        binding.controlBar.visibility = android.view.View.VISIBLE
+        Toast.makeText(this, "Mode Kontrol AKTIF — sentuhan akan diteruskan ke HP anak", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupRenderer() {
@@ -148,8 +179,7 @@ class ChildScreenViewActivity : AppCompatActivity() {
             override fun onAddStream(stream: MediaStream?) {}
             override fun onRemoveStream(stream: MediaStream?) {}
             override fun onDataChannel(channel: org.webrtc.DataChannel?) {
-                // HP anak yang membuat data channel "control" -- kita tinggal
-                // dengarkan supaya tahu kapan siap dipakai untuk kirim command.
+
                 if (channel?.label() == "control") {
                     controlChannel = channel
                     channel.registerObserver(object : org.webrtc.DataChannel.Observer {
@@ -168,8 +198,6 @@ class ChildScreenViewActivity : AppCompatActivity() {
             override fun onRenegotiationNeeded() {}
         })
 
-        // Tunggu SDP offer dari HP anak (dikirim otomatis begitu ScreenCaptureService
-        // di sisi anak mulai jalan), lalu balas dengan answer.
         FamilyLink.observeWebRtcOffer(this) { sdp ->
             val offerDesc = SessionDescription(SessionDescription.Type.OFFER, sdp)
             peerConnection?.setRemoteDescription(object : SimpleSdpObserver() {
@@ -192,14 +220,6 @@ class ChildScreenViewActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Tangkap sentuhan di renderer (video layar HP anak), konversi ke koordinat
-     * ternormalisasi (0.0-1.0) relatif terhadap RESOLUSI ASLI HP anak, lalu kirim
-     * sebagai tap/swipe jarak jauh. Hanya aktif kalau Mode Kontrol ON.
-     */
-    /** Kirim command lewat DataChannel (cepat, P2P) kalau sudah OPEN, kalau belum
-     * fallback ke RTDB (lebih lambat tapi tetap jalan) supaya kontrol tidak macet
-     * total selama negosiasi WebRTC belum kelar. */
     private fun sendControlCommand(json: org.json.JSONObject) {
         val ch = controlChannel
         if (ch != null && ch.state() == org.webrtc.DataChannel.State.OPEN) {
@@ -225,8 +245,6 @@ class ChildScreenViewActivity : AppCompatActivity() {
             val viewH = view.height.toFloat()
             if (viewW <= 0 || viewH <= 0) return@setOnTouchListener false
 
-            // Video di-render dengan SCALE_ASPECT_FIT (letterbox), hitung area
-            // gambar sebenarnya di dalam view berdasarkan rasio resolusi asli HP anak.
             val videoAspect = remoteWidth.toFloat() / remoteHeight.toFloat()
             val viewAspect = viewW / viewH
             val displayedW: Float
@@ -281,11 +299,7 @@ class ChildScreenViewActivity : AppCompatActivity() {
         binding.rendererScreen.release()
         eglBase?.release()
         FamilyLink.clearWebRtcSession(this)
-        // Sengaja TIDAK memanggil FamilyLink.sendStopScreenShare() di sini lagi --
-        // capturer & MediaProjection di HP anak dibiarkan tetap hidup di background
-        // supaya sesi pemantauan berikutnya tidak perlu consent dialog lagi. Yang
-        // ditutup cuma koneksi WebRTC sisi kita; HP anak otomatis membersihkan peer
-        // connection lamanya sendiri lewat onIceConnectionChange (lihat ScreenCaptureService).
+
     }
 }
 

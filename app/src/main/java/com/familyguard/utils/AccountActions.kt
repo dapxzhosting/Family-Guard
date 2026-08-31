@@ -11,25 +11,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 
-/**
- * Aksi akun yang dipakai bersama oleh ParentDashboardActivity & ChildHomeActivity,
- * supaya logikanya SATU tempat dan konsisten di kedua dashboard (sebelumnya
- * masing-masing dashboard punya implementasi sendiri-sendiri yang tidak lengkap,
- * mis. cuma hapus data lokal tapi lupa hapus data remote -> data lama "kembali"
- * lagi pas login/fetch ulang).
- */
 object AccountActions {
 
-    /**
-     * RESET ROLE: keluar dari role & keluarga saat ini, tapi TETAP login
-     * dengan akun Google yang sama. Dipakai kalau salah pilih role (Orang
-     * Tua/Anak) atau mau setup ulang device ini dari awal.
-     *
-     * Urutan penting: hapus data REMOTE dulu (device dari keluarga lama +
-     * role/kode di profil), baru hapus data LOKAL, baru pindah activity.
-     * Kalau urutannya dibalik (lokal dulu baru remote), ada risiko user
-     * keburu pindah activity duluan sebelum panggilan remote selesai.
-     */
     fun resetRole(activity: Activity) {
         AlertDialog.Builder(activity)
             .setTitle("Reset Role?")
@@ -51,12 +34,6 @@ object AccountActions {
             .show()
     }
 
-    /**
-     * GANTI / TAMBAH KELUARGA: mirip resetRole, tapi role (Orang Tua/Anak)
-     * TETAP dipertahankan -- cuma keluarnya dari keluarga yang sekarang,
-     * lalu langsung diarahkan ke alur masuk/buat keluarga baru (skip halaman
-     * pilih role, karena role-nya tidak berubah).
-     */
     fun changeFamily(activity: Activity) {
         val role = AppLockPrefs.getRole(activity)
         AlertDialog.Builder(activity)
@@ -69,7 +46,7 @@ object AccountActions {
             .setPositiveButton("Lanjut") { _, _ ->
                 Toast.makeText(activity, "Keluar dari keluarga saat ini...", Toast.LENGTH_SHORT).show()
                 FamilyLink.removeDeviceFromCurrentFamily(activity) {
-                    // Hanya hapus familyCode di remote, role tetap dipertahankan
+
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     if (uid != null) {
                         com.google.firebase.database.FirebaseDatabase.getInstance().reference
@@ -91,14 +68,6 @@ object AccountActions {
             .show()
     }
 
-    /**
-     * LOGOUT: keluar dari akun Google sepenuhnya (Firebase Auth + Google
-     * Sign-In session), hapus SEMUA data lokal, kembali ke LoginActivity.
-     * Device TIDAK dikeluarkan dari keluarga (kalau nanti login lagi pakai
-     * akun yang sama, harusnya balik ke keluarga yang sama juga -- beda
-     * dengan Reset Role/Ganti Keluarga yang memang sengaja melepas ikatan
-     * keluarga).
-     */
     fun logout(activity: Activity) {
         AlertDialog.Builder(activity)
             .setTitle("Keluar Akun?")
@@ -110,15 +79,6 @@ object AccountActions {
             .show()
     }
 
-    /**
-     * HAPUS KELUARGA: berbeda dari changeFamily() -- ini menghapus SELURUH
-     * node keluarga di Firebase (families/{code}), bukan cuma device ini
-     * yang keluar. Semua HP anak yang masih terhubung otomatis kehilangan
-     * koneksi karena keluarganya sudah tidak ada lagi. Role tetap Orang Tua,
-     * cuma kode & nama keluarga lokal ikut dibersihkan supaya bisa langsung
-     * "Buat Keluarga" baru dari menu. Dipakai khusus dari DashboardActivity
-     * (menu utama Orang Tua).
-     */
     fun deleteFamily(activity: Activity, onDone: (() -> Unit)? = null) {
         AlertDialog.Builder(activity)
             .setTitle("Hapus Keluarga?")
@@ -185,9 +145,7 @@ object AccountActions {
         } else {
             com.familyguard.ui.FamilyCodeActivity::class.java
         }
-        val intent = Intent(activity, target).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
+        val intent = Intent(activity, target)
         activity.startActivity(intent)
         activity.finish()
     }

@@ -14,12 +14,6 @@ import com.google.android.gms.location.Priority
 object LocationHelper {
     private const val TAG = "LocationHelper"
 
-    /**
-     * Cek izin lokasi secara eksplisit sebelum manggil API apa pun.
-     * @SuppressLint("MissingPermission") di bawah cuma mematikan warning
-     * lint — TIDAK mencegah SecurityException kalau izin belum granted.
-     * Makanya dicek manual di sini supaya tidak crash.
-     */
     private fun hasLocationPermission(context: Context): Boolean {
         val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val coarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -35,7 +29,6 @@ object LocationHelper {
 
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
-        // 1. Coba ambil lokasi terakhir (sangat cepat)
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 if (location != null) {
@@ -63,7 +56,7 @@ object LocationHelper {
         )
             .setMinUpdateIntervalMillis(5000)
             .setMaxUpdates(1)
-            .setDurationMillis(30000) // Tunggu maksimal 30 detik
+            .setDurationMillis(30000)
             .build()
 
         try {

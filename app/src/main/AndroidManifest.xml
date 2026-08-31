@@ -66,19 +66,21 @@
             android:exported="false"
             android:launchMode="singleTop" />
 
-        <activity android:name=".ui.FamilyCodeActivity" android:exported="false" />
+        <activity android:name=".ui.FamilyCodeActivity" android:exported="false" android:theme="@style/Theme.FamilyGuard.Plain" />
         <activity android:name=".ui.ChildHomeActivity" android:exported="false" />
+        <activity android:name=".ui.ChildMenuActivity" android:exported="false" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
         <activity android:name=".ui.DashboardActivity" android:exported="false" />
         <activity android:name=".ui.SettingsActivity" android:exported="false" />
         <activity android:name=".ui.AppListActivity" android:exported="false" />
+        <activity android:name=".ui.ScreenTimeReportActivity" android:exported="false" />
 
         <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
         <activity
             android:name=".ui.PrivacyPolicyActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.FamilyGuard" />
+            android:theme="@style/Theme.FamilyGuard.Plain"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.LocationMapActivity"

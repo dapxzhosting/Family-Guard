@@ -12,26 +12,6 @@ import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
 
-/**
- * Halaman Pengaturan (khusus Orang Tua, dibuka dari kartu "Pengaturan" di
- * DashboardActivity). Isinya:
- *
- * Akun:
- * - Nama   -> bisa diklik untuk diedit (dialog input), tersinkron ke Firebase
- *             lewat FamilyLink.updateUserName() -- lihat rowSettingsName.
- * - Email  -> info doang (akun Google yang lagi login, tidak bisa diubah
- *             dari sini karena terikat ke akun Google).
- *
- * Lainnya:
- * - Kebijakan Privasi & Syarat -> buka PrivacyPolicyActivity (mode "hanya
- *   dibaca", sama seperti shortcut yang ada di DashboardActivity).
- * - Tentang Aplikasi -> info versi aplikasi (dari PackageInfo), tidak bisa
- *   diklik.
- *
- * Transisi masuk/keluar activity ini pakai slide_up_in/slide_down_out
- * (bukan animasi default fade), dipasang lewat overridePendingTransition()
- * -- lihat juga DashboardActivity untuk sisi pemanggilnya.
- */
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
@@ -70,8 +50,6 @@ class SettingsActivity : AppCompatActivity() {
             AppLockPrefs.getUserName(this)?.takeIf { it.isNotBlank() } ?: "-"
     }
 
-    /** Dialog kecil buat ganti nama -- disimpan lokal + disinkron ke Firebase
-     *  (profil akun & record device kalau sudah tergabung keluarga). */
     private fun showEditNameDialog() {
         val input = EditText(this).apply {
             setText(AppLockPrefs.getUserName(this@SettingsActivity) ?: "")
@@ -108,8 +86,6 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** Tombol back sistem/gesture juga pakai animasi slide-down yang sama,
-     *  bukan animasi default, biar konsisten dengan tombol back di header. */
     override fun onBackPressed() {
         closeWithSlideDown()
     }

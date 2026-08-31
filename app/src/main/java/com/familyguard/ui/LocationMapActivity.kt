@@ -16,11 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Layar peta full-screen untuk melihat lokasi HP anak secara real-time.
- * Beda dengan peta kecil yang nempel di ParentDashboardActivity — di sini
- * bisa zoom/pan bebas, ada tombol recenter, dan bisa buka lokasi di app peta lain.
- */
 class LocationMapActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLocationMapBinding
@@ -33,7 +28,6 @@ class LocationMapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Konfigurasi OSMDroid wajib sebelum setContentView() supaya MapView bisa inflate benar
         Configuration.getInstance().userAgentValue = packageName
         Configuration.getInstance().load(this, android.preference.PreferenceManager.getDefaultSharedPreferences(this))
 
@@ -48,7 +42,7 @@ class LocationMapActivity : AppCompatActivity() {
         binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
         binding.mapView.setMultiTouchControls(true)
         binding.mapView.controller.setZoom(16.0)
-        // Default center (Jakarta) sebelum data lokasi pertama masuk
+
         binding.mapView.controller.setCenter(GeoPoint(-6.2088, 106.8456))
     }
 
@@ -128,7 +122,6 @@ class LocationMapActivity : AppCompatActivity() {
         binding.mapView.overlays.add(marker)
         binding.mapView.invalidate()
 
-        // Auto-center hanya sekali di update pertama, setelah itu biarkan user bebas geser/zoom
         if (isFirstUpdate) {
             binding.mapView.controller.setCenter(point)
             isFirstUpdate = false

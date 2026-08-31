@@ -13,12 +13,6 @@ import java.io.ByteArrayOutputStream
 
 object InstalledAppsHelper {
 
-    /**
-     * Convert icon aplikasi jadi Base64 PNG kecil (48x48) supaya bisa
-     * disimpan & dikirim lewat Firebase Realtime Database sebagai String.
-     * Di-resize kecil supaya ukuran data tetap ringan (icon asli app
-     * biasanya 512x512+, terlalu besar buat RTDB kalau dikirim mentah).
-     */
     fun iconToBase64(icon: Drawable, size: Int = 48): String {
         val bitmap = if (icon is BitmapDrawable && icon.bitmap != null) {
             Bitmap.createScaledBitmap(icon.bitmap, size, size, true)
@@ -44,10 +38,6 @@ object InstalledAppsHelper {
         }
     }
 
-    /**
-     * Ambil semua aplikasi yang terinstall (bukan system app utama).
-     * Filter keluar: launcher, system core, app kita sendiri.
-     */
     fun getInstalledApps(context: Context): List<AppInfo> {
         val pm = context.packageManager
         val skipPackages = setOf(
@@ -59,7 +49,7 @@ object InstalledAppsHelper {
 
         return pm.getInstalledApplications(PackageManager.GET_META_DATA)
             .filter { app ->
-                // Hanya user-installed apps atau yang punya launcher icon
+
                 val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
                 val hasLaunchIntent = pm.getLaunchIntentForPackage(app.packageName) != null
                 (isUserApp || hasLaunchIntent) && !skipPackages.contains(app.packageName)

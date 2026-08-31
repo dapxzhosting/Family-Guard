@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +33,7 @@ class ChildHomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChildHomeBinding
     private lateinit var memberAdapter: FamilyMemberAdapter
     private var devicesListener: com.google.firebase.database.ValueEventListener? = null
+    private var lastSyncedAccessibilityStatus: Boolean? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -39,7 +41,7 @@ class ChildHomeActivity : AppCompatActivity() {
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
             LocationHelper.updateCurrentLocation(this)
             startGuardService()
-            // Setelah lokasi biasa dapat, minta lokasi background (untuk Android 10+)
+
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     showBackgroundLocationDialog()
@@ -60,10 +62,7 @@ class ChildHomeActivity : AppCompatActivity() {
             .setTitle("Izin Lokasi Latar Belakang")
             .setMessage("Agar lokasi anak selalu terpantau walau layar mati atau aplikasi tertutup, pilih 'Izinkan sepanjang waktu' (Allow all the time) pada menu pengaturan lokasi berikutnya.")
             .setPositiveButton("Buka Pengaturan") { _, _ ->
-                // Catatan: mulai Android 11 (API 30), ACCESS_BACKGROUND_LOCATION tidak lagi
-                // bisa diminta lewat dialog izin biasa bersamaan dengan izin lain — sistem akan
-                // otomatis menolaknya. Satu-satunya cara yang reliable adalah mengarahkan user
-                // ke halaman Detail Aplikasi di Settings, lalu mereka pilih izin lokasi manual.
+
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 }
@@ -85,13 +84,18 @@ class ChildHomeActivity : AppCompatActivity() {
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = "Kode keluarga: ${formatCode(code)}"
+        binding.tvFamilyCode.typeface = Typeface.DEFAULT
         setupFamilyNameHeader(code)
 
         setupFamilyMembersList()
 
+        binding.btnOpenChildMenu.setOnClickListener {
+            startActivity(Intent(this, ChildMenuActivity::class.java))
+        }
+
         FamilyLink.startListening(this) { title, message ->
             showMessageNotification(title, message)
-            // showMessageDialog(title, message) // Dihapus karena sudah ditangani GuardService secara global
+
         }
 
         checkPermissions()
@@ -100,11 +104,6 @@ class ChildHomeActivity : AppCompatActivity() {
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
         requestIgnoreBatteryOptimization()
 
-        // FIX: sebelumnya "reset" cuma bisa dipicu lewat long-press tersembunyi
-        // di root view (tidak ada indikasi visual apapun, gampang ke-trigger
-        // tidak sengaja, dan cuma hapus data lokal tanpa bersih-bersih remote).
-        // Sekarang pakai tombol jelas di menu "Lainnya", lewat AccountActions
-        // yang sama dengan dashboard orang tua (lihat AccountActions.kt).
         binding.btnResetRoleChild.setOnClickListener {
             com.familyguard.utils.AccountActions.resetRole(this)
         }
@@ -118,12 +117,6 @@ class ChildHomeActivity : AppCompatActivity() {
         setupAnimations()
     }
 
-    /**
-     * Animasi native Android (ViewPropertyAnimator, tanpa library eksternal)
-     * supaya dashboard terasa smooth: card-card muncul staggered fade+slide-up
-     * saat dashboard dibuka, dan semua tombol/card punya feedback "press"
-     * (mengecil dikit saat ditekan, balik dengan overshoot saat dilepas).
-     */
     private fun setupAnimations() {
         com.familyguard.utils.AnimUtils.staggerFadeSlideIn(binding.rootContent)
         com.familyguard.utils.AnimUtils.attachPressAnimationRecursively(binding.rootContent)
@@ -134,12 +127,6 @@ class ChildHomeActivity : AppCompatActivity() {
         updateStatusIcons()
     }
 
-    /**
-     * Ambil daftar app terinstall lalu kirim ke Firebase supaya dashboard
-     * orang tua bisa menampilkan & mengontrolnya. Sebelumnya fungsi ini
-     * cuma ada di MainActivity, padahal HP anak sebenarnya jalan lewat
-     * ChildHomeActivity -- jadi appList (dan iconnya) tidak pernah ke-sync.
-     */
     private fun syncInstalledAppsToCloud() {
         Thread {
             try {
@@ -160,14 +147,6 @@ class ChildHomeActivity : AppCompatActivity() {
         }.start()
     }
 
-    /**
-     * Minta izin supaya app dikecualikan dari battery optimization Android.
-     * PENTING: di HP dengan custom OS agresif (HiOS/itel, Tecno, Infinix,
-     * MIUI, ColorOS, dll), izin standar Android ini SAJA seringkali TIDAK
-     * CUKUP -- OEM tersebut punya "Autostart"/"Battery Manager" terpisah di
-     * luar API Android biasa yang harus diaktifkan manual oleh user lewat
-     * halaman pengaturan mereka sendiri (lihat dialog yang ditampilkan).
-     */
     private fun requestIgnoreBatteryOptimization() {
         val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
@@ -187,7 +166,7 @@ class ChildHomeActivity : AppCompatActivity() {
                         }
                         startActivity(intent)
                     } catch (e: Exception) {
-                        // Beberapa OEM tidak menyediakan dialog ini -- arahkan ke detail app manual
+
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.parse("package:$packageName")
                         }
@@ -199,18 +178,6 @@ class ChildHomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Tampilkan daftar anggota keluarga (Orang Tua & Anak) di dashboard anak,
-     * dengan ikon berbeda per role, nama, dan status online -- pakai sumber
-     * data yang sama (FamilyLink.observeDevices) dengan yang dipakai dashboard
-     * orang tua untuk daftar HP anak, jadi datanya selalu konsisten.
-     */
-    /**
-     * Tampilkan nama keluarga di header dashboard anak. Nama keluarga cuma
-     * diisi & tersimpan lokal di device ORANG TUA (lewat FamilyNameActivity),
-     * jadi di HP anak harus fetch dari Firebase families/{code}/familyName --
-     * sama seperti ParentDashboardActivity.setupFamilyNameHeader().
-     */
     private fun setupFamilyNameHeader(code: String) {
         val localFamilyName = AppLockPrefs.getFamilyName(this)
         if (!localFamilyName.isNullOrBlank()) {
@@ -267,12 +234,12 @@ class ChildHomeActivity : AppCompatActivity() {
 
         binding.btnLocation.setOnClickListener {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // Belum granted sama sekali -> tampilkan dialog izin biasa
+
                 requestPermissionLauncher.launch(
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
                 )
             } else {
-                // Sudah granted foreground, tapi mungkin background belum -> ke Settings
+
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.parse("package:$packageName")
                 }
@@ -282,26 +249,25 @@ class ChildHomeActivity : AppCompatActivity() {
     }
 
     private fun updateStatusIcons() {
-        // 1. Device Admin
+
         val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val isAdminActive = dpm.isAdminActive(DeviceAdminReceiver.getComponentName(this))
         setStatus(binding.statusAdmin, binding.btnActivateAdmin, isAdminActive)
 
-        // 2. Accessibility
         val isAccessibilityActive = isAccessibilityServiceEnabled()
         setStatus(binding.statusAccessibility, binding.btnAccessibility, isAccessibilityActive)
 
-        // 3. Overlay
+        if (isAccessibilityActive != lastSyncedAccessibilityStatus) {
+            lastSyncedAccessibilityStatus = isAccessibilityActive
+            com.familyguard.sync.FamilyLink.updateAccessibilityStatus(this, isAccessibilityActive)
+        }
+
         val isOverlayActive = Settings.canDrawOverlays(this)
         setStatus(binding.statusOverlay, binding.btnOverlay, isOverlayActive)
 
-        // 4. Notification Listener
         val isNotifActive = isNotificationServiceEnabled()
         setStatus(binding.statusNotif, binding.btnNotifListener, isNotifActive)
 
-        // 5. Izin Lokasi (foreground). Kalau ini aktif tapi lokasi tetap gak muncul
-        // di dashboard ortu, kemungkinan besar penyebabnya bukan izin lagi, melainkan
-        // GPS/fused location belum dapat sinyal (umum terjadi di emulator).
         val isLocationActive = ContextCompat.checkSelfPermission(
             this, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(

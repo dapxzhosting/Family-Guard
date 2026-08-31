@@ -7,15 +7,6 @@ import com.familyguard.R
 import com.familyguard.sync.FamilyDevice
 import com.familyguard.utils.AppLockPrefs
 
-/**
- * Menampilkan daftar anggota keluarga (semua device yang terdaftar di
- * families/{code}/devices) dengan ikon berbeda untuk Orang Tua/Anak,
- * nama masing-masing, dan status online/offline.
- *
- * Dipakai di ChildHomeActivity (read-only, myDeviceId dipakai buat label
- * "(kamu)") dan di ParentDashboardActivity (bisa DIKLIK -- lihat
- * onMemberClick & selectedDeviceId untuk kontrol pindah HP anak).
- */
 class FamilyMemberAdapter(
     private var members: List<FamilyDevice> = emptyList(),
     private val myDeviceId: String? = null,
@@ -35,9 +26,6 @@ class FamilyMemberAdapter(
         notifyDataSetChanged()
     }
 
-    /** Update baris mana yang lagi "aktif dikontrol" (dashboard ortu) tanpa
-     *  perlu bikin ulang adapter dari nol -- dipanggil tiap kali tap nama
-     *  anak lain di list. */
     fun setSelectedDeviceId(deviceId: String?) {
         selectedDeviceId = deviceId
         notifyDataSetChanged()
@@ -59,10 +47,7 @@ class FamilyMemberAdapter(
         holder.name.text = if (member.deviceId == myDeviceId) "$baseName (kamu)" else baseName
 
         if (member.loggedOut) {
-            // Device masih anggota keluarga (node-nya tidak dihapus), tapi
-            // akunnya sengaja logout -- beda dari offline biasa (mati/no
-            // internet), jadi statusnya ditulis eksplisit biar Orang Tua
-            // (atau Anak lain) tidak salah kira ini cuma HP mati.
+
             holder.role.text = if (isParent) {
                 "Orang tua telah logout dari akun ini"
             } else {
@@ -78,9 +63,6 @@ class FamilyMemberAdapter(
             )
         }
 
-        // Baris yang lagi "dikontrol" ditandai beda (dipakai di dashboard ortu
-        // supaya kelihatan jelas HP anak mana yang aktif dikendalikan sekarang
-        // -- terutama penting kalau anaknya banyak, misal 5 anak sekaligus).
         val isSelected = member.deviceId == selectedDeviceId
         holder.itemView.setBackgroundColor(
             if (isSelected) 0xFFE8EAF6.toInt() else 0x00000000

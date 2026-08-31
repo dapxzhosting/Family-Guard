@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        // Tombol Lock HP
+
         binding.btnLockScreen.setOnClickListener {
             if (lockManager.isAdminActive) {
                 lockManager.lockScreen()
@@ -87,30 +87,25 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Tombol Aktifkan Device Admin
         binding.btnActivateAdmin.setOnClickListener {
             val intent = lockManager.getActivationIntent()
             adminLauncher.launch(intent)
         }
 
-        // Tombol Aktifkan Accessibility (App Lock)
         binding.btnAccessibility.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             Toast.makeText(this, "Aktifkan 'FamilyGuard' di daftar Accessibility Services", Toast.LENGTH_LONG).show()
         }
 
-        // Tombol Aktifkan Notification Listener
         binding.btnNotifListener.setOnClickListener {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             Toast.makeText(this, "Aktifkan 'FamilyGuard' di Notification Access", Toast.LENGTH_LONG).show()
         }
 
-        // Tombol Kirim Pesan (lokal, simulasi)
         binding.btnSendMessage.setOnClickListener {
             showSendMessageDialog()
         }
 
-        // Tab toggle: semua app vs terkunci
         binding.chipAll.setOnClickListener { filterApps("all") }
         binding.chipLocked.setOnClickListener { filterApps("locked") }
         binding.chipNotifBlocked.setOnClickListener { filterApps("notif") }
@@ -146,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 binding.progressBar.visibility = View.GONE
                 adapter.submitList(appList)
-                // Kirim daftar aplikasi ke cloud agar orang tua bisa lihat
+
                 FamilyLink.updateAppList(this, appList)
             }
         }.start()
@@ -172,7 +167,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Kirim") { _, _ ->
                 val msg = input.text.toString()
                 if (msg.isNotBlank()) {
-                    // Local notification (tanpa internet)
+
                     showLocalMessage("Pesan dari Orang Tua", msg)
                 }
             }
@@ -202,9 +197,9 @@ class MainActivity : AppCompatActivity() {
     private fun initFcmToken() {
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             AppLockPrefs.saveFcmToken(this, token)
-            // Note: binding.tvFcmToken might be missing in some layouts, safely handle it
+
             try {
-                // binding.tvFcmToken.text = "Token: ${token.take(20)}..."
+
             } catch (e: Exception) {}
         }
     }
@@ -234,7 +229,6 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// Extension untuk update status indicator
 private fun android.widget.ImageView.setStatus(active: Boolean) {
     setImageResource(
         if (active) android.R.drawable.presence_online

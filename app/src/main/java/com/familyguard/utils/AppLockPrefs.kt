@@ -4,13 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
 
-/**
- * Utility untuk menyimpan konfigurasi FamilyGuard secara lokal:
- * - Daftar app yang dikunci
- * - Daftar app yang notifikasinya diblokir
- * - Status guard service
- * - FCM token
- */
 object AppLockPrefs {
 
     private const val PREF_NAME = "family_guard_prefs"
@@ -33,10 +26,6 @@ object AppLockPrefs {
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
-    // ──────────────────────────────────────────────
-    // LOCKED APPS
-    // ──────────────────────────────────────────────
-
     fun getLockedApps(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_LOCKED_APPS, emptySet()) ?: emptySet()
 
@@ -55,10 +44,6 @@ object AppLockPrefs {
     fun isAppLocked(context: Context, packageName: String): Boolean =
         getLockedApps(context).contains(packageName)
 
-    // ──────────────────────────────────────────────
-    // BLOCKED NOTIFICATION APPS
-    // ──────────────────────────────────────────────
-
     fun getBlockedNotificationApps(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_BLOCKED_NOTIF_APPS, emptySet()) ?: emptySet()
 
@@ -74,10 +59,6 @@ object AppLockPrefs {
         prefs(context).edit().putStringSet(KEY_BLOCKED_NOTIF_APPS, current).apply()
     }
 
-    // ──────────────────────────────────────────────
-    // GUARD SERVICE
-    // ──────────────────────────────────────────────
-
     fun isGuardEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_GUARD_ENABLED, false)
 
@@ -85,20 +66,12 @@ object AppLockPrefs {
         prefs(context).edit().putBoolean(KEY_GUARD_ENABLED, enabled).apply()
     }
 
-    // ──────────────────────────────────────────────
-    // FCM TOKEN
-    // ──────────────────────────────────────────────
-
     fun saveFcmToken(context: Context, token: String) {
         prefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
     }
 
     fun getFcmToken(context: Context): String? =
         prefs(context).getString(KEY_FCM_TOKEN, null)
-
-    // ──────────────────────────────────────────────
-    // DEVICE PIN (untuk app lock screen)
-    // ──────────────────────────────────────────────
 
     fun savePin(context: Context, pin: String) {
         prefs(context).edit().putString(KEY_DEVICE_PIN, pin).apply()
@@ -108,10 +81,6 @@ object AppLockPrefs {
         prefs(context).getString(KEY_DEVICE_PIN, null)
 
     fun hasPin(context: Context): Boolean = getPin(context) != null
-
-    // ──────────────────────────────────────────────
-    // FAMILY CODE & ROLE
-    // ──────────────────────────────────────────────
 
     fun saveFamilyCode(context: Context, code: String) {
         prefs(context).edit().putString(KEY_FAMILY_CODE, code).apply()
@@ -150,14 +119,10 @@ object AppLockPrefs {
 
         if (lastPkg == packageName) {
             val elapsed = System.currentTimeMillis() - lastTime
-            return elapsed < 30_000 // 30 detik grace period
+            return elapsed < 30_000
         }
         return false
     }
-
-    // ──────────────────────────────────────────────
-    // USER NAME (dari layar setelah login Google) & NAMA KELUARGA
-    // ──────────────────────────────────────────────
 
     fun saveUserName(context: Context, name: String) {
         prefs(context).edit().putString(KEY_USER_NAME, name).apply()
@@ -173,17 +138,6 @@ object AppLockPrefs {
     fun getFamilyName(context: Context): String? =
         prefs(context).getString(KEY_FAMILY_NAME, null)
 
-    // ──────────────────────────────────────────────
-    // RESET / GANTI KELUARGA / LOGOUT
-    // ──────────────────────────────────────────────
-
-    /**
-     * Hapus role & kode keluarga LOKAL saja (dipakai untuk "Reset Role" dan
-     * "Ganti Keluarga"). Nama user & akun Google TIDAK ikut dihapus -- masih
-     * bisa lanjut pakai app sebagai user yang sama, cuma pilih role/keluarga
-     * dari awal lagi. Family name juga ikut dihapus karena itu melekat ke
-     * keluarga lama, bukan ke user-nya.
-     */
     fun clearRoleAndFamily(context: Context) {
         prefs(context).edit()
             .remove(KEY_ROLE)
@@ -193,12 +147,6 @@ object AppLockPrefs {
             .apply()
     }
 
-    /**
-     * Hapus SEMUA data lokal FamilyGuard (dipakai untuk "Keluar Akun"/logout).
-     * Dipanggil SETELAH FirebaseAuth.signOut() supaya sesi berikutnya benar-benar
-     * mulai dari nol -- kalau tidak, LoginActivity.routeNext() bisa salah lompat
-     * pakai data user SEBELUMNYA yang masih nyangkut di SharedPreferences ini.
-     */
     fun clearAllForLogout(context: Context) {
         prefs(context).edit().clear().apply()
     }

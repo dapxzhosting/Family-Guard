@@ -1,0 +1,86 @@
+package com.familyguard.ui
+
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.databinding.ActivityChildMenuBinding
+import com.familyguard.utils.AccountActions
+import com.familyguard.utils.AnimUtils
+import com.familyguard.utils.AppLockPrefs
+
+class ChildMenuActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityChildMenuBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityChildMenuBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        updateFamilyStatus()
+
+        binding.btnMenuDashboard.setOnClickListener {
+            if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
+                Toast.makeText(this, "Gabung keluarga dulu sebelum buka dashboard", Toast.LENGTH_SHORT).show()
+            } else {
+                startActivity(Intent(this, ChildHomeActivity::class.java))
+            }
+        }
+
+        binding.btnMenuChangeFamily.setOnClickListener {
+            if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
+                // Belum pernah gabung keluarga -- langsung ke layar masukkan
+                // kode, tanpa dialog konfirmasi "keluar dari keluarga saat
+                // ini" yang tidak relevan (memang belum ada keluarga).
+                startActivity(Intent(this, FamilyCodeActivity::class.java))
+            } else {
+                AccountActions.changeFamily(this)
+            }
+        }
+
+        binding.btnPrivacyPolicy.setOnClickListener {
+            val intent = Intent(this, PrivacyPolicyActivity::class.java).apply {
+                putExtra(PrivacyPolicyActivity.EXTRA_IS_FROM_SETTINGS, true)
+            }
+            startActivity(intent)
+        }
+
+        binding.btnMenuResetRole.setOnClickListener {
+            AccountActions.resetRole(this)
+        }
+
+        binding.btnMenuLogout.setOnClickListener {
+            AccountActions.logout(this)
+        }
+
+        AnimUtils.staggerFadeSlideIn(binding.rootMenuContent)
+        AnimUtils.attachPressAnimationRecursively(binding.rootMenuContent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateFamilyStatus()
+    }
+
+    private fun updateFamilyStatus() {
+        val code = AppLockPrefs.getFamilyCode(this)
+        val name = AppLockPrefs.getFamilyName(this)
+        val hasFamily = !code.isNullOrBlank()
+
+        binding.btnMenuDashboard.visibility = if (hasFamily) View.VISIBLE else View.GONE
+
+        if (hasFamily) {
+            binding.tvMenuFamilyTitle.text = "Sudah Terhubung"
+            binding.tvMenuFamilyStatus.text = "Keluarga: ${name?.takeIf { it.isNotBlank() } ?: code}"
+            binding.tvMenuChangeFamilyTitle.text = "Ganti Keluarga"
+            binding.tvMenuChangeFamilySubtitle.text = "Gabung ke keluarga lain"
+        } else {
+            binding.tvMenuFamilyTitle.text = "Belum Terhubung"
+            binding.tvMenuFamilyStatus.text = "Masukkan kode dari orang tua untuk gabung"
+            binding.tvMenuChangeFamilyTitle.text = "Gabung Keluarga"
+            binding.tvMenuChangeFamilySubtitle.text = "Masukkan kode keluarga"
+        }
+    }
+}

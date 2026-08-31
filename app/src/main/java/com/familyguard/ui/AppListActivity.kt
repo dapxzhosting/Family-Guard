@@ -17,24 +17,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-/**
- * Halaman "Kelola Aplikasi" khusus Orang Tua -- versi layar penuh dari list
- * aplikasi yang sebelumnya cuma nampil di kotak kecil (400dp) di dalam
- * ParentDashboardActivity. Dibuka dari sana lewat tombol "Lihat Semua
- * Aplikasi", dengan EXTRA_DEVICE_ID & EXTRA_CHILD_NAME dikirim supaya tahu
- * HP anak mana yang sedang dikelola.
- *
- * Fitur:
- * - List LENGKAP semua aplikasi HP anak (bukan dipotong tinggi kotak),
- *   masing-masing bisa di-toggle Kunci & Blokir Notif satu-satu (reuse
- *   AppListAdapter & FamilyLink yang sama dengan ParentDashboardActivity).
- * - Kolom pencarian buat filter nama aplikasi -- berguna kalau HP anak
- *   install banyak aplikasi.
- * - 4 tombol aksi massal: Kunci Semua / Buka Semua / Blokir Notif Semua /
- *   Izinkan Notif Semua -- "semua aplikasi bisa di-select sekaligus" tanpa
- *   perlu toggle satu-satu, dengan dialog konfirmasi dulu karena berlaku ke
- *   SEMUA aplikasi anak sekaligus.
- */
 class AppListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityListAppBinding
@@ -43,16 +25,8 @@ class AppListActivity : AppCompatActivity() {
     private var deviceId: String? = null
     private var deviceListener: ValueEventListener? = null
 
-    /** Daftar LENGKAP dari Firebase (tidak terpengaruh filter pencarian) --
-     *  dipakai sebagai sumber untuk tombol aksi massal supaya "Kunci Semua"
-     *  benar-benar kena ke semua aplikasi, bukan cuma yang sedang tampil
-     *  karena kebetulan lagi difilter pencarian. */
     private var fullAppList: List<AppInfo> = emptyList()
 
-    /** Status "HP anak ini sudah punya PIN?" -- diambil dari FamilyDevice.hasPin
-     *  lewat listener kecil terpisah (bukan observeDevices penuh, karena di sini
-     *  cuma perlu 1 device, bukan daftar semua device keluarga). Dipakai untuk
-     *  memblokir Kunci/Kunci Semua sebelum PIN pernah diset -- lihat requirePinSet(). */
     private var childHasPin: Boolean = false
     private var pinStatusListener: ValueEventListener? = null
 
@@ -143,9 +117,6 @@ class AppListActivity : AppCompatActivity() {
         }
     }
 
-    /** Semua tombol aksi massal butuh deviceId & minimal 1 aplikasi supaya
-     *  tidak menembak perintah kosong, dan selalu minta konfirmasi dulu
-     *  karena efeknya ke SEMUA aplikasi sekaligus (gampang salah pencet). */
     private fun confirmBulkAction(message: String, onConfirm: () -> Unit) {
         if (deviceId == null || fullAppList.isEmpty()) {
             toast("Belum ada daftar aplikasi untuk diproses")
@@ -159,9 +130,6 @@ class AppListActivity : AppCompatActivity() {
             .show()
     }
 
-    /** Sama seperti listener appList di ParentDashboardActivity, cuma di
-     *  sini datanya dituang ke fullAppList + filter pencarian aktif,
-     *  bukan langsung ke adapter. */
     private fun observeAppList(id: String) {
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val deviceRef = FirebaseDatabase.getInstance().reference
@@ -187,11 +155,6 @@ class AppListActivity : AppCompatActivity() {
         deviceRef.addValueEventListener(deviceListener!!)
     }
 
-    /** Listener kecil khusus field hasPin device ini -- terpisah dari
-     *  observeAppList() supaya tidak perlu urai ulang seluruh node device
-     *  cuma untuk 1 boolean, dan supaya perubahan PIN (mis. orang tua baru
-     *  saja set PIN dari dialog) langsung ke-refresh tanpa nunggu event
-     *  appList berubah. */
     private fun observePinStatus(id: String) {
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val pinRef = FirebaseDatabase.getInstance().reference
@@ -206,10 +169,6 @@ class AppListActivity : AppCompatActivity() {
         pinRef.addValueEventListener(pinStatusListener!!)
     }
 
-    /** Sama seperti requirePinSet() di ParentDashboardActivity -- cegah
-     *  kunci aplikasi dikirim sebelum PIN pernah diset ke HP anak ini,
-     *  supaya anak tidak "terkunci permanen" tanpa tahu PIN apa yang harus
-     *  dimasukkan. Return true kalau aman lanjut. */
     private fun requirePinSet(): Boolean {
         if (childHasPin) return true
         AlertDialog.Builder(this)
@@ -225,11 +184,6 @@ class AppListActivity : AppCompatActivity() {
         return false
     }
 
-    /** Versi ringkas dari dialog yang sama di ParentDashboardActivity --
-     *  deviceId di activity ini sudah pasti diketahui (dikirim lewat
-     *  EXTRA_DEVICE_ID), jadi tidak perlu requireSelectedChildId(). PIN
-     *  aktif (kalau ada) diambil dengan sekali baca (get()) karena di sini
-     *  tidak ada listener device penuh seperti childDevices. */
     private fun showSetPinDialog() {
         val target = deviceId ?: return
         val code = AppLockPrefs.getFamilyCode(this) ?: return

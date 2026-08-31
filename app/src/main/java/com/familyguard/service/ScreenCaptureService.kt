@@ -32,21 +32,6 @@ import org.webrtc.VideoCapturer
 import org.webrtc.VideoSource
 import org.webrtc.VideoTrack
 
-/**
- * Service yang membagikan layar HP anak ke HP orang tua lewat WebRTC (video
- * real-time, bukan lagi screenshot berulang lewat Firebase RTDB).
- *
- * Kenapa WebRTC: encoding hardware H.264 + jalur video P2P/relay bisa dapat
- * 30 fps+ dengan delay jauh lebih rendah daripada kirim JPEG lewat RTDB
- * (yang dulunya dibatasi ~4 fps karena tiap frame = 1 write database).
- * Firebase RTDB di sini HANYA dipakai untuk signaling (tukar SDP + ICE
- * candidate) lewat FamilyLink.sendWebRtcOffer/observeWebRtcAnswer/dst --
- * video-nya sendiri tidak lewat RTDB sama sekali.
- *
- * PENTING soal privasi/keamanan tetap sama seperti sebelumnya: MediaProjection
- * WAJIB izin eksplisit dari pengguna di HP ini, dan notifikasi foreground
- * service WAJIB tetap tampil selama capture aktif -- ini aturan Android.
- */
 class ScreenCaptureService : Service() {
 
     private var peerConnectionFactory: PeerConnectionFactory? = null
@@ -85,10 +70,6 @@ class ScreenCaptureService : Service() {
         RemoteControlState.realScreenWidth = screenWidth
         RemoteControlState.realScreenHeight = screenHeight
 
-        // Catatan: ScreenCapturerAndroid MEMBUAT MediaProjection-nya SENDIRI secara
-        // internal dari Intent hasil izin (resultData) + callback -- jangan panggil
-        // projectionManager.getMediaProjection() secara terpisah di sini, karena
-        // MediaProjection cuma boleh "dipakai" sekali oleh satu consumer.
         startWebRtc(resultData, screenWidth, screenHeight)
 
         return START_STICKY
@@ -101,17 +82,13 @@ class ScreenCaptureService : Service() {
             PeerConnectionFactory.InitializationOptions.builder(applicationContext)
                 .createInitializationOptions()
         )
+
         val factory = PeerConnectionFactory.builder()
-            .setVideoEncoderFactory(DefaultVideoEncoderFactory(eglBase!!.eglBaseContext, true, true))
+            .setVideoEncoderFactory(DefaultVideoEncoderFactory(eglBase!!.eglBaseContext, true, false))
             .setVideoDecoderFactory(DefaultVideoDecoderFactory(eglBase!!.eglBaseContext))
             .createPeerConnectionFactory()
         peerConnectionFactory = factory
 
-        // ScreenCapturerAndroid membuat MediaProjection-nya sendiri dari resultData
-        // ini (izin sistem dari dialog "Mulai merekam layar?" yang HANYA muncul di
-        // sini, sekali). Selama service ini (dan capturer/videoTrack-nya) tidak
-        // di-dispose, MediaProjection ini tetap valid dan bisa dipakai berkali-kali
-        // untuk peer connection BARU tanpa perlu consent ulang -- lihat reconnectPeer().
         val capturer = ScreenCapturerAndroid(resultData, object : MediaProjection.Callback() {
             override fun onStop() { stopSelf() }
         })
@@ -121,8 +98,6 @@ class ScreenCaptureService : Service() {
         videoSource = factory.createVideoSource(true)
         capturer.initialize(surfaceTextureHelper, applicationContext, videoSource!!.capturerObserver)
 
-        // 30 fps target -- lebar dibatasi supaya bitrate tetap wajar untuk
-        // koneksi seluler anak, tapi jauh di atas 4 fps implementasi lama.
         val targetWidth = if (width > MAX_CAPTURE_WIDTH) MAX_CAPTURE_WIDTH else width
         val scale = targetWidth.toFloat() / width
         val targetHeight = (height * scale).toInt()
@@ -130,24 +105,15 @@ class ScreenCaptureService : Service() {
 
         videoTrack = factory.createVideoTrack("familyguard_screen_v0", videoSource)
 
-        // Buat koneksi WebRTC pertama kali.
         setupPeerConnectionAndOffer()
     }
 
-    /**
-     * Dipanggil setiap orang tua membuka layar "Lihat Layar Anak" -- baik yang
-     * PERTAMA KALI (dari startWebRtc) maupun sesi BERIKUTNYA setelah orang tua
-     * sempat menutup layar sebelumnya. videoCapturer/videoTrack/MediaProjection
-     * TIDAK dibuat ulang di sini, cuma peer connection + offer baru -- makanya
-     * tidak perlu dialog izin lagi selama service ini masih hidup.
-     */
     fun reconnectPeer() {
         if (videoTrack == null || peerConnectionFactory == null) {
             Log.w(TAG, "reconnectPeer dipanggil tapi capturer belum siap")
             return
         }
-        // Buang peer connection lama (kalau ada sisa dari sesi sebelumnya) sebelum
-        // bikin yang baru, supaya tidak ada 2 koneksi nyala bersamaan.
+
         peerConnection?.close()
         peerConnection?.dispose()
         peerConnection = null
@@ -162,10 +128,7 @@ class ScreenCaptureService : Service() {
 
         val iceServers = listOf(
             PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-            // TODO: tambahkan TURN server sendiri di sini kalau anak sering di
-            // jaringan dengan NAT/firewall ketat (mis. sekolah), supaya P2P
-            // tetap bisa connect lewat relay. STUN publik saja cukup untuk
-            // kebanyakan jaringan rumah/data seluler.
+
         )
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
@@ -181,9 +144,7 @@ class ScreenCaptureService : Service() {
             }
             override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
             override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
-                // Kalau orang tua menutup layar / koneksi putus, bersihkan peer
-                // connection ini secara otomatis supaya reconnectPeer() berikutnya
-                // mulai dari kondisi bersih (capturer/videoTrack tetap jalan terus).
+
                 if (state == PeerConnection.IceConnectionState.DISCONNECTED ||
                     state == PeerConnection.IceConnectionState.FAILED ||
                     state == PeerConnection.IceConnectionState.CLOSED) {
@@ -208,9 +169,6 @@ class ScreenCaptureService : Service() {
         val sender = peerConnection?.addTrack(videoTrack, listOf("familyguard_stream_v0"))
         applyEncodingConstraints(sender)
 
-        // DataChannel untuk terima command kontrol (tap/swipe/back) dari HP orang tua.
-        // Ini jauh lebih cepat daripada lewat RTDB karena P2P langsung, tanpa
-        // round-trip ke server Firebase tiap kali orang tua nyentuh layar.
         val dcInit = org.webrtc.DataChannel.Init().apply { ordered = true }
         controlChannel = peerConnection?.createDataChannel("control", dcInit)
         controlChannel?.registerObserver(object : org.webrtc.DataChannel.Observer {
@@ -229,12 +187,8 @@ class ScreenCaptureService : Service() {
             }
         })
 
-        // Log fps aktual tiap 5 detik lewat getStats(), buat memastikan encoder di
-        // HP anak beneran ngirim ~30fps atau nggak (kalau di sini rendah, masalahnya
-        // di ENCODING/device anak, bukan di jaringan atau di sisi orang tua).
         startStatsLogging()
 
-        // Dengarkan ICE candidate dari HP orang tua (dikirim balik lewat signaling).
         FamilyLink.observeIceCandidates(this, fromChild = false) { mid, idx, cand ->
             peerConnection?.addIceCandidate(IceCandidate(mid, idx, cand))
         }
@@ -242,24 +196,16 @@ class ScreenCaptureService : Service() {
         createAndSendOffer()
     }
 
-    /**
-     * Paksa bitrate & prioritas fps, jangan biarkan WebRTC Bandwidth Estimation
-     * (BWE) menebak sendiri -- di jaringan lokal/WiFi rumah BWE kadang salah baca
-     * dan nge-drop bitrate/resolusi meski koneksi sebenarnya bagus, hasilnya
-     * terlihat "patah-patah" padahal bukan masalah jaringan beneran.
-     */
     private fun applyEncodingConstraints(sender: org.webrtc.RtpSender?) {
         val s = sender ?: return
         val params = s.parameters
         if (params.encodings.isEmpty()) return
         for (enc in params.encodings) {
-            enc.maxBitrateBps = 700_000     // diturunkan -- device Unisoc lemah, bitrate tinggi bikin encoder makin ketinggalan
+            enc.maxBitrateBps = 700_000
             enc.minBitrateBps = 150_000
             enc.maxFramerate = TARGET_FPS
         }
-        // MAINTAIN_FRAMERATE: kalau jaringan/CPU kewalahan, WebRTC akan turunin
-        // RESOLUSI dulu supaya fps tetap terjaga -- ini yang paling penting buat
-        // kasus "biar 30fps+", karena defaultnya (BALANCED) sering korbanin fps duluan.
+
         params.degradationPreference = org.webrtc.RtpParameters.DegradationPreference.MAINTAIN_FRAMERATE
         s.parameters = params
     }
@@ -291,7 +237,7 @@ class ScreenCaptureService : Service() {
             override fun onCreateSuccess(desc: SessionDescription) {
                 peerConnection?.setLocalDescription(SimpleSdpObserver(), desc)
                 FamilyLink.sendWebRtcOffer(this@ScreenCaptureService, desc.description)
-                // Dengarkan answer dari HP orang tua supaya koneksi bisa terbentuk.
+
                 FamilyLink.observeWebRtcAnswer(this@ScreenCaptureService) { sdp ->
                     val answerDesc = SessionDescription(SessionDescription.Type.ANSWER, sdp)
                     peerConnection?.setRemoteDescription(SimpleSdpObserver(), answerDesc)
@@ -345,14 +291,12 @@ class ScreenCaptureService : Service() {
         private const val TAG = "ScreenCaptureService"
         private const val NOTIF_ID = 9911
         private const val MAX_CAPTURE_WIDTH = 480
-        private const val TARGET_FPS = 30
+
+        private const val TARGET_FPS = 24
 
         const val EXTRA_RESULT_CODE = "result_code"
         const val EXTRA_RESULT_DATA = "result_data"
 
-        /** Referensi instance service yang aktif, dipakai FamilyLink untuk cek
-         * apakah screen capture sudah jalan (reconnect cepat) atau belum (perlu
-         * consent baru lewat ScreenCaptureRequestActivity). */
         @Volatile var instance: ScreenCaptureService? = null
     }
 }
@@ -364,9 +308,6 @@ private class SimpleSdpObserver : SdpObserver {
     override fun onSetFailure(p0: String?) {}
 }
 
-/** Menyimpan resolusi ASLI layar HP anak supaya AppLockAccessibilityService bisa
- * mengonversi koordinat tap ternormalisasi (0.0-1.0) dari HP orang tua kembali
- * ke koordinat piksel yang benar saat dispatchGesture(). */
 object RemoteControlState {
     @Volatile var realScreenWidth: Int = 1080
     @Volatile var realScreenHeight: Int = 2400

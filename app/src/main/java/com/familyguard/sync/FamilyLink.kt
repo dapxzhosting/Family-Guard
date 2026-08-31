@@ -15,11 +15,6 @@ object FamilyLink {
     private const val TAG = "FamilyLink"
     private val db = FirebaseDatabase.getInstance().reference
 
-    // ──────────────────────────────────────────────
-    // PROFIL USER (disimpan per akun Google/UID, BUKAN per HP -- supaya
-    // login akun yang sama di HP lain tidak perlu isi ulang nama/role/kode)
-    // ──────────────────────────────────────────────
-
     private fun userRef(uid: String) = db.child("users").child(uid)
 
     fun saveUserProfile(context: Context) {
@@ -35,13 +30,7 @@ object FamilyLink {
         if (updates.isNotEmpty()) {
             userRef(uid).updateChildren(updates)
                 .addOnFailureListener { e ->
-                    // FIX: sebelumnya kegagalan di sini (paling sering PERMISSION_DENIED
-                    // kalau Firebase Realtime Database Rules belum mengizinkan baca/tulis
-                    // ke path /users/{uid}) DIAM-DIAM tidak kelihatan sama sekali --
-                    // efeknya profil (nama/role/kode keluarga) tidak pernah benar-benar
-                    // tersimpan ke Firebase, jadi login akun yang sama di HP lain tidak
-                    // punya apa-apa untuk di-fetch balik, dan user diminta isi ulang dari
-                    // nol seolah-olah fiturnya tidak ada.
+
                     Log.e(TAG, "GAGAL simpan profil user ke /users/$uid -- kemungkinan besar " +
                             "Firebase Realtime Database Rules belum izinkan path ini. " +
                             "Error: ${e.message}", e)
@@ -49,11 +38,6 @@ object FamilyLink {
         }
     }
 
-    /**
-     * Cek apakah akun Google ini sudah pernah setup sebelumnya (di HP lain).
-     * Kalau ada, isi SharedPreferences lokal dari data Firebase supaya user
-     * tidak perlu isi nama/pilih role/masukkan kode keluarga lagi.
-     */
     fun fetchUserProfile(context: Context, onResult: (found: Boolean) -> Unit) {
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
@@ -70,19 +54,13 @@ object FamilyLink {
                 if (!role.isNullOrBlank()) AppLockPrefs.saveRole(context, role)
                 if (!code.isNullOrBlank()) {
                     AppLockPrefs.saveFamilyCode(context, code)
-                    // Register ulang device ini (device ID beda per HP) ke family yang sama
+
                     registerDevice(context)
                 }
                 onResult(!name.isNullOrBlank())
             }
             .addOnFailureListener { e ->
-                // FIX: sebelumnya kegagalan fetch (paling sering PERMISSION_DENIED kalau
-                // Firebase Rules belum izinkan baca /users/{uid}) cuma di-log ke Logcat --
-                // dari sudut pandang user, ini KELIHATAN PERSIS SAMA seperti "memang belum
-                // pernah setup akun ini", padahal sebenarnya beda kasus (data ADA tapi
-                // GAGAL diambil). onResult(false) di bawah bikin LoginActivity lanjut ke
-                // alur onboarding dari nol (isi nama, pilih role lagi) -- makanya perlu
-                // penanda jelas di log supaya gampang dibedakan dari kasus "memang baru".
+
                 Log.e(TAG, "GAGAL ambil profil user dari /users/$uid -- kemungkinan besar " +
                         "Firebase Realtime Database Rules belum izinkan path ini (bukan " +
                         "berarti user memang belum pernah setup). Error: ${e.message}", e)
@@ -90,12 +68,6 @@ object FamilyLink {
             }
     }
 
-    /**
-     * Hapus entri device ini dari node keluarga LAMA di Firebase (best-effort,
-     * dipanggil SEBELUM role/kode lokal dihapus). Tanpa ini, kalau anak/ortu
-     * pindah/ganti keluarga, device lama jadi "hantu" yang masih nongol di
-     * dashboard keluarga sebelumnya padahal sudah tidak dipakai lagi di sana.
-     */
     fun removeDeviceFromCurrentFamily(context: Context, onComplete: (() -> Unit)? = null) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -107,13 +79,6 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
-    /**
-     * Hapus role & kode keluarga dari profil REMOTE (/users/{uid}). PENTING:
-     * kalau ini tidak dipanggil, fetchUserProfile() di LoginActivity bakal
-     * "mengembalikan" role & kode keluarga LAMA dari Firebase pas user login
-     * lagi (di HP yang sama maupun HP lain) -- bikin fitur Reset Role/Ganti
-     * Keluarga kelihatan seperti tidak berfungsi sama sekali.
-     */
     fun clearRemoteRoleAndFamily(context: Context, onComplete: (() -> Unit)? = null) {
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
@@ -128,13 +93,6 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
-    /**
-     * Hapus SELURUH data keluarga (node families/{code}) dari Firebase --
-     * bukan cuma device ini seperti removeDeviceFromCurrentFamily(). Dipakai
-     * saat orang tua menghapus keluarga secara permanen: semua HP anak yang
-     * masih terhubung otomatis "terputus" karena node keluarganya sudah
-     * tidak ada lagi di database (listener mereka akan dapat null).
-     */
     fun deleteFamilyEntirely(context: Context, onComplete: (() -> Unit)? = null) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -145,13 +103,6 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
-    /**
-     * Ganti nama user dari SettingsActivity: simpan lokal, sinkron ke profil
-     * /users/{uid} (supaya kebawa kalau login di HP lain), dan kalau device
-     * ini sudah tergabung di keluarga, update juga record device-nya lewat
-     * registerDevice() supaya nama yang tampil di list "Anggota Keluarga"
-     * (dashboard anak) ikut berubah -- bukan cuma nama lokal doang.
-     */
     fun updateUserName(context: Context, newName: String, onComplete: (() -> Unit)? = null) {
         AppLockPrefs.saveUserName(context, newName)
 
@@ -165,17 +116,6 @@ object FamilyLink {
         onComplete?.invoke()
     }
 
-    /**
-     * Tandai device ini "sudah logout" di Firebase SEBELUM benar-benar sign
-     * out -- supaya anggota keluarga lain (terutama Orang Tua yang lihat
-     * dashboard) tahu device ini bukan cuma offline biasa (mati/no internet),
-     * tapi memang akunnya sengaja logout. Ditulis SEBELUM FirebaseAuth.signOut()
-     * dipanggil, karena rules Firebase kemungkinan butuh user masih ter-auth
-     * untuk bisa nulis. Beda dari changeFamily()/resetRole() yang HAPUS
-     * device node -- di sini device node TETAP ADA (anak masih anggota
-     * keluarga), cuma statusnya yang berubah, dan otomatis kebersihkan lagi
-     * begitu device ini login ulang (lihat registerDevice() -> loggedOut=false).
-     */
     fun markLoggedOut(context: Context, onComplete: (() -> Unit)? = null) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -186,6 +126,82 @@ object FamilyLink {
         deviceRef(code, id).updateChildren(
             mapOf("loggedOut" to true, "online" to false)
         ).addOnCompleteListener { onComplete?.invoke() }
+    }
+
+    fun updateAccessibilityStatus(context: Context, enabled: Boolean) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).child("accessibilityEnabled").setValue(enabled)
+    }
+
+    /**
+     * Firebase RTDB key TIDAK BOLEH mengandung titik (`.`), padahal package
+     * name Android selalu pakai titik (mis. "com.whatsapp") -- jadi titiknya
+     * diganti koma (karakter yang tidak pernah muncul di package name asli)
+     * supaya bisa dipakai sebagai key node, dan dibalikin lagi pas dibaca.
+     */
+    private fun encodePackageKey(packageName: String) = packageName.replace(".", ",")
+    private fun decodePackageKey(key: String) = key.replace(",", ".")
+
+    /**
+     * Sinkron total menit pemakaian [packageName] pada tanggal [date]
+     * (format yyyy-MM-dd) ke families/{code}/devices/{deviceId}/usage/{date}.
+     * Dipanggil dari UsageTracker, throttled supaya cuma nulis kalau angka
+     * menitnya beneran naik. Dibaca lagi oleh ScreenTimeReportActivity di
+     * sisi Orang Tua untuk generate laporan mingguan.
+     */
+    fun syncUsageMinutes(context: Context, date: String, packageName: String, minutes: Int) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).child("usage").child(date).child(encodePackageKey(packageName)).setValue(minutes)
+    }
+
+    /**
+     * Ambil rekap pemakaian [daysBack] hari terakhir (termasuk hari ini) dari
+     * HP anak [targetDeviceId], lalu kembalikan sebagai flat list yang siap
+     * dipakai ScreenTimeReportGenerator. Satu-shot read (bukan listener
+     * real-time) karena laporan cukup di-refresh manual/tiap buka halaman.
+     */
+    fun fetchUsageHistory(
+        context: Context,
+        targetDeviceId: String,
+        daysBack: Int,
+        onResult: (List<com.familyguard.utils.ScreenTimeReportGenerator.DailyUsage>) -> Unit
+    ) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onResult(emptyList())
+            return
+        }
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val calendar = java.util.Calendar.getInstance()
+        val dates = (0 until daysBack).map {
+            val d = sdf.format(calendar.time)
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
+            d
+        }
+
+        deviceRef(code, targetDeviceId).child("usage")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val result = mutableListOf<com.familyguard.utils.ScreenTimeReportGenerator.DailyUsage>()
+                for (date in dates) {
+                    val dayNode = snapshot.child(date)
+                    for (child in dayNode.children) {
+                        val minutes = child.getValue(Long::class.java) ?: continue
+                        val pkg = decodePackageKey(child.key ?: continue)
+                        result.add(
+                            com.familyguard.utils.ScreenTimeReportGenerator.DailyUsage(
+                                date = date,
+                                appPackage = pkg,
+                                durationMinutes = minutes
+                            )
+                        )
+                    }
+                }
+                onResult(result)
+            }
+            .addOnFailureListener { onResult(emptyList()) }
     }
 
     fun registerDevice(context: Context) {
@@ -201,10 +217,7 @@ object FamilyLink {
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
             child("hasPin").setValue(AppLockPrefs.hasPin(context))
-            // Device ini baru saja login/registrasi ulang -- pastikan tanda
-            // "sudah logout" (kalau ada dari sesi sebelumnya) dibersihkan,
-            // supaya dashboard Orang Tua/Anak berhenti nampilin status
-            // "telah logout dari akun ini" begitu akun ini login lagi.
+
             child("loggedOut").setValue(false)
             child("online").onDisconnect().setValue(false)
             child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
@@ -212,16 +225,6 @@ object FamilyLink {
         Log.d(TAG, "Device registered: $id as $role in family $code")
     }
 
-    /**
-     * Heartbeat berkala supaya status "online" & "lastSeen" di dashboard orang tua
-     * selalu akurat selama app/service masih hidup — bukan cuma sekali pas pairing.
-     *
-     * PENTING: onDisconnect() itu terikat ke KONEKSI Firebase yang aktif saat itu.
-     * Kalau koneksi terputus & sambung ulang (device restart, app di-kill lalu
-     * dibuka lagi, ganti jaringan), handler onDisconnect yang lama otomatis hilang
-     * dan HARUS didaftarkan ulang — makanya di sini juga dipanggil ulang, tidak cukup
-     * cuma di registerDevice() pas pairing pertama kali.
-     */
     fun sendHeartbeat(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
@@ -293,24 +296,15 @@ object FamilyLink {
             targetDeviceId
         )
 
-    // ===== Lihat Layar & Kontrol Jarak Jauh =====
-    // Dikirim dari HP ORANG TUA ke HP ANAK lewat channel command yang sama.
-
-    /** Minta HP anak mulai membagikan layarnya. Anak akan melihat dialog izin
-     * "Mulai merekam layar?" dari sistem Android sekali (ini WAJIB dari Android,
-     * tidak bisa dilewati oleh aplikasi manapun tanpa akses Device Owner). */
     fun sendRequestScreenShare(context: Context, targetDeviceId: String) =
         sendCommand(context, "start_screen_share", emptyMap(), targetDeviceId)
 
     fun sendStopScreenShare(context: Context, targetDeviceId: String) =
         sendCommand(context, "stop_screen_share", emptyMap(), targetDeviceId)
 
-    /** Kirim tap jarak jauh. x, y dinormalisasi 0.0-1.0 relatif terhadap lebar/tinggi
-     * layar HP anak (bukan pixel absolut), supaya rasio tetap benar walau resolusi beda. */
     fun sendRemoteTap(context: Context, xNorm: Float, yNorm: Float, targetDeviceId: String) =
         sendCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm), targetDeviceId)
 
-    /** Kirim swipe/drag jarak jauh (dipakai untuk scroll, swipe, dsb saat Mode Kontrol aktif). */
     fun sendRemoteSwipe(context: Context, x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long, targetDeviceId: String) =
         sendCommand(
             context, "remote_swipe",
@@ -318,7 +312,6 @@ object FamilyLink {
             targetDeviceId
         )
 
-    /** Kirim tombol back jarak jauh (tidak bisa lewat dispatchGesture biasa). */
     fun sendRemoteBack(context: Context, targetDeviceId: String) =
         sendCommand(context, "remote_back", emptyMap(), targetDeviceId)
 
@@ -352,7 +345,6 @@ object FamilyLink {
             return
         }
 
-        // Jangan timpa listener global dengan listener activity
         if (commandListener != null && isGlobalListener && !isGlobal) return
 
         if (commandListener != null) {
@@ -369,9 +361,6 @@ object FamilyLink {
                     val done = cmdSnap.child("done").getValue(Boolean::class.java) ?: true
                     if (done) continue
 
-                    // Command yang ditarget ke device lain (multi-anak) -- biarkan
-                    // saja, jangan diproses & jangan dihapus, supaya device yang
-                    // dituju masih bisa membacanya.
                     val target = cmdSnap.child("target").getValue(String::class.java)
                     if (target != null && target != myDeviceId) continue
 
@@ -382,11 +371,11 @@ object FamilyLink {
 
                     when (type) {
                         "lock_screen" -> {
-                            // Simpan status kunci secara lokal
+
                             AppLockPrefs.setDeviceLocked(context, true)
-                            // 1. Kunci sistem (jika admin aktif)
+
                             lockManager.lockScreen()
-                            // 2. Munculkan overlay LockScreenActivity kita
+
                             val intent = android.content.Intent(context, com.familyguard.ui.LockScreenActivity::class.java).apply {
                                 addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 putExtra(com.familyguard.ui.LockScreenActivity.EXTRA_MODE, com.familyguard.ui.LockScreenActivity.MODE_DEVICE_LOCK)
@@ -395,9 +384,9 @@ object FamilyLink {
                         }
 
                         "unlock_screen" -> {
-                            // Hapus status kunci secara lokal
+
                             AppLockPrefs.setDeviceLocked(context, false)
-                            // Kirim broadcast atau gunakan EventBus/LocalBroadcast untuk menutup LockScreenActivity
+
                             val intent = android.content.Intent("com.familyguard.ACTION_UNLOCK").apply {
                                 `package` = context.packageName
                             }
@@ -408,11 +397,7 @@ object FamilyLink {
                             val pin = payload.child("pin").getValue(String::class.java) ?: ""
                             if (pin.isNotEmpty()) {
                                 AppLockPrefs.savePin(context, pin)
-                                // Sinkron status "sudah ada PIN" + nilai PIN aktual ke
-                                // Firebase supaya dashboard Orang Tua tahu device ini AMAN
-                                // untuk dikunci (lihat guard di ParentDashboardActivity/
-                                // AppListActivity), dan supaya orang tua bisa lihat lagi
-                                // PIN yang sedang aktif kalau lupa (fitur "PIN saat ini").
+
                                 val code = AppLockPrefs.getFamilyCode(context)
                                 val id = AppLockPrefs.getDeviceId(context)
                                 if (!code.isNullOrBlank()) {
@@ -446,17 +431,12 @@ object FamilyLink {
                         }
 
                         "start_screen_share" -> {
-                            // Kalau ScreenCaptureService sudah jalan (dari sesi sebelumnya),
-                            // cukup bikin peer connection baru -- TANPA dialog consent lagi.
-                            // Consent MediaProjection cuma perlu sekali selama service ini
-                            // belum benar-benar dimatikan (lihat ScreenCaptureService.instance).
+
                             val running = com.familyguard.service.ScreenCaptureService.instance
                             if (running != null) {
                                 running.reconnectPeer()
                             } else {
-                                // Diproses HP ANAK: minta izin MediaProjection ke sistem (sekali,
-                                // wajib dari Android) lalu mulai capture layar. Lewat activity
-                                // transparan karena createScreenCaptureIntent() butuh Activity context.
+
                                 val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
                                     addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
@@ -469,8 +449,7 @@ object FamilyLink {
                         }
 
                         "remote_tap", "remote_swipe", "remote_back" -> {
-                            // Diproses HP ANAK: teruskan ke AccessibilityService yang sedang
-                            // aktif untuk benar-benar men-simulasikan sentuhan di layar.
+
                             com.familyguard.service.AppLockAccessibilityService.instance
                                 ?.executeRemoteInput(type, payload)
                         }
@@ -491,7 +470,7 @@ object FamilyLink {
     }
 
     fun stopListening(context: Context, force: Boolean = false) {
-        if (isGlobalListener && !force) return // Jangan stop jika ini listener global dari Service
+        if (isGlobalListener && !force) return
 
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         commandListener?.let { commandsRef(code).removeEventListener(it) }
@@ -515,7 +494,8 @@ object FamilyLink {
                     val hasPin = snap.child("hasPin").getValue(Boolean::class.java) ?: false
                     val currentPin = snap.child("currentPin").getValue(String::class.java)?.takeIf { it.isNotBlank() }
                     val loggedOut = snap.child("loggedOut").getValue(Boolean::class.java) ?: false
-                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin, loggedOut)
+                    val accessibilityEnabled = snap.child("accessibilityEnabled").getValue(Boolean::class.java) ?: false
+                    FamilyDevice(id, role, online, lastSeen, userName, hasPin, currentPin, loggedOut, accessibilityEnabled)
                 }
                 onChange(list)
             }
@@ -533,10 +513,6 @@ object FamilyLink {
         devicesRef(code).removeEventListener(listener)
     }
 
-    /**
-     * Observe lokasi HP anak secara real-time (dipakai oleh LocationMapActivity).
-     * Ambil dari device pertama yang role-nya CHILD dalam family yang sama.
-     */
     fun observeChildLocation(
         context: Context,
         onUpdate: (lat: Double, lng: Double, timestamp: Long) -> Unit,
@@ -578,11 +554,6 @@ object FamilyLink {
     private fun deviceRef(code: String, deviceId: String) = devicesRef(code).child(deviceId)
     private fun commandsRef(code: String) = familyRef(code).child("commands")
 
-    // ===== Streaming layar (frame demi frame lewat RTDB) =====
-    // Cukup 1 node yang DITIMPA tiap frame baru (bukan ditambah/push), supaya
-    // data lama otomatis "hilang" dan tidak menumpuk di database.
-
-    /** Dipanggil dari HP ANAK (ScreenCaptureService) untuk mengirim 1 frame layar. */
     fun uploadScreenFrame(context: Context, base64Jpeg: String, width: Int, height: Int) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
@@ -596,15 +567,6 @@ object FamilyLink {
         )
     }
 
-    /** Dipanggil dari HP ORANG TUA (ChildScreenViewActivity) untuk memantau frame terbaru.
-     *
-     * PENTING (fix lag parah): sebelumnya listener dipasang di SELURUH node
-     * "devices" (semua data semua device -- lokasi, app list, dll), jadi tiap
-     * ada 1 frame baru, SELURUH pohon data ikut ke-download ulang, bukan cuma
-     * framenya. Sekarang: cari deviceId anak SEKALI (single read, ringan),
-     * lalu pasang listener LANGSUNG ke node screen_stream anak itu saja --
-     * jadi tiap update cuma ngirim payload frame doang, jauh lebih ringan &
-     * lebih cepat sampai. */
     private var screenStreamRef: DatabaseReference? = null
 
     fun observeScreenStream(
@@ -625,8 +587,6 @@ object FamilyLink {
             }
         }
 
-        // Cari deviceId anak sekali saja (bukan tiap frame), baru pasang
-        // listener khusus di node screen_stream-nya.
         devicesRef(code).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val childId = snapshot.children.firstOrNull {
@@ -650,15 +610,8 @@ object FamilyLink {
         screenStreamRef = null
     }
 
-    // ===== WebRTC signaling (SDP + ICE candidate lewat RTDB) =====
-    // RTDB di sini CUMA dipakai untuk tukar-menukar "alamat" koneksi (signaling),
-    // video sungguhan mengalir langsung peer-to-peer (atau lewat TURN relay kalau
-    // NAT strict) via WebRTC -- makanya bisa jauh lebih tinggi fps & rendah delay
-    // dibanding kirim tiap frame lewat RTDB.
-
     private fun webrtcRef(code: String) = familyRef(code).child("webrtc")
 
-    /** Dipanggil HP ANAK setelah PeerConnection membuat SDP offer. */
     fun sendWebRtcOffer(context: Context, sdp: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         webrtcRef(code).apply {
@@ -669,7 +622,6 @@ object FamilyLink {
         }
     }
 
-    /** Dipanggil HP ORANG TUA setelah membuat SDP answer dari offer anak. */
     fun sendWebRtcAnswer(context: Context, sdp: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         webrtcRef(code).child("answer").setValue(sdp)
@@ -688,7 +640,6 @@ object FamilyLink {
     private var childCandidatesListener: ValueEventListener? = null
     private var parentCandidatesListener: ValueEventListener? = null
 
-    /** HP ORANG TUA: dengarkan offer dari anak. */
     fun observeWebRtcOffer(context: Context, onOffer: (String) -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         offerListener?.let { webrtcRef(code).child("offer").removeEventListener(it) }
@@ -701,7 +652,6 @@ object FamilyLink {
         webrtcRef(code).child("offer").addValueEventListener(offerListener!!)
     }
 
-    /** HP ANAK: dengarkan answer dari orang tua. */
     fun observeWebRtcAnswer(context: Context, onAnswer: (String) -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         answerListener?.let { webrtcRef(code).child("answer").removeEventListener(it) }
@@ -718,10 +668,6 @@ object FamilyLink {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val node = if (fromChild) "candidates_child" else "candidates_parent"
 
-        // Hapus dulu listener LAMA di node yang SAMA (kalau ada, dari sesi sebelumnya)
-        // sebelum daftar yang baru -- supaya tidak ada 2 listener numpuk di node
-        // yang sama dan menyebabkan command lama (yang nunjuk ke PeerConnection
-        // yang sudah di-dispose) tetap ke-trigger dan crash (use-after-free native).
         val oldListener = if (fromChild) childCandidatesListener else parentCandidatesListener
         oldListener?.let { webrtcRef(code).child(node).removeEventListener(it) }
 
@@ -737,19 +683,15 @@ object FamilyLink {
             override fun onCancelled(error: DatabaseError) {}
         }
         webrtcRef(code).child(node).addValueEventListener(listener)
-        // Simpan listener dikunci berdasarkan NODE tempat dia terdaftar (bukan
-        // "fromChild" yang gampang ketuker) supaya clearWebRtcSession() pasti
-        // menghapusnya dari node yang tepat.
+
         if (fromChild) childCandidatesListener = listener else parentCandidatesListener = listener
     }
 
-    /** Bersihkan seluruh sesi signaling (dipanggil saat mulai/berhenti berbagi layar). */
     fun clearWebRtcSession(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         offerListener?.let { webrtcRef(code).child("offer").removeEventListener(it) }
         answerListener?.let { webrtcRef(code).child("answer").removeEventListener(it) }
-        // Node "candidates_child" didengarkan oleh listener yang didaftarkan dengan
-        // fromChild=true (childCandidatesListener), dan sebaliknya untuk "candidates_parent".
+
         childCandidatesListener?.let { webrtcRef(code).child("candidates_child").removeEventListener(it) }
         parentCandidatesListener?.let { webrtcRef(code).child("candidates_parent").removeEventListener(it) }
         offerListener = null; answerListener = null
@@ -766,5 +708,6 @@ data class FamilyDevice(
     val userName: String? = null,
     val hasPin: Boolean = false,
     val currentPin: String? = null,
-    val loggedOut: Boolean = false
+    val loggedOut: Boolean = false,
+    val accessibilityEnabled: Boolean = false
 )

@@ -20,34 +20,6 @@ import com.familyguard.databinding.ActivitySplashBinding
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
 
-/**
- * Splash screen pertama yang tampil saat apk dibuka.
- *
- * Splash ini menggantikan loading spinner yang dulu muncul sendirian di
- * bawah tombol Google pada LoginActivity setiap kali user sudah pernah
- * login sebelumnya (auto sign-in). Proses cek "sudah login atau belum" +
- * fetch profil dari Firebase dijalankan DI SINI, di belakang layar,
- * sementara animasi logo + progress bar 0%-100% berjalan smooth di depan
- * mengikuti tahapan proses yang nyata (bukan animasi kosong berbasis timer
- * semata). Activity baru berpindah setelah animasi minimum selesai DAN
- * proses pengecekan akun benar-benar selesai.
- *
- * Progress bar dibagi jadi beberapa tahap (checkpoint) yang merepresentasikan
- * proses nyata:
- *  - 0%   -> 12%  : mengecek ketersediaan jaringan
- *  - 12%  -> 35%  : mengecek status login (Firebase Auth)
- *  - 35%  -> 92%  : mengambil data profil dari server (request jaringan asli)
- *  - 92%  -> 100% : finalisasi sebelum pindah halaman
- * Progress dianimasikan smooth antar checkpoint begitu tahap itu benar-benar
- * selesai, jadi kecepatan mengisi progress bar mengikuti kecepatan proses
- * jaringan yang sesungguhnya -- kalau jaringan lambat, progress akan
- * "menempel" lebih lama di satu checkpoint sampai tahap itu selesai.
- *
- * Kalau tidak ada jaringan sama sekali, splash berhenti di progress terakhir
- * yang berhasil dicapai dan menampilkan ikon + tulisan "Jaringan tidak
- * tersedia". Splash otomatis melanjutkan proses begitu jaringan kembali
- * tersedia (dipantau real-time lewat ConnectivityManager).
- */
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
@@ -63,24 +35,13 @@ class SplashActivity : AppCompatActivity() {
     private var minDurationElapsed = false
     private var alreadyNavigated = false
 
-    // "Nomor percobaan" proses loading saat ini. Setiap kali proses loading
-    // (ulang) dimulai, angka ini bertambah. Callback async (misalnya hasil
-    // fetch profil Firebase) HANYA dianggap valid kalau nomor percobaan saat
-    // callback itu dibuat masih sama dengan yang aktif sekarang -- kalau
-    // sudah berubah (karena sempat retry akibat jaringan putus-nyambung),
-    // callback lama itu diabaikan. Ini mencegah splash "stuck" karena
-    // menunggu request lama yang sudah tidak relevan lagi.
     private var loadingGeneration = 0
     private var isWaitingForNetwork = false
 
     companion object {
-        // Durasi minimum animasi splash tampil, supaya animasi logo & progress
-        // sempat "kelihatan" jelas walaupun proses cek akun selesai sangat cepat.
+
         private const val SPLASH_MIN_DURATION_MS = 3200L
 
-        // Kalau satu percobaan macet lebih lama dari ini (misalnya request ke
-        // Firebase menggantung tanpa callback sukses/gagal), anggap sebagai
-        // masalah jaringan dan tawarkan retry, alih-alih splash diam selamanya.
         private const val NETWORK_STALL_TIMEOUT_MS = 9000L
 
         private const val PROGRESS_NETWORK_CHECKED = 12
@@ -106,10 +67,6 @@ class SplashActivity : AppCompatActivity() {
         }, SPLASH_MIN_DURATION_MS)
     }
 
-    // ============================================================
-    //  CEK JARINGAN
-    // ============================================================
-
     private fun isNetworkAvailable(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
@@ -117,18 +74,6 @@ class SplashActivity : AppCompatActivity() {
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
-    /**
-     * Pantau perubahan jaringan secara real-time. Kalau jaringan hilang di
-     * tengah proses, batalkan percobaan yang sedang berjalan (naikkan
-     * loadingGeneration) supaya callback lama yang mungkin masih menggantung
-     * tidak lagi dianggap valid, lalu tampilkan peringatan. Begitu jaringan
-     * kembali tersedia, mulai percobaan baru dari awal secara otomatis --
-     * ini yang memperbaiki splash yang dulu "stuck" walau jaringan sudah
-     * kembali normal.
-     */
-    /**
-     * Pantau perubahan jaringan secara real-time.
-     */
     private fun registerNetworkMonitor() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -136,12 +81,12 @@ class SplashActivity : AppCompatActivity() {
 
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                // Saat ada jaringan terhubung, cek apakah jaringan tersebut valid/bisa akses internet
+
                 checkAndResumeLoading()
             }
 
             override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                // Dipanggil saat status internet terverifikasi (VALIDATED)
+
                 checkAndResumeLoading()
             }
 
@@ -149,7 +94,7 @@ class SplashActivity : AppCompatActivity() {
                 runOnUiThread {
                     if (!isNetworkAvailable()) {
                         isWaitingForNetwork = true
-                        loadingGeneration++ // Batalkan percobaan yang sedang berjalan
+                        loadingGeneration++
                         showNetworkWarning()
                     }
                 }
@@ -160,7 +105,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun checkAndResumeLoading() {
         runOnUiThread {
-            // Jika jaringan benar-benar valid dan kita sedang belum bernavigasi/sedang menunggu
+
             if (isNetworkAvailable() && !alreadyNavigated) {
                 if (isWaitingForNetwork || pendingDestination == null) {
                     isWaitingForNetwork = false
@@ -182,7 +127,6 @@ class SplashActivity : AppCompatActivity() {
             .setInterpolator(DecelerateInterpolator())
             .start()
 
-        // Ikon jaringan berdenyut pelan (pulse) selama menunggu koneksi kembali
         binding.networkWarningIcon.animate()
             .alpha(0.4f)
             .setDuration(700L)
@@ -212,10 +156,6 @@ class SplashActivity : AppCompatActivity() {
             .start()
     }
 
-    // ============================================================
-    //  PROSES LOADING (progress 0% -> 100%)
-    // ============================================================
-
     private fun beginLoadingProcess() {
         if (!isNetworkAvailable()) {
             isWaitingForNetwork = true
@@ -227,15 +167,10 @@ class SplashActivity : AppCompatActivity() {
 
         val myGeneration = ++loadingGeneration
 
-        // Tahap 1: jaringan terdeteksi tersedia
         animateProgressTo(PROGRESS_NETWORK_CHECKED, 260L)
 
         resolveDestination(myGeneration)
 
-        // Jaring pengaman: kalau setelah beberapa detik percobaan ini masih
-        // berjalan (belum ada tujuan & belum diganti oleh percobaan baru),
-        // anggap koneksi bermasalah (misalnya request menggantung) dan
-        // tampilkan peringatan supaya splash tidak diam selamanya.
         binding.root.postDelayed({
             if (myGeneration == loadingGeneration && pendingDestination == null) {
                 isWaitingForNetwork = true
@@ -244,23 +179,9 @@ class SplashActivity : AppCompatActivity() {
         }, NETWORK_STALL_TIMEOUT_MS)
     }
 
-    /**
-     * Menentukan activity tujuan berikutnya, PERSIS logika yang sebelumnya
-     * ada di LoginActivity.routeNext() -- kalau user belum pernah login,
-     * tujuannya LoginActivity seperti biasa. Kalau user sudah login, proses
-     * fetch profil dijalankan di sini supaya transisinya langsung ke halaman
-     * akhir tanpa loading tambahan lagi, dan progress bar mengikuti setiap
-     * tahap proses jaringan yang sesungguhnya.
-     *
-     * [myGeneration] adalah nomor percobaan saat fungsi ini dipanggil --
-     * dipakai untuk memastikan hasil callback Firebase di bawah hanya
-     * diproses kalau ini masih percobaan yang aktif (belum dibatalkan oleh
-     * putusnya jaringan di tengah jalan).
-     */
     private fun resolveDestination(myGeneration: Int) {
         val currentUser = auth.currentUser
 
-        // Tahap 2: status login sudah diketahui
         animateProgressTo(PROGRESS_AUTH_CHECKED, 260L)
 
         if (currentUser == null) {
@@ -271,9 +192,7 @@ class SplashActivity : AppCompatActivity() {
         }
 
         com.familyguard.sync.FamilyLink.fetchUserProfile(this) { found ->
-            // Kalau percobaan ini sudah dibatalkan (jaringan sempat putus di
-            // tengah proses fetch), abaikan hasilnya -- percobaan baru sudah
-            // atau akan berjalan sendiri lewat beginLoadingProcess().
+
             if (myGeneration != loadingGeneration) return@fetchUserProfile
 
             if (!isNetworkAvailable()) {
@@ -283,11 +202,9 @@ class SplashActivity : AppCompatActivity() {
                 return@fetchUserProfile
             }
 
-            // Tahap 3: data profil selesai diambil dari server
             animateProgressTo(PROGRESS_PROFILE_FETCHED, 320L)
 
             val role = AppLockPrefs.getRole(this)
-            val code = AppLockPrefs.getFamilyCode(this)
             val name = AppLockPrefs.getUserName(this)
 
             if (!found && name.isNullOrBlank()) {
@@ -302,13 +219,10 @@ class SplashActivity : AppCompatActivity() {
             val target = when {
                 name.isNullOrBlank() -> NameInputActivity::class.java
                 role.isNullOrBlank() -> RoleSelectionActivity::class.java
-                code.isNullOrBlank() && role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
-                code.isNullOrBlank() -> FamilyCodeActivity::class.java
                 role == AppLockPrefs.ROLE_PARENT -> DashboardActivity::class.java
-                else -> ChildHomeActivity::class.java
+                else -> ChildMenuActivity::class.java
             }
 
-            // Tahap 4: finalisasi, siap berpindah halaman
             animateProgressTo(PROGRESS_DONE, 220L)
 
             pendingDestination = { goTo(target) }
@@ -316,13 +230,6 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Animasikan progress bar dari nilai saat ini menuju [target] secara
-     * smooth, lalu update juga teks persentasenya. Dipanggil setiap satu
-     * tahap proses nyata selesai, jadi kecepatan pengisian bar merefleksikan
-     * kecepatan proses jaringan yang sesungguhnya, bukan sekadar hitungan
-     * mundur waktu tetap.
-     */
     private fun animateProgressTo(target: Int, durationMs: Long) {
         if (target <= currentProgress) return
         progressAnimator?.cancel()
@@ -340,12 +247,6 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Baru benar-benar pindah activity kalau DUA syarat sudah terpenuhi:
-     * animasi minimum sudah selesai diputar, DAN tujuan berikutnya sudah
-     * ditentukan (progress sudah mencapai 100%). Kalau salah satu belum
-     * siap, cukup menunggu -- animasi logo tetap looping smooth di layar.
-     */
     private fun tryNavigate() {
         if (alreadyNavigated) return
         if (!minDurationElapsed) return
@@ -354,19 +255,14 @@ class SplashActivity : AppCompatActivity() {
         destination.invoke()
     }
 
-    // ============================================================
-    //  ANIMASI LOGO
-    // ============================================================
-
     private fun playEntranceAnimation() {
-        // Glow fade-in halus di belakang logo
+
         binding.glowCircle.animate()
             .alpha(1f)
             .setDuration(700L)
             .setInterpolator(DecelerateInterpolator())
             .start()
 
-        // Logo: scale up dari 0.4 -> 1 dengan overshoot ringan + fade-in + rotasi kecil
         val logoScaleX = ObjectAnimator.ofFloat(binding.logoImage, "scaleX", 0.4f, 1f)
         val logoScaleY = ObjectAnimator.ofFloat(binding.logoImage, "scaleY", 0.4f, 1f)
         val logoAlpha = ObjectAnimator.ofFloat(binding.logoImage, "alpha", 0f, 1f)
@@ -378,7 +274,6 @@ class SplashActivity : AppCompatActivity() {
             interpolator = OvershootInterpolator(1.1f)
         }
 
-        // Teks nama app & tagline menyusul dengan stagger, fade + slide-up
         val nameAlpha = ObjectAnimator.ofFloat(binding.appNameText, "alpha", 0f, 1f)
         val nameSlide = ObjectAnimator.ofFloat(binding.appNameText, "translationY", 24f, 0f)
         val nameSet = AnimatorSet().apply {
@@ -397,7 +292,6 @@ class SplashActivity : AppCompatActivity() {
             startDelay = 750L
         }
 
-        // Progress container menyusul paling akhir
         val progressAlphaSet = ObjectAnimator.ofFloat(binding.progressContainer, "alpha", 0f, 1f).apply {
             duration = 500L
             interpolator = DecelerateInterpolator()
@@ -409,16 +303,11 @@ class SplashActivity : AppCompatActivity() {
         taglineSet.start()
         progressAlphaSet.start()
 
-        // Logo "mengambang" naik-turun terus-menerus supaya splash terasa hidup,
-        // dimulai setelah entrance animation logo selesai.
         binding.logoImage.postDelayed({ startFloatingLoop() }, logoEntrance.duration)
     }
 
     private fun startFloatingLoop() {
-        // Loop ini berjalan terus (INFINITE) selama splash tampil, termasuk
-        // kalau proses cek akun di background ternyata butuh waktu lebih
-        // lama dari SPLASH_MIN_DURATION_MS -- animasi tidak akan terlihat
-        // berhenti/macet sambil menunggu.
+
         floatingAnimator = ValueAnimator.ofFloat(0f, -16f, 0f).apply {
             duration = 2000L
             repeatCount = ValueAnimator.INFINITE
@@ -429,7 +318,6 @@ class SplashActivity : AppCompatActivity() {
             start()
         }
 
-        // Glow ikut "bernapas" (scale halus) mengikuti irama logo
         ValueAnimator.ofFloat(1f, 1.14f, 1f).apply {
             duration = 2000L
             repeatCount = ValueAnimator.INFINITE
@@ -447,7 +335,6 @@ class SplashActivity : AppCompatActivity() {
         floatingAnimator?.cancel()
         progressAnimator?.cancel()
 
-        // Fade-out seluruh konten splash sebelum pindah activity, biar transisinya smooth
         binding.root.animate()
             .alpha(0f)
             .setDuration(320L)
@@ -468,7 +355,7 @@ class SplashActivity : AppCompatActivity() {
             try {
                 connectivityManager.unregisterNetworkCallback(it)
             } catch (e: IllegalArgumentException) {
-                // Callback sudah tidak terdaftar, aman diabaikan
+
             }
         }
     }

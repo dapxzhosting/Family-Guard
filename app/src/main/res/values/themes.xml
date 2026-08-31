@@ -51,5 +51,14 @@
     <style name="LockScreen.HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">#B39DFF</item>
+    </style>    <!-- Theme netral tanpa font skynight, dipakai untuk layar yang butuh tampilan font standar -->
+    <style name="Theme.FamilyGuard.Plain" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#1A237E</item>
+        <item name="colorPrimaryVariant">#0D47A1</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#00695C</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="android:statusBarColor">#1A237E</item>
     </style>
+
 </resources>

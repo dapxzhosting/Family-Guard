@@ -29,11 +29,6 @@ class AppListAdapter(
             val context = binding.root.context
             val pm = context.packageManager
 
-            // Urutan prioritas:
-            // 1. app.icon -> kalau list ini dari device lokal (mis. halaman anak sendiri)
-            // 2. app.iconBase64 -> hasil sync dari HP anak lewat Firebase (dashboard ortu)
-            // 3. coba PackageManager lokal (buat app yg kebetulan juga ada di HP ini)
-            // 4. default ic_family
             val icon = app.icon
                 ?: app.iconBase64?.let {
                     com.familyguard.utils.InstalledAppsHelper.base64ToDrawable(context, it)
@@ -48,7 +43,6 @@ class AppListAdapter(
             binding.tvAppName.text = app.appName
             binding.tvPackageName.text = app.packageName
 
-            // Mencegah listener terpicu saat bind
             binding.switchLock.setOnCheckedChangeListener(null)
             binding.switchNotif.setOnCheckedChangeListener(null)
 

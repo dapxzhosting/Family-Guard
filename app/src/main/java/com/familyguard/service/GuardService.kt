@@ -12,10 +12,6 @@ import androidx.core.app.NotificationCompat
 import com.familyguard.R
 import com.familyguard.ui.MainActivity
 
-/**
- * Foreground Service agar FamilyGuard tetap berjalan di background.
- * Tanpa ini, Android dapat mematikan proses saat tidak aktif.
- */
 import com.familyguard.sync.FamilyLink
 import com.familyguard.ui.LockScreenActivity
 import com.familyguard.utils.AppLockPrefs
@@ -31,20 +27,10 @@ class GuardService : Service() {
         super.onCreate()
         startForeground(NOTIF_ID, buildNotification())
 
-        // FIX: pasang listener SCREEN_ON/USER_PRESENT selama GuardService hidup,
-        // supaya begitu layar dinyalakan lagi (habis dimatiin sebentar lewat
-        // tombol power), LockScreenActivity (mode DEVICE_LOCK) langsung muncul
-        // lagi otomatis kalau memang statusnya sedang locked. Sebelumnya lock
-        // screen cuma dimunculkan sekali waktu service ini pertama dibuat,
-        // jadi begitu layar off/on, anak langsung nyampe ke homescreen tanpa PIN.
         screenStateReceiver = com.familyguard.receiver.ScreenStateReceiver.register(this)
 
-        // Registrasi ulang device setiap kali service start (bukan cuma sekali pas
-        // pairing) supaya status "online" & onDisconnect handler selalu ter-arm dengan
-        // koneksi Firebase yang aktif saat ini. Lihat catatan di FamilyLink.sendHeartbeat().
         FamilyLink.registerDevice(this)
 
-        // Start listening for remote commands globally
         FamilyLink.startListening(this, isGlobal = true) { title, message ->
             showGlobalMessage(title, message)
         }
@@ -53,25 +39,9 @@ class GuardService : Service() {
             showDeviceLockScreen()
         }
 
-        // FIX: "tinggal hapus/swipe jendela LockScreen dari recents malah bisa
-        // kebuka". Sebelumnya LockScreenActivity cuma relaunch dirinya sendiri
-        // lewat onPause()/onUserLeaveHint() -- tapi kalau task-nya di-remove
-        // paksa dari recents (swipe di overview, atau "close" di multi-window),
-        // activity langsung ke onDestroy dan TIDAK ADA yang munculin lagi
-        // (proses relaunch dari dalam activity yang sedang dihancurkan sendiri
-        // gampang gagal/ke-cancel bareng task-nya).
-        //
-        // Makanya pengecekan "apakah lock screen masih tampil" dipindah ke SINI,
-        // di GuardService yang berjalan independen (foreground service, task
-        // terpisah dari LockScreenActivity) -- polling ketat tiap 1 detik selama
-        // status masih locked, dan langsung relaunch begitu terdeteksi hilang,
-        // dari LUAR activity itu sendiri, jadi tidak ikut mati kalau task-nya
-        // di-swipe/dihapus.
         startLockWatchdog()
         startPeriodicLocationUpdates()
 
-        // Re-arm watchdog setiap kali service ini hidup (baik start normal
-        // maupun di-restart otomatis oleh watchdog itu sendiri).
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
     }
 
@@ -79,15 +49,8 @@ class GuardService : Service() {
         LockScreenActivity.requestDeviceLock(this)
     }
 
-    /**
-     * Polling ketat dari dalam Service (bukan dari Activity) yang memastikan
-     * LockScreenActivity SELALU tampil selama AppLockPrefs.isDeviceLocked==true.
-     * Dicek tiap 1 detik -- cukup rapat supaya celah waktu anak bisa pakai HP
-     * setelah swipe/hapus jendela lock screen dari recents jadi sangat singkat,
-     * tapi tidak terlalu rapat untuk baterai/CPU.
-     */
     private fun startLockWatchdog() {
-        // Hindari dobel loop kalau onCreate ke-trigger lagi tanpa onDestroy dulu
+
         lockWatchRunnable?.let { lockWatchHandler.removeCallbacks(it) }
 
         val runnable = object : Runnable {
@@ -108,7 +71,7 @@ class GuardService : Service() {
             override fun run() {
                 LocationHelper.updateCurrentLocation(this@GuardService)
                 FamilyLink.sendHeartbeat(this@GuardService)
-                handler.postDelayed(this, 60_000) // Update setiap 1 menit
+                handler.postDelayed(this, 60_000)
             }
         }
         handler.post(runnable)
@@ -134,7 +97,7 @@ class GuardService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY // Restart otomatis jika dimatikan sistem
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

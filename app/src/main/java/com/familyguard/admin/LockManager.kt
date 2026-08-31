@@ -14,10 +14,6 @@ class LockManager(private val context: Context) {
     val isAdminActive: Boolean
         get() = dpm.isAdminActive(adminComponent)
 
-    /**
-     * Kunci layar HP secara langsung menggunakan Device Admin.
-     * Membutuhkan Device Admin aktif.
-     */
     fun lockScreen(): Result<Unit> {
         return try {
             if (!isAdminActive) {
@@ -33,18 +29,12 @@ class LockManager(private val context: Context) {
         }
     }
 
-    /**
-     * Set password minimum requirement (opsional)
-     */
     fun setPasswordMinLength(length: Int) {
         if (isAdminActive) {
             dpm.setPasswordMinimumLength(adminComponent, length)
         }
     }
 
-    /**
-     * Request aktifkan Device Admin
-     */
     fun getActivationIntent(): android.content.Intent {
         return android.content.Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
