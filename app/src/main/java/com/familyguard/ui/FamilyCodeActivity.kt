@@ -15,6 +15,10 @@ import kotlin.random.Random
 
 class FamilyCodeActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_IS_CHANGE_FAMILY = "extra_is_change_family"
+    }
+
     private lateinit var binding: ActivityFamilyCodeBinding
     private var generatedCode: String = ""
 
@@ -66,6 +70,18 @@ class FamilyCodeActivity : AppCompatActivity() {
         binding.cardParent.visibility = View.GONE
         binding.cardChild.visibility = View.VISIBLE
 
+        if (intent.getBooleanExtra(EXTRA_IS_CHANGE_FAMILY, false)) {
+            binding.btnBackToDashboardChild.visibility = View.VISIBLE
+            binding.btnBackToDashboardChild.setOnClickListener {
+                startActivity(
+                    Intent(this, ChildHomeActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                )
+                finish()
+            }
+        }
+
         binding.etFamilyCode.addTextChangedListener(FamilyCodeTextWatcher(binding.etFamilyCode))
 
         binding.btnConnect.setOnClickListener {
@@ -81,6 +97,16 @@ class FamilyCodeActivity : AppCompatActivity() {
     }
 
     private fun saveCodeAndContinue(code: String) {
+        if (intent.getBooleanExtra(EXTRA_IS_CHANGE_FAMILY, false)) {
+            com.familyguard.utils.AccountActions.leaveCurrentFamily(this) {
+                commitNewFamilyCode(code)
+            }
+        } else {
+            commitNewFamilyCode(code)
+        }
+    }
+
+    private fun commitNewFamilyCode(code: String) {
         AppLockPrefs.saveFamilyCode(this, code)
         FamilyLink.registerDevice(this)
         FamilyLink.saveUserProfile(this)

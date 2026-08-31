@@ -34,35 +34,44 @@ object AccountActions {
             .show()
     }
 
+    /**
+     * Melepas keanggotaan dari keluarga saat ini di Firebase & local prefs.
+     * Dipanggil setelah kode keluarga baru berhasil divalidasi, supaya
+     * pengguna tidak berakhir di kondisi "tanpa keluarga" kalau proses
+     * ganti keluarga dibatalkan di tengah jalan.
+     */
+    fun leaveCurrentFamily(activity: Activity, onDone: () -> Unit) {
+        FamilyLink.removeDeviceFromCurrentFamily(activity) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                    .child("users").child(uid).child("familyCode").removeValue()
+                    .addOnCompleteListener {
+                        AppLockPrefs.saveFamilyCode(activity, "")
+                        AppLockPrefs.saveFamilyName(activity, "")
+                        AppLockPrefs.setDeviceLocked(activity, false)
+                        onDone()
+                    }
+            } else {
+                AppLockPrefs.saveFamilyCode(activity, "")
+                AppLockPrefs.saveFamilyName(activity, "")
+                onDone()
+            }
+        }
+    }
+
     fun changeFamily(activity: Activity) {
         val role = AppLockPrefs.getRole(activity)
         AlertDialog.Builder(activity)
             .setTitle("Ganti Keluarga?")
             .setMessage(
-                "Perangkat ini akan keluar dari keluarga saat ini dan bisa " +
-                        "gabung atau buat keluarga baru. Role kamu (${roleLabel(role)}) " +
-                        "tidak berubah."
+                "Kamu akan diminta memasukkan kode keluarga baru. " +
+                        "Keanggotaan di keluarga saat ini baru akan dilepas " +
+                        "setelah kode baru berhasil dimasukkan. Role kamu " +
+                        "(${roleLabel(role)}) tidak berubah."
             )
             .setPositiveButton("Lanjut") { _, _ ->
-                Toast.makeText(activity, "Keluar dari keluarga saat ini...", Toast.LENGTH_SHORT).show()
-                FamilyLink.removeDeviceFromCurrentFamily(activity) {
-
-                    val uid = FirebaseAuth.getInstance().currentUser?.uid
-                    if (uid != null) {
-                        com.google.firebase.database.FirebaseDatabase.getInstance().reference
-                            .child("users").child(uid).child("familyCode").removeValue()
-                            .addOnCompleteListener {
-                                AppLockPrefs.saveFamilyCode(activity, "")
-                                AppLockPrefs.saveFamilyName(activity, "")
-                                AppLockPrefs.setDeviceLocked(activity, false)
-                                goToFamilyEntry(activity, role)
-                            }
-                    } else {
-                        AppLockPrefs.saveFamilyCode(activity, "")
-                        AppLockPrefs.saveFamilyName(activity, "")
-                        goToFamilyEntry(activity, role)
-                    }
-                }
+                goToFamilyEntry(activity, role)
             }
             .setNegativeButton("Batal", null)
             .show()
@@ -145,7 +154,9 @@ object AccountActions {
         } else {
             com.familyguard.ui.FamilyCodeActivity::class.java
         }
-        val intent = Intent(activity, target)
+        val intent = Intent(activity, target).apply {
+            putExtra(com.familyguard.ui.FamilyCodeActivity.EXTRA_IS_CHANGE_FAMILY, true)
+        }
         activity.startActivity(intent)
         activity.finish()
     }
