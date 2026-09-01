@@ -19,6 +19,7 @@ object AppLockPrefs {
     private const val KEY_LAST_UNLOCKED_TIME = "last_unlocked_time"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_FAMILY_NAME = "family_name"
+    private const val KEY_LAST_PIN_PREFIX = "last_set_pin_"
 
     const val ROLE_PARENT = "PARENT"
     const val ROLE_CHILD = "CHILD"
@@ -76,6 +77,20 @@ object AppLockPrefs {
     fun savePin(context: Context, pin: String) {
         prefs(context).edit().putString(KEY_DEVICE_PIN, pin).apply()
     }
+
+    /**
+     * Pengingat PIN lokal di sisi ORANG TUA saja (bukan disimpan ke Firebase).
+     * Sebelumnya PIN anak disimpan plaintext di RTDB (families/{code}/devices/{id}/currentPin)
+     * supaya orang tua bisa lihat "PIN saat ini" -- itu bahaya karena siapa pun yang
+     * baca database bisa lihat PIN anak. Sekarang cukup diingat di HP orang tua sendiri,
+     * key-nya per targetDeviceId supaya bisa multi-anak.
+     */
+    fun saveLastSetPinForChild(context: Context, targetDeviceId: String, pin: String) {
+        prefs(context).edit().putString(KEY_LAST_PIN_PREFIX + targetDeviceId, pin).apply()
+    }
+
+    fun getLastSetPinForChild(context: Context, targetDeviceId: String): String? =
+        prefs(context).getString(KEY_LAST_PIN_PREFIX + targetDeviceId, null)
 
     fun getPin(context: Context): String? =
         prefs(context).getString(KEY_DEVICE_PIN, null)

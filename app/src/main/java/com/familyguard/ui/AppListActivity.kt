@@ -186,18 +186,11 @@ class AppListActivity : AppCompatActivity() {
 
     private fun showSetPinDialog() {
         val target = deviceId ?: return
-        val code = AppLockPrefs.getFamilyCode(this) ?: return
-
-        FirebaseDatabase.getInstance().reference
-            .child("families").child(code).child("devices").child(target).child("currentPin")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val currentPin = snapshot.getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                showSetPinDialogInternal(target, currentPin)
-            }
-            .addOnFailureListener {
-                showSetPinDialogInternal(target, null)
-            }
+        // PIN tidak lagi disimpan di Firebase (plaintext = risiko keamanan).
+        // Pengingat "PIN saat ini" sekarang diambil dari penyimpanan lokal
+        // di HP orang tua sendiri (hanya ada di device ini, tidak pernah dikirim ke server).
+        val currentPin = AppLockPrefs.getLastSetPinForChild(this, target)
+        showSetPinDialogInternal(target, currentPin)
     }
 
     private fun showSetPinDialogInternal(target: String, currentPin: String?) {
@@ -220,6 +213,7 @@ class AppListActivity : AppCompatActivity() {
                 val pin = input.text.toString().trim()
                 if (pin.length == 4) {
                     FamilyLink.sendSetPin(this, pin, target)
+                    AppLockPrefs.saveLastSetPinForChild(this, target, pin)
                     toast("Perintah atur PIN dikirim")
                 } else {
                     toast("PIN harus 4 digit!")
