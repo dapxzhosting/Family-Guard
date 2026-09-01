@@ -129,6 +129,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         memberAdapter = FamilyMemberAdapter(
             myDeviceId = AppLockPrefs.getDeviceId(this),
             selectedDeviceId = selectedChildId,
+            isParentView = true,
             onMemberClick = { member ->
                 when {
                     member.role != AppLockPrefs.ROLE_CHILD -> toast("Orang Tua tidak bisa dikontrol")
@@ -138,6 +139,20 @@ class ParentDashboardActivity : AppCompatActivity() {
                         memberAdapter.setSelectedDeviceId(member.deviceId)
                     }
                 }
+            },
+            onKickClick = { member ->
+                val displayName = member.userName?.takeIf { it.isNotBlank() }
+                    ?: if (member.role == AppLockPrefs.ROLE_PARENT) "Orang Tua ini" else "Anak ini"
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Keluarkan dari keluarga?")
+                    .setMessage("$displayName akan dikeluarkan dari keluarga dan kehilangan akses ke dashboard. Anggota ini bisa gabung lagi nanti kalau punya kode keluarga.")
+                    .setPositiveButton("Keluarkan") { _, _ ->
+                        FamilyLink.kickDevice(this, member.deviceId) {
+                            toast("${displayName} telah dikeluarkan dari keluarga")
+                        }
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
             }
         )
         binding.rvFamilyMembers.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)

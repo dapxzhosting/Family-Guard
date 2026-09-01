@@ -121,6 +121,69 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
+    /**
+     * Dipanggil dari sisi ORANG TUA untuk mengeluarkan satu anggota
+     * keluarga (biasanya anak) tanpa menghapus keluarganya secara
+     * keseluruhan. Cukup hapus node families/{code}/devices/{targetDeviceId}
+     * -- anggota lain tetap ada, hanya device ini yang tercabut.
+     */
+    fun kickDevice(context: Context, targetDeviceId: String, onComplete: (() -> Unit)? = null) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete?.invoke()
+            return
+        }
+        deviceRef(code, targetDeviceId).removeValue()
+            .addOnCompleteListener { onComplete?.invoke() }
+    }
+
+    private var kickListenerRef: DatabaseReference? = null
+    private var kickListener: ValueEventListener? = null
+
+    /**
+     * Dipantau dari sisi ANAK. Kalau node device milik HP ini
+     * (families/{code}/devices/{myDeviceId}) tiba-tiba hilang padahal
+     * keluarganya sendiri masih ada, berarti orang tua baru saja
+     * mengeluarkan (kick) device ini secara spesifik -- beda dengan kasus
+     * keluarga dihapus total (itu ditangani listenFamilyDeletion()).
+     */
+    fun listenForKick(context: Context, onKicked: () -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) return
+        val myDeviceId = AppLockPrefs.getDeviceId(context)
+
+        stopListeningForKick()
+
+        val ref = deviceRef(code, myDeviceId)
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    familyRef(code).get().addOnSuccessListener { familySnap ->
+                        if (familySnap.exists()) {
+                            onKicked()
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "listenForKick cancelled: ${error.message}")
+            }
+        }
+        kickListenerRef = ref
+        kickListener = listener
+        ref.addValueEventListener(listener)
+    }
+
+    fun stopListeningForKick() {
+        val ref = kickListenerRef
+        val listener = kickListener
+        if (ref != null && listener != null) {
+            ref.removeEventListener(listener)
+        }
+        kickListenerRef = null
+        kickListener = null
+    }
+
     fun clearRemoteRoleAndFamily(context: Context, onComplete: (() -> Unit)? = null) {
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {

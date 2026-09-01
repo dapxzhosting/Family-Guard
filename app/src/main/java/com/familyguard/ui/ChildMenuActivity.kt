@@ -27,6 +27,15 @@ class ChildMenuActivity : AppCompatActivity() {
         FamilyLink.listenFamilyDeletion(this) {
             AppLockPrefs.saveFamilyCode(this, "")
             AppLockPrefs.saveFamilyName(this, "")
+            binding.tvFamilyNoticeText.text = "Keluarga telah dihapus oleh orang tua. Silakan gabung ke keluarga lain."
+            binding.tvFamilyDeletedNotice.visibility = View.VISIBLE
+            updateFamilyStatus()
+        }
+
+        FamilyLink.listenForKick(this) {
+            AppLockPrefs.saveFamilyCode(this, "")
+            AppLockPrefs.saveFamilyName(this, "")
+            binding.tvFamilyNoticeText.text = "Kamu telah dikeluarkan dari keluarga oleh orang tua."
             binding.tvFamilyDeletedNotice.visibility = View.VISIBLE
             updateFamilyStatus()
         }
@@ -83,6 +92,7 @@ class ChildMenuActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListeningFamilyDeletion()
+        FamilyLink.stopListeningForKick()
     }
 
     private fun updateFamilyStatus() {

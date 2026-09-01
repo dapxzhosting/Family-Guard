@@ -11,7 +11,11 @@ class FamilyMemberAdapter(
     private var members: List<FamilyDevice> = emptyList(),
     private val myDeviceId: String? = null,
     private var selectedDeviceId: String? = null,
-    private val onMemberClick: ((FamilyDevice) -> Unit)? = null
+    private val onMemberClick: ((FamilyDevice) -> Unit)? = null,
+    // true kalau adapter ini dipakai di layar Dashboard Orang Tua --
+    // hanya di situ tombol "keluarkan anggota" boleh muncul.
+    private val isParentView: Boolean = false,
+    private val onKickClick: ((FamilyDevice) -> Unit)? = null
 ) : RecyclerView.Adapter<FamilyMemberAdapter.ViewHolder>() {
 
     class ViewHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {
@@ -19,6 +23,7 @@ class FamilyMemberAdapter(
         val name: android.widget.TextView = view.findViewById(R.id.tvMemberName)
         val role: android.widget.TextView = view.findViewById(R.id.tvMemberRole)
         val dot: android.view.View = view.findViewById(R.id.dotMemberOnline)
+        val btnKick: android.widget.ImageButton = view.findViewById(R.id.btnKickMember)
     }
 
     fun submitList(newMembers: List<FamilyDevice>) {
@@ -74,6 +79,18 @@ class FamilyMemberAdapter(
         if (onMemberClick != null) {
             holder.itemView.isClickable = true
             holder.itemView.setOnClickListener { onMemberClick.invoke(member) }
+        }
+
+        // Tombol "keluarkan anggota" cuma muncul di Dashboard Orang Tua,
+        // dan tidak boleh muncul di baris diri sendiri (tidak bisa
+        // mengeluarkan diri sendiri lewat sini).
+        val canKick = isParentView && onKickClick != null && member.deviceId != myDeviceId
+        if (canKick) {
+            holder.btnKick.visibility = android.view.View.VISIBLE
+            holder.btnKick.setOnClickListener { onKickClick.invoke(member) }
+        } else {
+            holder.btnKick.visibility = android.view.View.GONE
+            holder.btnKick.setOnClickListener(null)
         }
     }
 
