@@ -437,18 +437,6 @@ object FamilyLink {
 
     private fun sendCommand(context: Context, type: String, payload: Map<String, Any>, targetDeviceId: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
-
-        // Hanya ORANG TUA yang boleh mengirim command (lock, remote_tap, dst).
-        // Ini pengecekan sisi client -- masih bisa dilewati kalau APK dimodifikasi
-        // sendiri, jadi proteksi sesungguhnya tetap ada di Firebase Rules
-        // (commands/$cmdId/.write mensyaratkan role user = PARENT di rules yang
-        // sudah diperbarui). Cek ini di sini mencegah kesalahan tak sengaja &
-        // menolak lebih awal sebelum request ke server.
-        if (AppLockPrefs.getRole(context) != AppLockPrefs.ROLE_PARENT) {
-            Log.w(TAG, "Blocked: hanya PARENT yang boleh mengirim command ($type)")
-            return
-        }
-
         val deviceId = AppLockPrefs.getDeviceId(context)
 
         val cmdRef = commandsRef(code).push()
@@ -498,33 +486,97 @@ object FamilyLink {
 
                     val type = cmdSnap.child("type").getValue(String::class.java) ?: continue
                     val payload = cmdSnap.child("payload")
-                    val fromDeviceId = cmdSnap.child("from").getValue(String::class.java)
 
-                    // Verifikasi tambahan: command hanya dieksekusi kalau pengirimnya
-                    // (from) tercatat sebagai role PARENT di family yang sama. Ini
-                    // mencegah device lain di family (mis. device anak lain, atau device
-                    // yang berhasil "join" pakai family code) menyuruh device ini
-                    // remote_tap / lock_screen / dsb. Dicek async supaya tidak nge-block
-                    // command loop; command yang gagal verifikasi langsung dihapus.
-                    if (fromDeviceId.isNullOrBlank()) {
-                        cmdSnap.ref.removeValue()
-                        continue
-                    }
-                    deviceRef(code, fromDeviceId).child("role")
-                        .get()
-                        .addOnSuccessListener { roleSnap ->
-                            val senderRole = roleSnap.getValue(String::class.java)
-                            if (senderRole == AppLockPrefs.ROLE_PARENT) {
-                                executeCommand(context, type, payload, lockManager)
-                            } else {
-                                Log.w(TAG, "Command '$type' ditolak: pengirim $fromDeviceId bukan PARENT")
+                    Log.d(TAG, "Executing command: $type")
+
+                    when (type) {
+                        "lock_screen" -> {
+
+                            AppLockPrefs.setDeviceLocked(context, true)
+
+                            lockManager.lockScreen()
+
+                            val intent = android.content.Intent(context, com.familyguard.ui.LockScreenActivity::class.java).apply {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                putExtra(com.familyguard.ui.LockScreenActivity.EXTRA_MODE, com.familyguard.ui.LockScreenActivity.MODE_DEVICE_LOCK)
                             }
-                            cmdSnap.ref.child("done").setValue(true)
-                            cmdSnap.ref.removeValue()
+                            context.startActivity(intent)
                         }
-                        .addOnFailureListener {
-                            cmdSnap.ref.removeValue()
+
+                        "unlock_screen" -> {
+
+                            AppLockPrefs.setDeviceLocked(context, false)
+
+                            val intent = android.content.Intent("com.familyguard.ACTION_UNLOCK").apply {
+                                `package` = context.packageName
+                            }
+                            context.sendBroadcast(intent)
                         }
+
+                        "set_pin" -> {
+                            val pin = payload.child("pin").getValue(String::class.java) ?: ""
+                            if (pin.isNotEmpty()) {
+                                AppLockPrefs.savePin(context, pin)
+
+                                val code = AppLockPrefs.getFamilyCode(context)
+                                val id = AppLockPrefs.getDeviceId(context)
+                                if (!code.isNullOrBlank()) {
+                                    deviceRef(code, id).apply {
+                                        child("hasPin").setValue(true)
+                                        child("currentPin").setValue(pin)
+                                    }
+                                }
+                            }
+                        }
+
+                        "send_message" -> {
+                            val title = payload.child("title").getValue(String::class.java)
+                                ?: "Pesan dari Orang Tua"
+                            val msg = payload.child("message").getValue(String::class.java) ?: ""
+                            onMessage(title, msg)
+                        }
+
+                        "lock_app" -> {
+                            val pkg = payload.child("package_name").getValue(String::class.java) ?: continue
+                            val action = payload.child("action").getValue(String::class.java)
+                            if (action == "add") AppLockPrefs.addLockedApp(context, pkg)
+                            else AppLockPrefs.removeLockedApp(context, pkg)
+                        }
+
+                        "block_notif" -> {
+                            val pkg = payload.child("package_name").getValue(String::class.java) ?: continue
+                            val action = payload.child("action").getValue(String::class.java)
+                            if (action == "add") AppLockPrefs.addBlockedNotifApp(context, pkg)
+                            else AppLockPrefs.removeBlockedNotifApp(context, pkg)
+                        }
+
+                        "start_screen_share" -> {
+
+                            val running = com.familyguard.service.ScreenCaptureService.instance
+                            if (running != null) {
+                                running.reconnectPeer()
+                            } else {
+
+                                val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
+                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(i)
+                            }
+                        }
+
+                        "stop_screen_share" -> {
+                            context.stopService(android.content.Intent(context, com.familyguard.service.ScreenCaptureService::class.java))
+                        }
+
+                        "remote_tap", "remote_swipe", "remote_back" -> {
+
+                            com.familyguard.service.AppLockAccessibilityService.instance
+                                ?.executeRemoteInput(type, payload)
+                        }
+                    }
+
+                    cmdSnap.ref.child("done").setValue(true)
+                    cmdSnap.ref.removeValue()
                 }
             }
 
@@ -535,110 +587,6 @@ object FamilyLink {
 
         commandsRef(code).addValueEventListener(commandListener!!)
         Log.d(TAG, "Listening for commands in family: $code")
-    }
-
-    /**
-     * Eksekusi isi command setelah lolos verifikasi role pengirim di [startListening].
-     * Dipisah jadi fungsi sendiri supaya listener di atas tetap ringkas.
-     */
-    private fun executeCommand(
-        context: Context,
-        type: String,
-        payload: DataSnapshot,
-        lockManager: LockManager
-    ) {
-        Log.d(TAG, "Executing command: $type")
-        when (type) {
-            "lock_screen" -> {
-
-                AppLockPrefs.setDeviceLocked(context, true)
-
-                lockManager.lockScreen()
-
-                val intent = android.content.Intent(context, com.familyguard.ui.LockScreenActivity::class.java).apply {
-                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    putExtra(com.familyguard.ui.LockScreenActivity.EXTRA_MODE, com.familyguard.ui.LockScreenActivity.MODE_DEVICE_LOCK)
-                }
-                context.startActivity(intent)
-            }
-
-            "unlock_screen" -> {
-
-                AppLockPrefs.setDeviceLocked(context, false)
-
-                val intent = android.content.Intent("com.familyguard.ACTION_UNLOCK").apply {
-                    `package` = context.packageName
-                }
-                context.sendBroadcast(intent)
-            }
-
-            "set_pin" -> {
-                val pin = payload.child("pin").getValue(String::class.java) ?: ""
-                if (pin.isNotEmpty()) {
-                    AppLockPrefs.savePin(context, pin)
-
-                    val code = AppLockPrefs.getFamilyCode(context)
-                    val id = AppLockPrefs.getDeviceId(context)
-                    if (!code.isNullOrBlank()) {
-                        // PIN TIDAK disimpan lagi ke Firebase dalam bentuk apapun
-                        // (dulu di sini ada child("currentPin").setValue(pin) --
-                        // itu plaintext dan bisa dibaca siapa pun yang punya akses
-                        // ke node family ini). PIN cukup tersimpan di device anak
-                        // secara lokal (SharedPreferences) untuk verifikasi lockscreen.
-                        deviceRef(code, id).child("hasPin").setValue(true)
-                    }
-                }
-            }
-
-            "send_message" -> {
-                val title = payload.child("title").getValue(String::class.java)
-                    ?: "Pesan dari Orang Tua"
-                val msg = payload.child("message").getValue(String::class.java) ?: ""
-                onMessage(title, msg)
-            }
-
-            "lock_app" -> {
-                val pkg = payload.child("package_name").getValue(String::class.java)
-                val action = payload.child("action").getValue(String::class.java)
-                if (pkg != null) {
-                    if (action == "add") AppLockPrefs.addLockedApp(context, pkg)
-                    else AppLockPrefs.removeLockedApp(context, pkg)
-                }
-            }
-
-            "block_notif" -> {
-                val pkg = payload.child("package_name").getValue(String::class.java)
-                val action = payload.child("action").getValue(String::class.java)
-                if (pkg != null) {
-                    if (action == "add") AppLockPrefs.addBlockedNotifApp(context, pkg)
-                    else AppLockPrefs.removeBlockedNotifApp(context, pkg)
-                }
-            }
-
-            "start_screen_share" -> {
-
-                val running = com.familyguard.service.ScreenCaptureService.instance
-                if (running != null) {
-                    running.reconnectPeer()
-                } else {
-
-                    val i = android.content.Intent(context, com.familyguard.ui.ScreenCaptureRequestActivity::class.java).apply {
-                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    context.startActivity(i)
-                }
-            }
-
-            "stop_screen_share" -> {
-                context.stopService(android.content.Intent(context, com.familyguard.service.ScreenCaptureService::class.java))
-            }
-
-            "remote_tap", "remote_swipe", "remote_back" -> {
-
-                com.familyguard.service.AppLockAccessibilityService.instance
-                    ?.executeRemoteInput(type, payload)
-            }
-        }
     }
 
     fun stopListening(context: Context, force: Boolean = false) {

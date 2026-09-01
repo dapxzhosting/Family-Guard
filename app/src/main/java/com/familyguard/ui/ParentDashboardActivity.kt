@@ -278,10 +278,7 @@ class ParentDashboardActivity : AppCompatActivity() {
     }
 
     private fun showSetPinDialog() {
-        // PIN tidak lagi disimpan di Firebase -- ambil pengingat dari
-        // penyimpanan lokal HP orang tua (lihat AppLockPrefs.getLastSetPinForChild).
-        val target = requireSelectedChildId()
-        val currentPin = target?.let { AppLockPrefs.getLastSetPinForChild(this, it) }
+        val currentPin = childDevices.firstOrNull { it.deviceId == selectedChildId }?.currentPin
 
         val input = android.widget.EditText(this).apply {
             hint = "Masukkan 4 digit PIN baru"
@@ -300,9 +297,9 @@ class ParentDashboardActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Simpan") { _, _ ->
                 val pin = input.text.toString().trim()
+                val target = requireSelectedChildId()
                 if (pin.length == 4 && target != null) {
                     FamilyLink.sendSetPin(this, pin, target)
-                    AppLockPrefs.saveLastSetPinForChild(this, target, pin)
                     toast("Perintah atur PIN dikirim")
                 } else if (pin.length != 4) {
                     toast("PIN harus 4 digit!")
