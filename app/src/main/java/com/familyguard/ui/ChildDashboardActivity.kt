@@ -24,7 +24,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.view.View
-import com.familyguard.admin.DeviceAdminReceiver
+import com.familyguard.admin.FamilyDeviceAdminReceiver
 import com.familyguard.service.AppLockAccessibilityService
 import com.familyguard.service.GuardService
 
@@ -220,7 +220,7 @@ class ChildDashboardActivity : AppCompatActivity() {
     private fun setupStatusButtons() {
         binding.btnActivateAdmin.setOnClickListener {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, DeviceAdminReceiver.getComponentName(this@ChildDashboardActivity))
+                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, FamilyDeviceAdminReceiver.getComponentName(this@ChildDashboardActivity))
                 putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Dibutuhkan untuk mengunci perangkat dari jauh.")
             }
             startActivity(intent)
@@ -258,7 +258,7 @@ class ChildDashboardActivity : AppCompatActivity() {
     private fun updateStatusIcons() {
 
         val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val isAdminActive = dpm.isAdminActive(DeviceAdminReceiver.getComponentName(this))
+        val isAdminActive = dpm.isAdminActive(FamilyDeviceAdminReceiver.getComponentName(this))
         setStatus(binding.statusAdmin, binding.btnActivateAdmin, isAdminActive)
 
         val isAccessibilityActive = isAccessibilityServiceEnabled()

@@ -9,7 +9,7 @@ class LockManager(private val context: Context) {
 
     private val dpm: DevicePolicyManager =
         context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    private val adminComponent: ComponentName = DeviceAdminReceiver.getComponentName(context)
+    private val adminComponent: ComponentName = FamilyDeviceAdminReceiver.getComponentName(context)
 
     val isAdminActive: Boolean
         get() = dpm.isAdminActive(adminComponent)
