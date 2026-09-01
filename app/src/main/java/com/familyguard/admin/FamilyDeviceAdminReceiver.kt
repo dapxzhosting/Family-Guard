@@ -1,11 +1,12 @@
 package com.familyguard.admin
 
 import android.app.admin.DeviceAdminReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 
-class DeviceAdminReceiver : DeviceAdminReceiver() {
+class FamilyDeviceAdminReceiver : DeviceAdminReceiver() {
 
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
@@ -18,7 +19,8 @@ class DeviceAdminReceiver : DeviceAdminReceiver() {
     }
 
     companion object {
-        fun getComponentName(context: Context) =
-            android.content.ComponentName(context, DeviceAdminReceiver::class.java)
+        fun getComponentName(context: Context): ComponentName {
+            return ComponentName(context, FamilyDeviceAdminReceiver::class.java)
+        }
     }
 }

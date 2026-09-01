@@ -4,7 +4,7 @@
     android:id="@+id/rootScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A237E"
+    android:background="#00695C"
     android:clipToPadding="false"
     android:fillViewport="true">
 

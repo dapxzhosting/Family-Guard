@@ -21,6 +21,11 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_CHILD) {
+            binding.settingsHeader.setBackgroundColor(android.graphics.Color.parseColor("#00695C"))
+            window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+        }
+
         refreshName()
         binding.tvSettingsEmail.text =
             FirebaseAuth.getInstance().currentUser?.email?.takeIf { it.isNotBlank() } ?: "-"

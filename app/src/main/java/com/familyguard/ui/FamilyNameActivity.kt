@@ -20,6 +20,7 @@ class FamilyNameActivity : AppCompatActivity() {
 
         binding = ActivityFamilyNameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.btnFamilyNameBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         binding.btnContinue.setOnClickListener {
             val name = binding.etFamilyName.text.toString().trim()

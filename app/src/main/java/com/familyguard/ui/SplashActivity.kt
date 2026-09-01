@@ -16,6 +16,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.R
 import com.familyguard.databinding.ActivitySplashBinding
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
@@ -57,6 +58,8 @@ class SplashActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+        applyRoleTheme()
+
         playEntranceAnimation()
         registerNetworkMonitor()
         beginLoadingProcess()
@@ -65,6 +68,24 @@ class SplashActivity : AppCompatActivity() {
             minDurationElapsed = true
             tryNavigate()
         }, SPLASH_MIN_DURATION_MS)
+    }
+
+    /**
+     * Kalau HP ini sudah pernah pilih role "Anak" sebelumnya (tersimpan lokal,
+     * tidak perlu nunggu network), splash pakai gradient & status bar hijau
+     * senada dengan dashboard/menu anak. Kalau belum login / belum pilih role
+     * / role-nya orang tua, tetap pakai biru default dari tema.
+     */
+    private fun applyRoleTheme() {
+        val role = AppLockPrefs.getRole(this)
+        if (role == AppLockPrefs.ROLE_CHILD) {
+            window.setBackgroundDrawableResource(R.drawable.bg_splash_gradient_green)
+            binding.root.setBackgroundResource(R.drawable.bg_splash_gradient_green)
+            binding.glowCircle.setBackgroundResource(R.drawable.bg_splash_logo_glow_green)
+            binding.appTagline.setTextColor(android.graphics.Color.parseColor("#B9EFE6"))
+            binding.progressPercentText.setTextColor(android.graphics.Color.parseColor("#CFF3EC"))
+            window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+        }
     }
 
     private fun isNetworkAvailable(): Boolean {

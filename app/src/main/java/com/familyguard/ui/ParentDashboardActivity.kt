@@ -65,6 +65,7 @@ class ParentDashboardActivity : AppCompatActivity() {
 
         binding = ActivityParentDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.btnParentDashboardBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = formatCode(code)

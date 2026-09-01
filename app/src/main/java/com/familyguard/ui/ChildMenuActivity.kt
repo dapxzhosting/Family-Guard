@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.R
 import com.familyguard.databinding.ActivityChildMenuBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AccountActions
@@ -19,6 +20,7 @@ class ChildMenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChildMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.statusBarColor = android.graphics.Color.parseColor("#00695C")
 
         updateFamilyStatus()
 
@@ -35,6 +37,12 @@ class ChildMenuActivity : AppCompatActivity() {
             } else {
                 startActivity(Intent(this, ChildDashboardActivity::class.java))
             }
+        }
+
+        binding.btnMenuSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.slide_up_in, R.anim.stay_dim)
         }
 
         binding.btnMenuChangeFamily.setOnClickListener {

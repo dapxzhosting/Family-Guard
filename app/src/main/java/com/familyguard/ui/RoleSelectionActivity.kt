@@ -34,6 +34,7 @@ class RoleSelectionActivity : AppCompatActivity() {
 
         binding = ActivityRoleSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.btnRoleSelectionBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         binding.btnRoleParent.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_PARENT)

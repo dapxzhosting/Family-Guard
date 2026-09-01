@@ -80,6 +80,8 @@ class ChildDashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChildDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+        binding.btnChildDashboardBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"
         binding.tvFamilyCode.text = "Kode keluarga: ${formatCode(code)}"

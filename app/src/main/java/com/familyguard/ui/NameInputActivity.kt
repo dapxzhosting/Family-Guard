@@ -17,6 +17,7 @@ class NameInputActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNameInputBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.btnNameInputBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         FirebaseAuth.getInstance().currentUser?.displayName?.let {
             binding.etName.setText(it)

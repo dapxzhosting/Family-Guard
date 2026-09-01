@@ -23,7 +23,22 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#1A237E">
+                android:background="#00695C">
+
+                <ImageView
+                    android:id="@+id/btnChildDashboardBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="start|top"
+                    android:layout_margin="8dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:rotation="180"
+                    android:contentDescription="Kembali"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="#FFFFFF" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -60,7 +75,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Kode: ---"
-                        android:textColor="#90CAF9"
+                        android:textColor="#B2DFDB"
                         android:fontFamily="sans-serif"/>
 
                     <TextView
