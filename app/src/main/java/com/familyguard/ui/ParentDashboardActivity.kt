@@ -31,6 +31,7 @@ class ParentDashboardActivity : AppCompatActivity() {
     private var childDevices: List<FamilyDevice> = emptyList()
     private var selectedChildId: String? = null
     private var appListListener: ValueEventListener? = null
+    private var childLeftNoticeListener: ValueEventListener? = null
 
     private fun requireSelectedChildId(): String? {
         if (selectedChildId == null) {
@@ -77,6 +78,28 @@ class ParentDashboardActivity : AppCompatActivity() {
         setupButtons()
         setupMap()
         observeConnectedDevices()
+        observeChildLeftNotice()
+    }
+
+    /**
+     * Dengarkan notice "anak keluar dari keluarga" (families/{code}/childLeftNotice)
+     * dan tampilkan banner peringatan di atas dashboard. Banner tetap
+     * tampil sampai Orang Tua menutupnya manual (btnDismissChildLeftNotice)
+     * -- ini penting karena begitu anak keluar, device-nya sudah tercabut
+     * dari daftar anggota, jadi banner ini satu-satunya jejak yang tersisa.
+     */
+    private fun observeChildLeftNotice() {
+        childLeftNoticeListener = FamilyLink.observeChildLeftNotice(this) { userName, _ ->
+            if (userName != null) {
+                binding.tvChildLeftNotice.text = "$userName telah keluar dari keluarga"
+                binding.cardChildLeftNotice.visibility = android.view.View.VISIBLE
+            } else {
+                binding.cardChildLeftNotice.visibility = android.view.View.GONE
+            }
+        }
+        binding.btnDismissChildLeftNotice.setOnClickListener {
+            FamilyLink.dismissChildLeftNotice(this)
+        }
     }
 
     private fun setupFamilyNameHeader(code: String) {
@@ -569,5 +592,6 @@ class ParentDashboardActivity : AppCompatActivity() {
                     .removeEventListener(listener)
             }
         }
+        childLeftNoticeListener?.let { FamilyLink.removeChildLeftNoticeListener(this, it) }
     }
 }

@@ -122,6 +122,71 @@ object FamilyLink {
     }
 
     /**
+     * Dipanggil dari sisi ANAK saat memilih "Keluar dari Keluarga" (beda
+     * dengan Ganti Keluarga -- di sini anak TIDAK langsung join keluarga
+     * lain). Ditulis SEBELUM device node dihapus (lihat
+     * removeDeviceFromCurrentFamily / AccountActions.leaveFamily) karena
+     * begitu device node hilang, nama anak sudah tidak bisa diambil lagi.
+     * Disimpan di families/{code}/childLeftNotice (bukan di node devices) supaya
+     * tetap ada walau device-nya sudah tercabut, dan dibaca realtime oleh
+     * ParentDashboardActivity untuk nampilin banner peringatan.
+     */
+    fun notifyChildLeftFamily(context: Context, onComplete: (() -> Unit)? = null) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete?.invoke()
+            return
+        }
+        val userName = AppLockPrefs.getUserName(context)?.takeIf { it.isNotBlank() }
+        familyRef(code).child("childLeftNotice").setValue(
+            mapOf(
+                "userName" to (userName ?: "Anak"),
+                "timestamp" to System.currentTimeMillis()
+            )
+        ).addOnCompleteListener { onComplete?.invoke() }
+    }
+
+    /**
+     * Dengarkan notice "anak keluar dari keluarga" secara realtime di sisi
+     * Orang Tua. onChange dipanggil dengan null kalau notice-nya sudah
+     * di-dismiss/dihapus (lihat dismissChildLeftNotice).
+     */
+    fun observeChildLeftNotice(
+        context: Context,
+        onChange: (userName: String?, timestamp: Long) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    onChange(null, 0L)
+                    return
+                }
+                val userName = snapshot.child("userName").getValue(String::class.java)
+                val timestamp = snapshot.child("timestamp").getValue(Long::class.java) ?: 0L
+                onChange(userName, timestamp)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "childLeftNotice observer cancelled: ${error.message}")
+            }
+        }
+        familyRef(code).child("childLeftNotice").addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeChildLeftNoticeListener(context: Context, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        familyRef(code).child("childLeftNotice").removeEventListener(listener)
+    }
+
+    /** Dipanggil saat Orang Tua menutup (dismiss) banner notice di dashboard. */
+    fun dismissChildLeftNotice(context: Context) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        familyRef(code).child("childLeftNotice").removeValue()
+    }
+
+    /**
      * Dipanggil dari sisi ORANG TUA untuk mengeluarkan satu anggota
      * keluarga (biasanya anak) tanpa menghapus keluarganya secara
      * keseluruhan. Cukup hapus node families/{code}/devices/{targetDeviceId}

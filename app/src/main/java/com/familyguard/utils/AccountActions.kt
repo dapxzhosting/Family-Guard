@@ -77,6 +77,35 @@ object AccountActions {
             .show()
     }
 
+    /**
+     * Khusus role Anak: keluar dari keluarga saat ini TANPA langsung join
+     * keluarga lain (beda dengan changeFamily). Sebelum device node
+     * dihapus, kirim dulu notice ke families/{code}/childLeftNotice supaya
+     * Orang Tua tetap tahu anaknya keluar walau device-nya sudah tercabut
+     * dari daftar anggota.
+     */
+    fun leaveFamily(activity: Activity, onDone: () -> Unit) {
+        AlertDialog.Builder(activity)
+            .setTitle("Keluar dari Keluarga?")
+            .setMessage(
+                "Kamu akan keluar dari keluarga saat ini. Orang tua akan " +
+                        "diberi tahu bahwa kamu sudah keluar. Kamu tetap " +
+                        "berperan sebagai Anak dan bisa gabung ke keluarga " +
+                        "lain kapan saja lewat kode keluarga."
+            )
+            .setPositiveButton("Keluar") { _, _ ->
+                Toast.makeText(activity, "Keluar dari keluarga...", Toast.LENGTH_SHORT).show()
+                FamilyLink.notifyChildLeftFamily(activity) {
+                    leaveCurrentFamily(activity) {
+                        Toast.makeText(activity, "Kamu telah keluar dari keluarga", Toast.LENGTH_SHORT).show()
+                        onDone()
+                    }
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
     fun logout(activity: Activity) {
         AlertDialog.Builder(activity)
             .setTitle("Keluar Akun?")

@@ -65,6 +65,12 @@ class ChildMenuActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnMenuLeaveFamily.setOnClickListener {
+            AccountActions.leaveFamily(this) {
+                updateFamilyStatus()
+            }
+        }
+
         binding.btnPrivacyPolicy.setOnClickListener {
             val intent = Intent(this, PrivacyPolicyActivity::class.java).apply {
                 putExtra(PrivacyPolicyActivity.EXTRA_IS_FROM_SETTINGS, true)
@@ -101,6 +107,7 @@ class ChildMenuActivity : AppCompatActivity() {
         val hasFamily = !code.isNullOrBlank()
 
         binding.btnMenuDashboard.visibility = if (hasFamily) View.VISIBLE else View.GONE
+        binding.btnMenuLeaveFamily.visibility = if (hasFamily) View.VISIBLE else View.GONE
 
         if (hasFamily) {
             binding.tvFamilyDeletedNotice.visibility = View.GONE

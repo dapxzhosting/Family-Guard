@@ -90,10 +90,6 @@ class ChildDashboardActivity : AppCompatActivity() {
 
         setupFamilyMembersList()
 
-        binding.btnOpenChildMenu.setOnClickListener {
-            startActivity(Intent(this, ChildMenuActivity::class.java))
-        }
-
         FamilyLink.listenFamilyDeletion(this) {
             AppLockPrefs.saveFamilyCode(this, "")
             AppLockPrefs.saveFamilyName(this, "")

@@ -76,7 +76,7 @@ class FamilyCodeActivity : AppCompatActivity() {
             binding.btnBackToDashboardChild.visibility = View.VISIBLE
             binding.btnBackToDashboardChild.setOnClickListener {
                 startActivity(
-                    Intent(this, ChildDashboardActivity::class.java).apply {
+                    Intent(this, ChildMenuActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     }
                 )
