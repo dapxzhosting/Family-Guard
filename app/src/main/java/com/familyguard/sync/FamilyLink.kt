@@ -575,7 +575,7 @@ object FamilyLink {
     private var commandListener: ValueEventListener? = null
     private var isGlobalListener = false
 
-    fun startListening(context: Context, isGlobal: Boolean = false, onMessage: (title: String, body: String) -> Unit) {
+    fun startListening(context: Context, isGlobal: Boolean = false, onMessage: (title: String, body: String, fromDeviceId: String) -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context) ?: run {
             Log.w(TAG, "No family code — not listening")
             return
@@ -649,7 +649,8 @@ object FamilyLink {
                             val title = payload.child("title").getValue(String::class.java)
                                 ?: "Pesan dari Orang Tua"
                             val msg = payload.child("message").getValue(String::class.java) ?: ""
-                            onMessage(title, msg)
+                            val fromDeviceId = cmdSnap.child("from").getValue(String::class.java) ?: ""
+                            onMessage(title, msg, fromDeviceId)
                         }
 
                         "lock_app" -> {

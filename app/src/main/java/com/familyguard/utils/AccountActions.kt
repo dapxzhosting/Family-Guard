@@ -23,6 +23,7 @@ object AccountActions {
             )
             .setPositiveButton("Reset") { _, _ ->
                 Toast.makeText(activity, "Mereset role...", Toast.LENGTH_SHORT).show()
+                FamilyLink.stopListeningForKick()
                 FamilyLink.removeDeviceFromCurrentFamily(activity) {
                     FamilyLink.clearRemoteRoleAndFamily(activity) {
                         AppLockPrefs.clearRoleAndFamily(activity)
@@ -41,6 +42,14 @@ object AccountActions {
      * ganti keluarga dibatalkan di tengah jalan.
      */
     fun leaveCurrentFamily(activity: Activity, onDone: () -> Unit) {
+        // Matikan dulu listener "kick" SEBELUM device node kita sendiri
+        // dihapus -- listenForKick() cuma lihat "device node ini hilang
+        // sementara keluarga masih ada" tanpa tahu SIAPA yang menghapusnya,
+        // jadi kalau tidak dimatikan dulu, penghapusan yang kita lakukan
+        // sendiri (leave/ganti keluarga) akan salah terdeteksi sebagai
+        // "dikeluarkan oleh orang tua".
+        FamilyLink.stopListeningForKick()
+
         FamilyLink.removeDeviceFromCurrentFamily(activity) {
             val uid = FirebaseAuth.getInstance().currentUser?.uid
             if (uid != null) {

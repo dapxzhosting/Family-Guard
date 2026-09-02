@@ -98,7 +98,7 @@ class ChildDashboardActivity : AppCompatActivity() {
             finish()
         }
 
-        FamilyLink.startListening(this) { title, message ->
+        FamilyLink.startListening(this) { title, message, _ ->
             showMessageNotification(title, message)
 
         }

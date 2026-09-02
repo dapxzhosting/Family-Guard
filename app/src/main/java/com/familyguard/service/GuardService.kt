@@ -31,8 +31,8 @@ class GuardService : Service() {
 
         FamilyLink.registerDevice(this)
 
-        FamilyLink.startListening(this, isGlobal = true) { title, message ->
-            showGlobalMessage(title, message)
+        FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
+            showGlobalMessage(title, message, fromDeviceId)
         }
 
         if (AppLockPrefs.isDeviceLocked(this)) {
@@ -77,12 +77,13 @@ class GuardService : Service() {
         handler.post(runnable)
     }
 
-    private fun showGlobalMessage(title: String, message: String) {
+    private fun showGlobalMessage(title: String, message: String, fromDeviceId: String) {
         val intent = Intent(this, LockScreenActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra(LockScreenActivity.EXTRA_MODE, LockScreenActivity.MODE_MESSAGE)
             putExtra(LockScreenActivity.EXTRA_MESSAGE_TITLE, title)
             putExtra(LockScreenActivity.EXTRA_MESSAGE_BODY, message)
+            putExtra(LockScreenActivity.EXTRA_MESSAGE_FROM, fromDeviceId)
         }
         startActivity(intent)
     }

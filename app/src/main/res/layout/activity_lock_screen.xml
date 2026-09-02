@@ -125,6 +125,26 @@
 
         </FrameLayout>
 
+        <!-- Box balas pesan -- HANYA dipakai saat MODE_MESSAGE. Ditaruh di
+             posisi yang sama dengan pinInputArea (salah satu GONE, satunya
+             VISIBLE) supaya layout tidak dobel kosong. -->
+        <EditText
+            android:id="@+id/etReplyMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/pin_box_background"
+            android:gravity="top|start"
+            android:hint="Tulis balasan..."
+            android:textColorHint="#78909C"
+            android:inputType="textMultiLine|textCapSentences"
+            android:minLines="3"
+            android:maxLines="5"
+            android:padding="14dp"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/btnUnlock"
             android:layout_width="match_parent"
@@ -138,6 +158,22 @@
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"
+            app:cornerRadius="14dp" />
+
+        <Button
+            android:id="@+id/btnSendReply"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#00695C"
+            android:elevation="2dp"
+            android:letterSpacing="0.02"
+            android:text="Kirim Balasan"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
             app:cornerRadius="14dp" />
 
         <Button

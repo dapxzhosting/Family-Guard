@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.Toast
 import com.familyguard.databinding.ActivityLockScreenBinding
+import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 
 class LockScreenActivity : Activity() {
@@ -12,6 +13,7 @@ class LockScreenActivity : Activity() {
     private lateinit var binding: ActivityLockScreenBinding
     private var lockedPackage: String? = null
     private var mode: String = MODE_APP_LOCK
+    private var messageFromDeviceId: String = ""
 
     private val unlockReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
@@ -77,11 +79,19 @@ class LockScreenActivity : Activity() {
             MODE_MESSAGE -> {
                 val title = intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "Pesan"
                 val body = intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: ""
+                messageFromDeviceId = intent.getStringExtra(EXTRA_MESSAGE_FROM) ?: ""
                 binding.tvTitle.text = "Pesan: $title"
                 binding.tvSubtitle.text = body
                 binding.btnUnlock.text = "Tutup Pesan"
                 binding.pinInputArea.visibility = android.view.View.GONE
+                binding.btnGoHome.visibility = android.view.View.GONE
                 binding.btnUnlock.setOnClickListener { finish() }
+
+                if (messageFromDeviceId.isNotBlank()) {
+                    binding.etReplyMessage.visibility = android.view.View.VISIBLE
+                    binding.btnSendReply.visibility = android.view.View.VISIBLE
+                    binding.btnSendReply.setOnClickListener { sendReply() }
+                }
             }
             else -> {
                 if (pin == null) {
@@ -198,6 +208,33 @@ class LockScreenActivity : Activity() {
         intent.addCategory(android.content.Intent.CATEGORY_HOME)
         intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
+    }
+
+    /**
+     * Kirim balasan ke pengirim pesan asli (messageFromDeviceId, diambil
+     * dari field "from" command send_message -- lihat FamilyLink) memakai
+     * mekanisme send_message yang sama, cuma arahnya kebalik. Bisa dipakai
+     * dari kedua sisi (Anak membalas Orang Tua, atau sebaliknya) karena
+     * LockScreenActivity mode MESSAGE ini generik untuk keduanya.
+     */
+    private fun sendReply() {
+        val text = binding.etReplyMessage.text?.toString()?.trim() ?: ""
+        if (text.isEmpty()) {
+            Toast.makeText(this, "Tulis balasan dulu", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (messageFromDeviceId.isBlank()) {
+            finish()
+            return
+        }
+
+        val myRole = AppLockPrefs.getRole(this)
+        val myName = AppLockPrefs.getUserName(this)?.takeIf { it.isNotBlank() }
+        val senderLabel = myName ?: if (myRole == AppLockPrefs.ROLE_PARENT) "Orang Tua" else "Anak"
+
+        FamilyLink.sendMessage(this, "Balasan dari $senderLabel", text, messageFromDeviceId)
+        Toast.makeText(this, "Balasan terkirim", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     private fun setFirstPin() {
@@ -397,6 +434,7 @@ class LockScreenActivity : Activity() {
         const val EXTRA_MODE = "mode"
         const val EXTRA_MESSAGE_TITLE = "msg_title"
         const val EXTRA_MESSAGE_BODY = "msg_body"
+        const val EXTRA_MESSAGE_FROM = "msg_from"
 
         const val MODE_APP_LOCK = "app_lock"
         const val MODE_DEVICE_LOCK = "device_lock"
