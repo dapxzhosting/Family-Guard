@@ -78,6 +78,12 @@ class AppLockAccessibilityService : AccessibilityService() {
 
         if (packageName == "com.familyguard") return
 
+        // Update "sedang dipakai sekarang" secara realtime ke dashboard --
+        // terpisah dari UsageTracker (yang cuma nyatat total menit per
+        // hari) supaya orang tua bisa lihat app apa yang aktif SEKARANG
+        // tanpa nunggu package-nya ditinggalkan dulu.
+        com.familyguard.sync.FamilyLink.updateCurrentApp(this, packageName)
+
         val lockedApps = AppLockPrefs.getLockedApps(this)
         if (lockedApps.contains(packageName)) {
 

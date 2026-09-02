@@ -277,6 +277,57 @@ object FamilyLink {
     }
 
     /**
+     * Update aplikasi yang SEDANG dibuka (realtime) ke
+     * families/{code}/devices/{deviceId}/currentApp -- dipanggil dari
+     * AppLockAccessibilityService.evaluatePackage() setiap foreground app
+     * berganti (bukan numpang di flow menit UsageTracker, supaya update-nya
+     * instan tanpa nunggu threshold 1 menit). Dibaca via listener realtime
+     * oleh ParentDashboardActivity, bukan one-shot get() seperti laporan
+     * mingguan.
+     */
+    fun updateCurrentApp(context: Context, packageName: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).child("currentApp").setValue(
+            mapOf(
+                "packageName" to packageName,
+                "since" to System.currentTimeMillis()
+            )
+        )
+    }
+
+    /**
+     * Dengarkan perubahan currentApp milik [targetDeviceId] secara realtime.
+     * Dipanggil saat orang tua memilih/melihat detail 1 HP anak, dilepas
+     * lewat removeCurrentAppListener() saat pindah anak / activity ditutup.
+     */
+    fun observeCurrentApp(
+        context: Context,
+        targetDeviceId: String,
+        onChange: (packageName: String?, since: Long) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val pkg = snapshot.child("packageName").getValue(String::class.java)
+                val since = snapshot.child("since").getValue(Long::class.java) ?: 0L
+                onChange(pkg, since)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "currentApp observer cancelled: ${error.message}")
+            }
+        }
+        deviceRef(code, targetDeviceId).child("currentApp").addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeCurrentAppListener(context: Context, targetDeviceId: String, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        deviceRef(code, targetDeviceId).child("currentApp").removeEventListener(listener)
+    }
+
+    /**
      * Ambil rekap pemakaian [daysBack] hari terakhir (termasuk hari ini) dari
      * HP anak [targetDeviceId], lalu kembalikan sebagai flat list yang siap
      * dipakai ScreenTimeReportGenerator. Satu-shot read (bukan listener

@@ -420,6 +420,10 @@ class ParentDashboardActivity : AppCompatActivity() {
         updateControlsVisibility()
         updatePermissionWarning()
 
+        binding.tvCurrentAppName.text = "Memuat..."
+        binding.tvCurrentAppSince.text = ""
+        binding.ivCurrentAppIcon.setImageDrawable(null)
+
         val code = AppLockPrefs.getFamilyCode(this) ?: return
         val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
         val deviceRef = db.child("families").child(code).child("devices").child(deviceId)
@@ -449,10 +453,54 @@ class ParentDashboardActivity : AppCompatActivity() {
                 if (appListData.isNotEmpty()) {
                     appAdapter.submitList(appListData)
                 }
+
+                updateCurrentAppUI(node.child("currentApp"), appListData)
             }
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
         }
         deviceRef.addValueEventListener(appListListener!!)
+    }
+
+    /**
+     * Render card "Sedang digunakan sekarang" dari node currentApp
+     * (packageName + since), pakai nameLookup/iconLookup dari appList yang
+     * sudah dimuat di listener yang sama supaya tidak perlu fetch terpisah.
+     */
+    private fun updateCurrentAppUI(
+        currentAppSnap: com.google.firebase.database.DataSnapshot,
+        appListData: List<com.familyguard.model.AppInfo>
+    ) {
+        val pkg = currentAppSnap.child("packageName").getValue(String::class.java)
+        val since = currentAppSnap.child("since").getValue(Long::class.java) ?: 0L
+
+        if (pkg.isNullOrBlank()) {
+            binding.tvCurrentAppName.text = "Tidak ada data"
+            binding.tvCurrentAppSince.text = ""
+            binding.ivCurrentAppIcon.setImageDrawable(null)
+            return
+        }
+
+        val info = appListData.firstOrNull { it.packageName == pkg }
+        binding.tvCurrentAppName.text = info?.appName ?: pkg
+
+        if (since > 0) {
+            binding.tvCurrentAppSince.text = "sejak ${sdf.format(Date(since))}"
+        } else {
+            binding.tvCurrentAppSince.text = ""
+        }
+
+        val iconB64 = info?.iconBase64
+        if (!iconB64.isNullOrBlank()) {
+            try {
+                val bytes = android.util.Base64.decode(iconB64, android.util.Base64.DEFAULT)
+                val bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                binding.ivCurrentAppIcon.setImageBitmap(bmp)
+            } catch (e: Exception) {
+                binding.ivCurrentAppIcon.setImageDrawable(null)
+            }
+        } else {
+            binding.ivCurrentAppIcon.setImageDrawable(null)
+        }
     }
 
     private fun updateDeviceStatusUI(devices: List<FamilyDevice>) {
