@@ -13,7 +13,7 @@ import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import kotlin.random.Random
 
-class FamilyCodeActivity : AppCompatActivity() {
+class FamilyCodeActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_IS_CHANGE_FAMILY = "extra_is_change_family"

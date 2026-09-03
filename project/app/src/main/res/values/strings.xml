@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">FamilyGuard</string>
-    <string name="accessibility_service_label">FamilyGuard App Lock</string>
-    <string name="accessibility_service_description">FamilyGuard menggunakan Accessibility Service untuk mendeteksi pergantian aplikasi dan menampilkan layar kunci PIN pada aplikasi yang diproteksi orang tua.</string>
-</resources>

@@ -24,7 +24,7 @@ import com.familyguard.utils.AppLockPrefs
  * Tombol "Aku Mengerti / Setuju" SELALU ditampilkan, baik dibuka saat
  * onboarding pertama kali maupun dibuka ulang dari menu Pengaturan.
  */
-class PrivacyPolicyActivity : AppCompatActivity() {
+class PrivacyPolicyActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class ParentDashboardActivity : AppCompatActivity() {
+class ParentDashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityParentDashboardBinding
     private var deviceObserver: ValueEventListener? = null
@@ -35,6 +35,9 @@ class ParentDashboardActivity : AppCompatActivity() {
     private var appListListener: ValueEventListener? = null
     private var childLeftNoticeListener: ValueEventListener? = null
     private var inboxListener: ValueEventListener? = null
+    private var approvalRequestsListener: ValueEventListener? = null
+    private var pendingApprovalRequests: List<com.familyguard.sync.FamilyLink.ApprovalRequest> = emptyList()
+    private var seenApprovalRequestIds: MutableSet<String> = mutableSetOf()
 
     private fun requireSelectedChildId(): String? {
         if (selectedChildId == null) {
@@ -83,6 +86,84 @@ class ParentDashboardActivity : AppCompatActivity() {
         observeConnectedDevices()
         observeChildLeftNotice()
         setupInbox()
+        setupApprovalRequests()
+    }
+
+    /**
+     * Fitur Approval & Notifikasi: dengarkan permintaan izin dari anak
+     * (families/{code}/approvalRequests) secara realtime. Selama dashboard
+     * ini terbuka, request baru langsung tampil sebagai card di atas + notif
+     * sistem (app belum punya infrastruktur push server-side, jadi notifikasi
+     * realtime hanya jalan selagi Orang Tua sedang membuka salah satu layar
+     * yang mendengarkan node ini -- sama seperti badge pesan masuk yang
+     * sudah ada).
+     */
+    private fun setupApprovalRequests() {
+        binding.btnApprovalApprove.setOnClickListener {
+            pendingApprovalRequests.firstOrNull()?.let { req ->
+                FamilyLink.respondApprovalRequest(this, req, approve = true)
+                toast("Disetujui — ${req.appName} dibuka ${req.durationMinutes} menit untuk ${req.childName}")
+            }
+        }
+        binding.btnApprovalReject.setOnClickListener {
+            pendingApprovalRequests.firstOrNull()?.let { req ->
+                FamilyLink.respondApprovalRequest(this, req, approve = false)
+                toast("Permintaan ${req.childName} ditolak")
+            }
+        }
+
+        approvalRequestsListener = FamilyLink.observeApprovalRequests(this) { requests ->
+            val pending = requests.filter { it.status == "pending" }
+
+            // Notif sistem cuma untuk request BARU yang belum pernah dilihat
+            // di sesi ini, supaya tidak nge-spam ulang tiap kali node berubah.
+            pending.forEach { req ->
+                if (seenApprovalRequestIds.add(req.id)) {
+                    showApprovalNotification(req)
+                }
+            }
+
+            pendingApprovalRequests = pending
+            if (pending.isEmpty()) {
+                binding.cardApprovalRequest.visibility = android.view.View.GONE
+            } else {
+                val first = pending.first()
+                binding.cardApprovalRequest.visibility = android.view.View.VISIBLE
+                binding.tvApprovalRequestDetail.text =
+                    "${first.childName} minta izin buka \"${first.appName}\" (${first.durationMinutes} menit)"
+                binding.tvApprovalRequestCount.visibility =
+                    if (pending.size > 1) android.view.View.VISIBLE else android.view.View.GONE
+                binding.tvApprovalRequestCount.text = "+${pending.size - 1} lainnya"
+            }
+        }
+    }
+
+    private fun showApprovalNotification(request: com.familyguard.sync.FamilyLink.ApprovalRequest) {
+        val channelId = "family_approval_channel"
+        val nm = getSystemService(android.app.NotificationManager::class.java)
+        val channel = android.app.NotificationChannel(
+            channelId, "Permintaan Izin Anak", android.app.NotificationManager.IMPORTANCE_HIGH
+        ).apply { description = "Notifikasi saat anak minta izin buka aplikasi terkunci" }
+        nm.createNotificationChannel(channel)
+
+        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val pi = android.app.PendingIntent.getActivity(
+            this, request.id.hashCode(), intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notif = androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(com.familyguard.R.drawable.ic_family)
+            .setContentTitle("${request.childName} minta izin")
+            .setContentText("Buka \"${request.appName}\" selama ${request.durationMinutes} menit")
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pi)
+            .build()
+
+        nm.notify(request.id.hashCode(), notif)
     }
 
     /**
@@ -209,6 +290,7 @@ class ParentDashboardActivity : AppCompatActivity() {
         binding.rvFamilyMembers.adapter = memberAdapter
         binding.rvFamilyMembers.isNestedScrollingEnabled = false
         memberSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutMemberSkeleton)
+        memberSkeletonAnimator?.let { registerSkeletonAnimator(it) }
     }
 
     private fun setupAppRecyclerView() {
@@ -621,5 +703,6 @@ class ParentDashboardActivity : AppCompatActivity() {
         }
         childLeftNoticeListener?.let { FamilyLink.removeChildLeftNoticeListener(this, it) }
         inboxListener?.let { FamilyLink.removeMessagesListener(this, AppLockPrefs.getDeviceId(this), it) }
+        approvalRequestsListener?.let { FamilyLink.removeApprovalRequestsListener(this, it) }
     }
 }

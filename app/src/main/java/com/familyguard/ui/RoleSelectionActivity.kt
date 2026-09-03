@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.databinding.ActivityRoleSelectionBinding
 import com.familyguard.utils.AppLockPrefs
 
-class RoleSelectionActivity : AppCompatActivity() {
+class RoleSelectionActivity : BaseActivity() {
 
     private lateinit var binding: ActivityRoleSelectionBinding
 

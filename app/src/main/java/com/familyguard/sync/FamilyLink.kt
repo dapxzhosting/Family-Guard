@@ -320,6 +320,20 @@ object FamilyLink {
     }
 
     /**
+     * Update SATU field deviceAdminActive=false tanpa menimpa status
+     * permission lain -- dipanggil dari FamilyDeviceAdminReceiver.onDisabled
+     * (fitur 4: Approval & Notifikasi / proteksi uninstall) supaya
+     * cardPermissionWarning di ParentDashboardActivity langsung nyala
+     * real-time begitu anak menonaktifkan Device Admin, tanpa perlu
+     * menunggu sinkronisasi penuh dari updateStatusIcons().
+     */
+    fun markDeviceAdminDisabled(context: Context) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val id = AppLockPrefs.getDeviceId(context)
+        deviceRef(code, id).child("deviceAdminActive").setValue(false)
+    }
+
+    /**
      * Firebase RTDB key TIDAK BOLEH mengandung titik (`.`), padahal package
      * name Android selalu pakai titik (mis. "com.whatsapp") -- jadi titiknya
      * diganti koma (karakter yang tidak pernah muncul di package name asli)
@@ -615,6 +629,166 @@ object FamilyLink {
         familyRef(code).child("messages").child(ownDeviceId).child(messageId).removeValue()
     }
 
+    // ================= APPROVAL REQUEST (fitur 4: Approval & Notifikasi) =================
+    //
+    // Alur: Anak kena lock screen app terkunci -> tekan "Minta Izin ke Orang
+    // Tua" -> request ditulis ke families/{code}/approvalRequests/{id} berisi
+    // siapa yang minta + app apa + berapa lama. Orang Tua yang sedang buka
+    // ParentDashboardActivity mendengar node ini secara realtime (selama app
+    // dibuka -- app ini memang belum punya infrastruktur push notification
+    // server-side, jadi konsisten dengan pola notifikasi in-app yang sudah
+    // ada seperti badge pesan masuk) dan bisa Setuju/Tolak dari sana. Anak
+    // mendengarkan balik status request miliknya sendiri lewat
+    // observeApprovalRequestStatus, dan begitu disetujui, AppLockPrefs akan
+    // buka sementara app itu untuk durasi yang diminta.
+
+    data class ApprovalRequest(
+        val id: String,
+        val packageName: String,
+        val appName: String,
+        val childDeviceId: String,
+        val childName: String,
+        val durationMinutes: Int,
+        val status: String, // pending | approved | rejected
+        val timestamp: Long
+    )
+
+    private fun approvalRequestsRef(code: String) = familyRef(code).child("approvalRequests")
+
+    /**
+     * Dipanggil dari sisi ANAK (LockScreenActivity) saat menekan tombol
+     * "Minta Izin ke Orang Tua" pada app yang terkunci.
+     */
+    fun sendApprovalRequest(
+        context: Context,
+        packageName: String,
+        appName: String,
+        durationMinutes: Int,
+        onComplete: (requestId: String?) -> Unit
+    ) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onComplete(null)
+            return
+        }
+        val childDeviceId = AppLockPrefs.getDeviceId(context)
+        val childName = AppLockPrefs.getUserName(context)?.takeIf { it.isNotBlank() } ?: "Anak"
+
+        val ref = approvalRequestsRef(code).push()
+        ref.setValue(
+            mapOf(
+                "packageName" to packageName,
+                "appName" to appName,
+                "childDeviceId" to childDeviceId,
+                "childName" to childName,
+                "durationMinutes" to durationMinutes,
+                "status" to "pending",
+                "timestamp" to System.currentTimeMillis()
+            )
+        ).addOnSuccessListener {
+            onComplete(ref.key)
+        }.addOnFailureListener {
+            Log.e(TAG, "Gagal kirim approval request: ${it.message}")
+            onComplete(null)
+        }
+    }
+
+    /**
+     * Dipanggil dari sisi ORANG TUA (ParentDashboardActivity) -- dengarkan
+     * semua approval request se-keluarga secara realtime, terurut request
+     * terbaru duluan. UI yang memanggil ini sebaiknya filter status=="pending"
+     * kalau cuma mau tampilkan yang masih perlu diputuskan.
+     */
+    fun observeApprovalRequests(
+        context: Context,
+        onChange: (List<ApprovalRequest>) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { child ->
+                    val packageName = child.child("packageName").getValue(String::class.java) ?: return@mapNotNull null
+                    val appName = child.child("appName").getValue(String::class.java) ?: packageName
+                    val childDeviceId = child.child("childDeviceId").getValue(String::class.java) ?: return@mapNotNull null
+                    val childName = child.child("childName").getValue(String::class.java) ?: "Anak"
+                    val durationMinutes = child.child("durationMinutes").getValue(Int::class.java) ?: 15
+                    val status = child.child("status").getValue(String::class.java) ?: "pending"
+                    val timestamp = child.child("timestamp").getValue(Long::class.java) ?: 0L
+                    ApprovalRequest(child.key ?: return@mapNotNull null, packageName, appName, childDeviceId, childName, durationMinutes, status, timestamp)
+                }.sortedByDescending { it.timestamp }
+                onChange(list)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "observeApprovalRequests cancelled: ${error.message}")
+            }
+        }
+        approvalRequestsRef(code).addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeApprovalRequestsListener(context: Context, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        approvalRequestsRef(code).removeEventListener(listener)
+    }
+
+    /**
+     * Dengarkan SATU request milik anak sendiri (dipanggil dari
+     * LockScreenActivity setelah request dikirim) supaya begitu Orang Tua
+     * Setuju/Tolak, anak langsung tahu tanpa perlu polling manual.
+     */
+    fun observeApprovalRequestStatus(
+        context: Context,
+        requestId: String,
+        onStatusChange: (status: String, durationMinutes: Int) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val status = snapshot.child("status").getValue(String::class.java) ?: return
+                val durationMinutes = snapshot.child("durationMinutes").getValue(Int::class.java) ?: 15
+                onStatusChange(status, durationMinutes)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        approvalRequestsRef(code).child(requestId).addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeApprovalRequestStatusListener(context: Context, requestId: String, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        approvalRequestsRef(code).child(requestId).removeEventListener(listener)
+    }
+
+    /**
+     * Dipanggil dari sisi ORANG TUA saat menekan Setuju/Tolak. Kalau
+     * disetujui, otomatis kirim juga perintah buka kunci sementara ke HP
+     * anak (dipakai kalau anak sedang online) -- tapi status di
+     * approvalRequests tetap sumber kebenaran utama karena LockScreenActivity
+     * anak mendengarkannya langsung.
+     */
+    fun respondApprovalRequest(
+        context: Context,
+        request: ApprovalRequest,
+        approve: Boolean
+    ) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        approvalRequestsRef(code).child(request.id).child("status")
+            .setValue(if (approve) "approved" else "rejected")
+
+        if (approve) {
+            sendCommand(
+                context, "temp_unlock_app",
+                mapOf("package_name" to request.packageName, "duration_minutes" to request.durationMinutes),
+                request.childDeviceId
+            )
+        }
+    }
+
+    fun deleteApprovalRequest(context: Context, requestId: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        approvalRequestsRef(code).child(requestId).removeValue()
+    }
+
     fun sendLockApp(context: Context, packageName: String, lock: Boolean, targetDeviceId: String) =
         sendCommand(
             context, "lock_app",
@@ -779,6 +953,17 @@ object FamilyLink {
                             val action = payload.child("action").getValue(String::class.java)
                             if (action == "add") AppLockPrefs.addLockedApp(context, pkg)
                             else AppLockPrefs.removeLockedApp(context, pkg)
+                        }
+
+                        "temp_unlock_app" -> {
+                            // Hasil approval request yang disetujui Orang Tua
+                            // (lihat FamilyLink.respondApprovalRequest) --
+                            // buka app ini sementara tanpa menghapusnya dari
+                            // daftar app terkunci, supaya otomatis terkunci
+                            // lagi begitu durasinya habis.
+                            val pkg = payload.child("package_name").getValue(String::class.java) ?: continue
+                            val durationMinutes = payload.child("duration_minutes").getValue(Int::class.java) ?: 15
+                            AppLockPrefs.setApprovedTemporaryUnlock(context, pkg, durationMinutes)
                         }
 
                         "lock_apps_bulk" -> {

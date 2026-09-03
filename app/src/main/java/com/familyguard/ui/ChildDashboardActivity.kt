@@ -29,7 +29,7 @@ import com.familyguard.admin.FamilyDeviceAdminReceiver
 import com.familyguard.service.AppLockAccessibilityService
 import com.familyguard.service.GuardService
 
-class ChildDashboardActivity : AppCompatActivity() {
+class ChildDashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityChildDashboardBinding
     private lateinit var memberAdapter: FamilyMemberAdapter

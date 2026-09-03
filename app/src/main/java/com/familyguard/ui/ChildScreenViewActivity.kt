@@ -20,7 +20,7 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
 
-class ChildScreenViewActivity : AppCompatActivity() {
+class ChildScreenViewActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_DEVICE_ID = "extra_device_id"

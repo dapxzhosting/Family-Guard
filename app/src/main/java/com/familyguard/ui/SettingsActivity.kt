@@ -12,7 +12,7 @@ import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
 

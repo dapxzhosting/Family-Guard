@@ -11,7 +11,7 @@ import com.familyguard.utils.AccountActions
 import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
 
-class ParentMenuActivity : AppCompatActivity() {
+class ParentMenuActivity : BaseActivity() {
 
     private lateinit var binding: ActivityParentMenuBinding
 

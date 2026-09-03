@@ -27,7 +27,7 @@ import java.util.Locale
  * duluan oleh fitur "Aplikasi HP Anak" (AppListActivity) -- tidak perlu
  * sinkronisasi terpisah khusus laporan ini.
  */
-class ScreenTimeReportActivity : AppCompatActivity() {
+class ScreenTimeReportActivity : BaseActivity() {
 
     private lateinit var binding: ActivityScreenTimeReportBinding
     private val generator = ScreenTimeReportGenerator()

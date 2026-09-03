@@ -9,7 +9,7 @@ import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 
-class NameInputActivity : AppCompatActivity() {
+class NameInputActivity : BaseActivity() {
 
     private lateinit var binding: ActivityNameInputBinding
 

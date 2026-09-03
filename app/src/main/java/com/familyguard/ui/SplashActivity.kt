@@ -21,7 +21,7 @@ import com.familyguard.databinding.ActivitySplashBinding
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySplashBinding
     private lateinit var auth: FirebaseAuth

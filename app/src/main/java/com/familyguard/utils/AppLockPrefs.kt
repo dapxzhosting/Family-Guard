@@ -17,6 +17,8 @@ object AppLockPrefs {
     private const val KEY_DEVICE_LOCKED = "device_locked"
     private const val KEY_LAST_UNLOCKED_PACKAGE = "last_unlocked_pkg"
     private const val KEY_LAST_UNLOCKED_TIME = "last_unlocked_time"
+    private const val KEY_APPROVED_UNLOCK_PACKAGE = "approved_unlock_pkg"
+    private const val KEY_APPROVED_UNLOCK_UNTIL = "approved_unlock_until"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_FAMILY_NAME = "family_name"
 
@@ -140,9 +142,31 @@ object AppLockPrefs {
 
         if (lastPkg == packageName) {
             val elapsed = System.currentTimeMillis() - lastTime
-            return elapsed < 30_000
+            if (elapsed < 30_000) return true
         }
-        return false
+        return isPackageApprovedUnlocked(context, packageName)
+    }
+
+    /**
+     * Buka sementara satu app untuk [durationMinutes] menit setelah Orang
+     * Tua menyetujui approval request (lihat FamilyLink.respondApprovalRequest
+     * dan FamilyFirebaseMessagingService/GuardCommand handler untuk
+     * "temp_unlock_app"). Beda dengan setPackageUnlocked() yang cuma untuk
+     * jeda 30 detik pasca-PIN -- ini bisa berdurasi berjam-jam sesuai yang
+     * disetujui Orang Tua.
+     */
+    fun setApprovedTemporaryUnlock(context: Context, packageName: String, durationMinutes: Int) {
+        val untilMillis = System.currentTimeMillis() + (durationMinutes.coerceAtLeast(1) * 60_000L)
+        prefs(context).edit()
+            .putString(KEY_APPROVED_UNLOCK_PACKAGE, packageName)
+            .putLong(KEY_APPROVED_UNLOCK_UNTIL, untilMillis)
+            .apply()
+    }
+
+    private fun isPackageApprovedUnlocked(context: Context, packageName: String): Boolean {
+        val approvedPkg = prefs(context).getString(KEY_APPROVED_UNLOCK_PACKAGE, null)
+        val until = prefs(context).getLong(KEY_APPROVED_UNLOCK_UNTIL, 0L)
+        return approvedPkg == packageName && System.currentTimeMillis() < until
     }
 
     fun saveUserName(context: Context, name: String) {

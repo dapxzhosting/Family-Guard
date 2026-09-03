@@ -14,6 +14,8 @@ class LockScreenActivity : Activity() {
     private var lockedPackage: String? = null
     private var mode: String = MODE_APP_LOCK
     private var messageFromDeviceId: String = ""
+    private var pendingApprovalRequestId: String? = null
+    private var approvalStatusListener: com.google.firebase.database.ValueEventListener? = null
 
     private val unlockReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
@@ -125,6 +127,11 @@ class LockScreenActivity : Activity() {
                     binding.tvSubtitle.text = "Masukkan PIN orang tua untuk membuka"
 
                     binding.btnUnlock.visibility = android.view.View.GONE
+
+                    if (mode == MODE_APP_LOCK && lockedPackage != null) {
+                        binding.btnRequestApproval.visibility = android.view.View.VISIBLE
+                        binding.btnRequestApproval.setOnClickListener { requestApproval() }
+                    }
                 }
             }
         }
@@ -259,6 +266,56 @@ class LockScreenActivity : Activity() {
         FamilyLink.sendMessage(this, "Balasan dari $senderLabel", text, messageFromDeviceId)
         Toast.makeText(this, "Balasan terkirim", Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    /**
+     * Kirim approval request ke Orang Tua (families/{code}/approvalRequests)
+     * lalu dengarkan balik statusnya secara realtime -- kalau disetujui,
+     * app langsung dibuka (durasi bukanya ditentukan oleh
+     * AppLockPrefs.setApprovedTemporaryUnlock lewat command temp_unlock_app
+     * yang dikirim FamilyLink.respondApprovalRequest).
+     */
+    private fun requestApproval() {
+        val pkg = lockedPackage ?: return
+        val appName = try {
+            val pm = packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+        } catch (e: Exception) {
+            pkg
+        }
+
+        binding.btnRequestApproval.isEnabled = false
+        binding.btnRequestApproval.text = "Mengirim permintaan..."
+
+        FamilyLink.sendApprovalRequest(this, pkg, appName, REQUEST_DURATION_MINUTES) { requestId ->
+            if (requestId == null) {
+                Toast.makeText(this, "Gagal mengirim permintaan, coba lagi", Toast.LENGTH_SHORT).show()
+                binding.btnRequestApproval.isEnabled = true
+                binding.btnRequestApproval.text = "Minta Izin ke Orang Tua"
+                return@sendApprovalRequest
+            }
+
+            pendingApprovalRequestId = requestId
+            binding.btnRequestApproval.text = "Menunggu persetujuan..."
+            binding.tvApprovalStatus.visibility = android.view.View.VISIBLE
+            binding.tvApprovalStatus.text = "Permintaan terkirim ke Orang Tua, mohon tunggu ($REQUEST_DURATION_MINUTES menit jika disetujui)"
+
+            approvalStatusListener = FamilyLink.observeApprovalRequestStatus(this, requestId) { status, durationMinutes ->
+                when (status) {
+                    "approved" -> {
+                        AppLockPrefs.setApprovedTemporaryUnlock(this, pkg, durationMinutes)
+                        Toast.makeText(this, "Disetujui! Aplikasi dibuka $durationMinutes menit", Toast.LENGTH_LONG).show()
+                        FamilyLink.deleteApprovalRequest(this, requestId)
+                        finish()
+                    }
+                    "rejected" -> {
+                        binding.tvApprovalStatus.text = "Permintaan ditolak oleh Orang Tua"
+                        binding.btnRequestApproval.visibility = android.view.View.GONE
+                        FamilyLink.deleteApprovalRequest(this, requestId)
+                    }
+                }
+            }
+        }
     }
 
     private fun setFirstPin() {
@@ -415,6 +472,9 @@ class LockScreenActivity : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         isForeground = false
+        pendingApprovalRequestId?.let { reqId ->
+            approvalStatusListener?.let { FamilyLink.removeApprovalRequestStatusListener(this, reqId, it) }
+        }
         try {
             unregisterReceiver(unlockReceiver)
         } catch (e: Exception) {
@@ -455,6 +515,7 @@ class LockScreenActivity : Activity() {
         }
 
         const val EXTRA_LOCKED_PACKAGE = "locked_package"
+        private const val REQUEST_DURATION_MINUTES = 15
         const val EXTRA_MODE = "mode"
         const val EXTRA_MESSAGE_TITLE = "msg_title"
         const val EXTRA_MESSAGE_BODY = "msg_body"

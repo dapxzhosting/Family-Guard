@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.databinding.ActivityFamilyNameBinding
 import com.familyguard.utils.AppLockPrefs
 
-class FamilyNameActivity : AppCompatActivity() {
+class FamilyNameActivity : BaseActivity() {
 
     private lateinit var binding: ActivityFamilyNameBinding
 

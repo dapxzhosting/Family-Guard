@@ -19,12 +19,14 @@ import com.google.firebase.database.ValueEventListener
  * menu masing-masing role. Tap 1 pesan -> tandai terbaca. Tombol X di baris
  * -> hapus pesan itu saja.
  */
-class MessageInboxActivity : AppCompatActivity() {
+class MessageInboxActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMessageInboxBinding
     private lateinit var adapter: MessageAdapter
     private var messagesListener: ValueEventListener? = null
     private var myDeviceId: String = ""
+    private var skeletonAnimator: android.animation.ObjectAnimator? = null
+    private var isFirstLoad = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,8 +55,21 @@ class MessageInboxActivity : AppCompatActivity() {
         binding.rvMessages.layoutManager = LinearLayoutManager(this)
         binding.rvMessages.adapter = adapter
 
+        skeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutInboxSkeleton)
+        skeletonAnimator?.let { registerSkeletonAnimator(it) }
+
         messagesListener = FamilyLink.observeMessages(this, myDeviceId) { messages ->
             adapter.submitList(messages)
+
+            if (isFirstLoad) {
+                isFirstLoad = false
+                com.familyguard.utils.AnimUtils.crossFadeToContent(
+                    binding.layoutInboxSkeleton,
+                    if (messages.isEmpty()) binding.layoutInboxEmpty else binding.rvMessages,
+                    skeletonAnimator
+                )
+            }
+
             binding.layoutInboxEmpty.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
             binding.rvMessages.visibility = if (messages.isEmpty()) View.GONE else View.VISIBLE
 
@@ -69,6 +84,7 @@ class MessageInboxActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        skeletonAnimator?.cancel()
         messagesListener?.let { FamilyLink.removeMessagesListener(this, myDeviceId, it) }
     }
 }

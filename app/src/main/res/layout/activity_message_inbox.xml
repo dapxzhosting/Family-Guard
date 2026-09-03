@@ -57,6 +57,24 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Skeleton loading: tampil saat pesan belum selesai dimuat dari server.
+         Kalau internet putus, BaseActivity akan membekukan animasi pulse-nya
+         (lihat registerSkeletonAnimator di MessageInboxActivity). -->
+    <LinearLayout
+        android:id="@+id/layoutInboxSkeleton"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp">
+
+        <include layout="@layout/item_skeleton_message_row" />
+        <include layout="@layout/item_skeleton_message_row" />
+        <include layout="@layout/item_skeleton_message_row" />
+        <include layout="@layout/item_skeleton_message_row" />
+    </LinearLayout>
+
     <!-- Empty state -->
     <LinearLayout
         android:id="@+id/layoutInboxEmpty"
@@ -89,6 +107,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="12dp" />
+        android:paddingBottom="12dp"
+        android:visibility="gone" />
 
 </LinearLayout>
