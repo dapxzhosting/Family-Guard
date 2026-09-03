@@ -1,7 +1,11 @@
-package com.familyguard.ui
+package com.familyguard.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.familyguard.R
 import com.familyguard.sync.FamilyDevice
@@ -18,12 +22,12 @@ class FamilyMemberAdapter(
     private val onKickClick: ((FamilyDevice) -> Unit)? = null
 ) : RecyclerView.Adapter<FamilyMemberAdapter.ViewHolder>() {
 
-    class ViewHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {
-        val icon: android.widget.ImageView = view.findViewById(R.id.ivMemberIcon)
-        val name: android.widget.TextView = view.findViewById(R.id.tvMemberName)
-        val role: android.widget.TextView = view.findViewById(R.id.tvMemberRole)
-        val dot: android.view.View = view.findViewById(R.id.dotMemberOnline)
-        val btnKick: android.widget.ImageButton = view.findViewById(R.id.btnKickMember)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val icon: ImageView = view.findViewById(R.id.ivMemberIcon)
+        val name: TextView = view.findViewById(R.id.tvMemberName)
+        val role: TextView = view.findViewById(R.id.tvMemberRole)
+        val dot: View = view.findViewById(R.id.dotMemberOnline)
+        val btnKick: ImageButton = view.findViewById(R.id.btnKickMember)
     }
 
     fun submitList(newMembers: List<FamilyDevice>) {
@@ -80,16 +84,12 @@ class FamilyMemberAdapter(
             holder.itemView.isClickable = true
             holder.itemView.setOnClickListener { onMemberClick.invoke(member) }
         }
-
-        // Tombol "keluarkan anggota" cuma muncul di Dashboard Orang Tua,
-        // dan tidak boleh muncul di baris diri sendiri (tidak bisa
-        // mengeluarkan diri sendiri lewat sini).
         val canKick = isParentView && onKickClick != null && member.deviceId != myDeviceId
         if (canKick) {
-            holder.btnKick.visibility = android.view.View.VISIBLE
+            holder.btnKick.visibility = View.VISIBLE
             holder.btnKick.setOnClickListener { onKickClick.invoke(member) }
         } else {
-            holder.btnKick.visibility = android.view.View.GONE
+            holder.btnKick.visibility = View.GONE
             holder.btnKick.setOnClickListener(null)
         }
     }

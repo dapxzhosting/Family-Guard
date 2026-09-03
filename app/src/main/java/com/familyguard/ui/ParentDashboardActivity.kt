@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.databinding.ActivityParentDashboardBinding
 import com.familyguard.sync.FamilyDevice
 import com.familyguard.sync.FamilyLink
+import com.familyguard.ui.adapter.FamilyMemberAdapter
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.database.ValueEventListener
 import org.osmdroid.config.Configuration

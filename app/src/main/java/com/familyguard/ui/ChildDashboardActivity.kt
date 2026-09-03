@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.familyguard.R
 import com.familyguard.databinding.ActivityChildDashboardBinding
 import com.familyguard.sync.FamilyLink
+import com.familyguard.ui.adapter.FamilyMemberAdapter
 import com.familyguard.utils.AppLockPrefs
 import com.familyguard.utils.LocationHelper
 
