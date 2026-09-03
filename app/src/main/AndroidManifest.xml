@@ -69,6 +69,7 @@
         <activity android:name=".ui.SettingsActivity" android:exported="false" />
         <activity android:name=".ui.AppListActivity" android:exported="false" />
         <activity android:name=".ui.ScreenTimeReportActivity" android:exported="false" />
+        <activity android:name=".ui.MessageInboxActivity" android:exported="false" />
 
         <!-- Activity Kebijakan Privasi Ditambahkan Di Sini -->
         <activity

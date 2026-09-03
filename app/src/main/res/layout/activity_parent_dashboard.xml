@@ -65,6 +65,43 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
+                    <!-- Tombol buka Pesan Masuk, badge merah muncul kalau ada yang belum dibaca -->
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp">
+
+                        <ImageView
+                            android:id="@+id/btnOpenInbox"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:padding="7dp"
+                            android:src="@drawable/ic_message"
+                            app:tint="#FFFFFF"
+                            android:contentDescription="Pesan Masuk"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+
+                        <TextView
+                            android:id="@+id/tvInboxBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top|end"
+                            android:layout_marginTop="2dp"
+                            android:background="@drawable/bg_icon_circle_warning"
+                            android:gravity="center"
+                            android:minWidth="16dp"
+                            android:minHeight="16dp"
+                            android:paddingStart="3dp"
+                            android:paddingEnd="3dp"
+                            android:text="1"
+                            android:textColor="#FFFFFF"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
                     <!-- Chip status koneksi ringkas di pojok header -->
                     <LinearLayout
                         android:id="@+id/chipHeaderStatus"

@@ -1,6 +1,7 @@
 package com.familyguard.ui
 
 import android.graphics.Typeface
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -32,6 +33,7 @@ class ParentDashboardActivity : AppCompatActivity() {
     private var selectedChildId: String? = null
     private var appListListener: ValueEventListener? = null
     private var childLeftNoticeListener: ValueEventListener? = null
+    private var inboxListener: ValueEventListener? = null
 
     private fun requireSelectedChildId(): String? {
         if (selectedChildId == null) {
@@ -79,6 +81,30 @@ class ParentDashboardActivity : AppCompatActivity() {
         setupMap()
         observeConnectedDevices()
         observeChildLeftNotice()
+        setupInbox()
+    }
+
+    /**
+     * Badge jumlah pesan belum dibaca di ikon amplop header, dan buka
+     * MessageInboxActivity saat di-tap. Pesannya sendiri dikirim balik oleh
+     * Anak lewat LockScreenActivity mode MESSAGE (lihat FamilyLink.sendMessage
+     * -- ditulis ke families/{code}/messages/{myDeviceId}, ownDeviceId di
+     * sini = device Orang Tua sendiri).
+     */
+    private fun setupInbox() {
+        val myDeviceId = AppLockPrefs.getDeviceId(this)
+        binding.btnOpenInbox.setOnClickListener {
+            startActivity(Intent(this, MessageInboxActivity::class.java))
+        }
+        inboxListener = FamilyLink.observeMessages(this, myDeviceId) { messages ->
+            val unread = messages.count { !it.read }
+            if (unread > 0) {
+                binding.tvInboxBadge.text = if (unread > 9) "9+" else unread.toString()
+                binding.tvInboxBadge.visibility = android.view.View.VISIBLE
+            } else {
+                binding.tvInboxBadge.visibility = android.view.View.GONE
+            }
+        }
     }
 
     /**
@@ -593,5 +619,6 @@ class ParentDashboardActivity : AppCompatActivity() {
             }
         }
         childLeftNoticeListener?.let { FamilyLink.removeChildLeftNoticeListener(this, it) }
+        inboxListener?.let { FamilyLink.removeMessagesListener(this, AppLockPrefs.getDeviceId(this), it) }
     }
 }

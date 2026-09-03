@@ -125,9 +125,6 @@
 
         </FrameLayout>
 
-        <!-- Box balas pesan -- HANYA dipakai saat MODE_MESSAGE. Ditaruh di
-             posisi yang sama dengan pinInputArea (salah satu GONE, satunya
-             VISIBLE) supaya layout tidak dobel kosong. -->
         <EditText
             android:id="@+id/etReplyMessage"
             android:layout_width="match_parent"

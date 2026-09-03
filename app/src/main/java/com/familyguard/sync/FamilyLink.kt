@@ -515,8 +515,93 @@ object FamilyLink {
     fun sendSetPin(context: Context, pin: String, targetDeviceId: String) =
         sendCommand(context, "set_pin", mapOf("pin" to pin), targetDeviceId)
 
-    fun sendMessage(context: Context, title: String, message: String, targetDeviceId: String) =
+    /**
+     * Kirim pesan popup (send_message command -- tetap sama seperti
+     * sebelumnya, dibaca via startListening() lalu ditampilkan sebagai
+     * LockScreenActivity mode MESSAGE) SEKALIGUS simpan salinannya secara
+     * persisten ke families/{code}/messages/{targetDeviceId}/{pushId}
+     * supaya tidak hilang kalau popup-nya kelewat/di-dismiss -- ini yang
+     * dibaca ParentDashboardActivity/ChildDashboardActivity buat inbox.
+     */
+    fun sendMessage(context: Context, title: String, message: String, targetDeviceId: String) {
         sendCommand(context, "send_message", mapOf("title" to title, "message" to message), targetDeviceId)
+
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val myId = AppLockPrefs.getDeviceId(context)
+        val myRole = AppLockPrefs.getRole(context)
+        val myName = AppLockPrefs.getUserName(context)?.takeIf { it.isNotBlank() }
+            ?: if (myRole == AppLockPrefs.ROLE_PARENT) "Orang Tua" else "Anak"
+
+        familyRef(code).child("messages").child(targetDeviceId).push().setValue(
+            mapOf(
+                "title" to title,
+                "body" to message,
+                "fromDeviceId" to myId,
+                "fromName" to myName,
+                "fromRole" to (myRole ?: ""),
+                "timestamp" to System.currentTimeMillis(),
+                "read" to false
+            )
+        )
+    }
+
+    data class ChatMessage(
+        val id: String,
+        val title: String,
+        val body: String,
+        val fromDeviceId: String,
+        val fromName: String,
+        val timestamp: Long,
+        val read: Boolean
+    )
+
+    /**
+     * Dengarkan seluruh pesan masuk untuk [ownDeviceId] secara realtime,
+     * diurutkan dari yang terbaru. Dipakai oleh MessageInboxActivity (list
+     * lengkap) dan dashboard (badge jumlah belum dibaca).
+     */
+    fun observeMessages(
+        context: Context,
+        ownDeviceId: String,
+        onChange: (List<ChatMessage>) -> Unit
+    ): ValueEventListener {
+        val code = AppLockPrefs.getFamilyCode(context) ?: ""
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { child ->
+                    val title = child.child("title").getValue(String::class.java) ?: return@mapNotNull null
+                    val body = child.child("body").getValue(String::class.java) ?: ""
+                    val fromDeviceId = child.child("fromDeviceId").getValue(String::class.java) ?: ""
+                    val fromName = child.child("fromName").getValue(String::class.java) ?: "Anggota Keluarga"
+                    val timestamp = child.child("timestamp").getValue(Long::class.java) ?: 0L
+                    val read = child.child("read").getValue(Boolean::class.java) ?: false
+                    ChatMessage(child.key ?: return@mapNotNull null, title, body, fromDeviceId, fromName, timestamp, read)
+                }.sortedByDescending { it.timestamp }
+                onChange(list)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "observeMessages cancelled: ${error.message}")
+            }
+        }
+        familyRef(code).child("messages").child(ownDeviceId).addValueEventListener(listener)
+        return listener
+    }
+
+    fun removeMessagesListener(context: Context, ownDeviceId: String, listener: ValueEventListener) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        familyRef(code).child("messages").child(ownDeviceId).removeEventListener(listener)
+    }
+
+    fun markMessageRead(context: Context, ownDeviceId: String, messageId: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        familyRef(code).child("messages").child(ownDeviceId).child(messageId).child("read").setValue(true)
+    }
+
+    fun deleteMessage(context: Context, ownDeviceId: String, messageId: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        familyRef(code).child("messages").child(ownDeviceId).child(messageId).removeValue()
+    }
 
     fun sendLockApp(context: Context, packageName: String, lock: Boolean, targetDeviceId: String) =
         sendCommand(
