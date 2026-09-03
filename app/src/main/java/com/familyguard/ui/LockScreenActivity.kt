@@ -80,8 +80,29 @@ class LockScreenActivity : Activity() {
                 val title = intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "Pesan"
                 val body = intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: ""
                 messageFromDeviceId = intent.getStringExtra(EXTRA_MESSAGE_FROM) ?: ""
-                binding.tvTitle.text = "Pesan: $title"
+
+                // title dari pengirim SUDAH berbentuk kalimat lengkap ("Pesan
+                // dari Orang Tua" / "Balasan dari Anak"), jadi jangan ditempel
+                // prefix "Pesan:" lagi -- itu penyebab teksnya jadi dobel
+                // ("Pesan: Pesan dari Orang Tua").
+                binding.tvTitle.text = title
+                binding.tvTitle.textSize = 18f
+
+                // Isi pesan (body) adalah konten UTAMA yang perlu dibaca anak,
+                // jadi dibuat menonjol -- bukan style subtitle kecil/redup
+                // bawaan mode PIN. Lebar dibuat match_parent (bawaannya
+                // wrap_content) supaya teks panjang membungkus rapi & rata
+                // kiri, bukan numpuk sempit di tengah.
                 binding.tvSubtitle.text = body
+                binding.tvSubtitle.textSize = 19f
+                binding.tvSubtitle.setTextColor(0xFFFFFFFF.toInt())
+                binding.tvSubtitle.gravity = android.view.Gravity.START
+                binding.tvSubtitle.setLineSpacing(6f, 1.1f)
+                binding.tvSubtitle.layoutParams = (binding.tvSubtitle.layoutParams as android.widget.LinearLayout.LayoutParams).apply {
+                    width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    topMargin = dpToPx(16)
+                }
+
                 binding.btnUnlock.text = "Tutup Pesan"
                 binding.pinInputArea.visibility = android.view.View.GONE
                 binding.btnGoHome.visibility = android.view.View.GONE
@@ -202,6 +223,9 @@ class LockScreenActivity : Activity() {
             insets
         }
     }
+
+    private fun dpToPx(dp: Int): Int =
+        (dp * resources.displayMetrics.density).toInt()
 
     private fun goHome() {
         val intent = android.content.Intent(android.content.Intent.ACTION_MAIN)
