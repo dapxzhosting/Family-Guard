@@ -110,16 +110,6 @@ class ChildDashboardActivity : AppCompatActivity() {
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
         requestIgnoreBatteryOptimization()
 
-        binding.btnResetRoleChild.setOnClickListener {
-            com.familyguard.utils.AccountActions.resetRole(this)
-        }
-        binding.btnChangeFamilyChild.setOnClickListener {
-            com.familyguard.utils.AccountActions.changeFamily(this)
-        }
-        binding.btnLogoutChild.setOnClickListener {
-            com.familyguard.utils.AccountActions.logout(this)
-        }
-
         setupAnimations()
     }
 

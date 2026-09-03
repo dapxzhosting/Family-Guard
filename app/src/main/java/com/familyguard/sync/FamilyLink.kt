@@ -452,7 +452,19 @@ object FamilyLink {
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
-            child("hasPin").setValue(AppLockPrefs.hasPin(context))
+
+            // JANGAN timpa hasPin jadi false di sini kalau baca lokalnya false --
+            // status "PIN sudah diset" harus monoton (sekali true, jangan pernah
+            // balik false lewat re-registrasi). Kalau kita selalu ikutin nilai
+            // lokal apa adanya, proses yang sempat kebunuh & restart sebelum
+            // SharedPreferences ke-flush ke disk bisa bikin flag ini kebalik ke
+            // false di Firebase padahal PIN sebenarnya sudah ada -- efeknya SEMUA
+            // tombol fitur yang butuh PIN (Kunci Semua, Kunci Layar, dll) jadi
+            // minta set PIN lagi terus-menerus. Command "set_pin" sendiri tetap
+            // yang berwenang menuliskan hasPin=true begitu PIN baru masuk.
+            if (AppLockPrefs.hasPin(context)) {
+                child("hasPin").setValue(true)
+            }
 
             child("loggedOut").setValue(false)
             child("online").onDisconnect().setValue(false)
@@ -610,6 +622,23 @@ object FamilyLink {
             targetDeviceId
         )
 
+    /**
+     * Kirim aksi kunci/buka untuk BANYAK aplikasi sekaligus dalam SATU command,
+     * bukan satu command per-aplikasi. Dipakai oleh tombol "Kunci Semua" /
+     * "Buka Semua" supaya diproses atomic di HP anak (lihat catatan bug lama:
+     * mengirim N command terpisah untuk aksi massal bikin sebagian command
+     * "remove" telat/ke-skip saat listener commands memproses ulang seluruh
+     * daftar berkali-kali secara reentrant).
+     */
+    fun sendLockAppsBulk(context: Context, packageNames: List<String>, lock: Boolean, targetDeviceId: String) {
+        if (packageNames.isEmpty()) return
+        sendCommand(
+            context, "lock_apps_bulk",
+            mapOf("package_names" to packageNames, "action" to if (lock) "add" else "remove"),
+            targetDeviceId
+        )
+    }
+
     fun sendBlockNotif(context: Context, packageName: String, block: Boolean, targetDeviceId: String) =
         sendCommand(
             context, "block_notif",
@@ -722,9 +751,16 @@ object FamilyLink {
                                 val code = AppLockPrefs.getFamilyCode(context)
                                 val id = AppLockPrefs.getDeviceId(context)
                                 if (!code.isNullOrBlank()) {
-                                    deviceRef(code, id).apply {
-                                        child("hasPin").setValue(true)
-                                        child("currentPin").setValue(pin)
+                                    // Satu write batch (updateChildren) supaya hasPin & currentPin
+                                    // konsisten diterapkan bareng, dan pasang failure listener
+                                    // supaya kegagalan (mis. Firebase rules, offline) kelihatan
+                                    // di log, bukan gagal diam-diam seperti sebelumnya.
+                                    deviceRef(code, id).updateChildren(
+                                        mapOf("hasPin" to true, "currentPin" to pin)
+                                    ).addOnSuccessListener {
+                                        Log.d(TAG, "hasPin/currentPin berhasil disinkron ke Firebase")
+                                    }.addOnFailureListener { e ->
+                                        Log.e(TAG, "GAGAL sinkron hasPin/currentPin ke Firebase: ${e.message}", e)
                                     }
                                 }
                             }
@@ -743,6 +779,17 @@ object FamilyLink {
                             val action = payload.child("action").getValue(String::class.java)
                             if (action == "add") AppLockPrefs.addLockedApp(context, pkg)
                             else AppLockPrefs.removeLockedApp(context, pkg)
+                        }
+
+                        "lock_apps_bulk" -> {
+                            val pkgs = payload.child("package_names").children.mapNotNull {
+                                it.getValue(String::class.java)
+                            }
+                            val action = payload.child("action").getValue(String::class.java)
+                            if (pkgs.isNotEmpty()) {
+                                if (action == "add") AppLockPrefs.addLockedApps(context, pkgs)
+                                else AppLockPrefs.removeLockedApps(context, pkgs)
+                            }
                         }
 
                         "block_notif" -> {

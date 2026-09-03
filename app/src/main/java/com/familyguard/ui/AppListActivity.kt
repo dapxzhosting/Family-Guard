@@ -93,13 +93,15 @@ class AppListActivity : AppCompatActivity() {
         binding.btnLockAll.setOnClickListener {
             if (!requirePinSet()) return@setOnClickListener
             confirmBulkAction("Kunci SEMUA aplikasi di HP anak?") {
-                fullAppList.forEach { FamilyLink.sendLockApp(this, it.packageName, true, deviceId!!) }
+                val packages = fullAppList.map { it.packageName }
+                FamilyLink.sendLockAppsBulk(this, packages, true, deviceId!!)
                 toast("Perintah kunci semua aplikasi dikirim")
             }
         }
         binding.btnUnlockAll.setOnClickListener {
             confirmBulkAction("Buka kunci SEMUA aplikasi di HP anak?") {
-                fullAppList.forEach { FamilyLink.sendLockApp(this, it.packageName, false, deviceId!!) }
+                val packages = fullAppList.map { it.packageName }
+                FamilyLink.sendLockAppsBulk(this, packages, false, deviceId!!)
                 toast("Perintah buka semua aplikasi dikirim")
             }
         }

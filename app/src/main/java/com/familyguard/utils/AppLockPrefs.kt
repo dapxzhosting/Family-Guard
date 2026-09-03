@@ -41,6 +41,20 @@ object AppLockPrefs {
         prefs(context).edit().putStringSet(KEY_LOCKED_APPS, current).apply()
     }
 
+    /** Tambah banyak package ke locked_apps dalam SATU write (atomic, bukan loop per-app). */
+    fun addLockedApps(context: Context, packageNames: Collection<String>) {
+        val current = getLockedApps(context).toMutableSet()
+        current.addAll(packageNames)
+        prefs(context).edit().putStringSet(KEY_LOCKED_APPS, current).apply()
+    }
+
+    /** Hapus banyak package dari locked_apps dalam SATU write (atomic, bukan loop per-app). */
+    fun removeLockedApps(context: Context, packageNames: Collection<String>) {
+        val current = getLockedApps(context).toMutableSet()
+        current.removeAll(packageNames.toSet())
+        prefs(context).edit().putStringSet(KEY_LOCKED_APPS, current).apply()
+    }
+
     fun isAppLocked(context: Context, packageName: String): Boolean =
         getLockedApps(context).contains(packageName)
 
@@ -74,7 +88,14 @@ object AppLockPrefs {
         prefs(context).getString(KEY_FCM_TOKEN, null)
 
     fun savePin(context: Context, pin: String) {
-        prefs(context).edit().putString(KEY_DEVICE_PIN, pin).apply()
+        // Pakai commit() (sinkron), BUKAN apply() (async) -- PIN ini status kritis
+        // yang harus sudah pasti nyimpen ke disk sebelum command "set_pin" dianggap
+        // selesai. Kalau proses HP anak kebunuh (battery killer OEM semacam
+        // Itel/Tecno/Infinix) tepat setelah apply() tapi sebelum write ke disk
+        // kelar, restart berikutnya bakal baca PIN sebagai "belum ada" lagi --
+        // dan itu bikin registerDevice() menimpa balik hasPin jadi false di
+        // Firebase padahal barusan sudah diset (lihat registerDevice()).
+        prefs(context).edit().putString(KEY_DEVICE_PIN, pin).commit()
     }
 
     fun getPin(context: Context): String? =
