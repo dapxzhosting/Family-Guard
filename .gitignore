@@ -1,16 +1,63 @@
+# ==== Gradle ====
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
+.gradle/
+build/
 /captures
-.externalNativeBuild
-.cxx
+.cxx/
+.externalNativeBuild/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# ==== Local konfigurasi (JANGAN pernah commit -- beda tiap komputer) ====
 local.properties
 
+# ==== Android Studio / IntelliJ ====
+.idea/
+*.hprof
+.navigation/
+captures/
+.externalNativeBuild
+.cxx
+
+# ==== Keystore & signing (JANGAN pernah commit) ====
+*.jks
+*.keystore
+*.p12
+*.pem
+key.properties
+keystore.properties
+
+# ==== Firebase / Google Services (JANGAN pernah commit -- ganti tiap environment) ====
+google-services.json
+GoogleService-Info.plist
+**/google-services.json
+
+# ==== Secrets & env files ====
+*.env
+.env
+.env.*
+secrets.properties
+*.secrets
+
+# ==== Log & crash report ====
+*.log
+crashlytics-build.properties
+fabric.properties
+
+# ==== OS files ====
+.DS_Store
+Thumbs.db
+
+# ==== Output APK/AAB hasil build lokal ====
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# ==== Kotlin / Java build cache ====
+out/
+.kotlin/
+
+# ==== Version control lain ====
+*.orig

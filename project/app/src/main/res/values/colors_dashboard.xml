@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palet dashboard orang tua -->
+    <color name="dash_bg">#F4F6FB</color>
+    <color name="dash_surface">#FFFFFF</color>
+    <color name="dash_primary">#3348E8</color>
+    <color name="dash_primary_dark">#1E2A9E</color>
+    <color name="dash_primary_soft">#EEF0FE</color>
+
+    <color name="dash_text_primary">#1B1F3B</color>
+    <color name="dash_text_secondary">#6B7191</color>
+    <color name="dash_text_muted">#9BA0BD</color>
+    <color name="dash_divider">#EDEFF7</color>
+
+    <color name="dash_success">#1FAA6E</color>
+    <color name="dash_success_soft">#E4F8EF</color>
+    <color name="dash_danger">#E24C5C</color>
+    <color name="dash_danger_soft">#FDEBED</color>
+    <color name="dash_warning">#F0A93C</color>
+    <color name="dash_warning_soft">#FDF3E2</color>
+    <color name="dash_info">#3B8FF3</color>
+    <color name="dash_info_soft">#E9F2FE</color>
+    <color name="dash_purple">#8B5CF6</color>
+    <color name="dash_purple_soft">#F1EBFE</color>
+</resources>

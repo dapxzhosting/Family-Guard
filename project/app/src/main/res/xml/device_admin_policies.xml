@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <!-- Untuk mengunci layar -->
+        <force-lock />
+        <!-- Untuk set kebijakan password (opsional) -->
+        <limit-password />
+        <!-- Untuk wipe data (opsional, hapus jika tidak diperlukan) -->
+        <!-- <wipe-data /> -->
+    </uses-policies>
+</device-admin>
