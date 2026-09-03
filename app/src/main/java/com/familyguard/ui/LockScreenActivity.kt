@@ -306,7 +306,7 @@ class LockScreenActivity : Activity() {
                         AppLockPrefs.setApprovedTemporaryUnlock(this, pkg, durationMinutes)
                         Toast.makeText(this, "Disetujui! Aplikasi dibuka $durationMinutes menit", Toast.LENGTH_LONG).show()
                         FamilyLink.deleteApprovalRequest(this, requestId)
-                        finish()
+                        reopenLockedAppThenFinish(pkg)
                     }
                     "rejected" -> {
                         binding.tvApprovalStatus.text = "Permintaan ditolak oleh Orang Tua"
@@ -340,7 +340,7 @@ class LockScreenActivity : Activity() {
 
                 AppLockPrefs.setPackageUnlocked(this, lockedPackage!!)
                 Toast.makeText(this, "Berhasil dibuka", Toast.LENGTH_SHORT).show()
-                finish()
+                reopenLockedAppThenFinish(lockedPackage!!)
             } else {
                 if (mode == MODE_DEVICE_LOCK) {
                     AppLockPrefs.setDeviceLocked(this, false)
@@ -353,6 +353,33 @@ class LockScreenActivity : Activity() {
             binding.etPin.error = "PIN salah!"
             Toast.makeText(this, "PIN salah, coba lagi", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    /**
+     * LockScreenActivity dibuka dari AccessibilityService pakai
+     * FLAG_ACTIVITY_NEW_TASK (wajib, karena Service bukan Activity context),
+     * yang artinya dia jalan di TASK TERPISAH dari aplikasi yang dikunci --
+     * bukan numpuk di atas task app tersebut. Akibatnya kalau cuma
+     * finish(), sistem tidak tahu harus balik ke app yang dikunci dan malah
+     * menampilkan Home. Makanya di sini app yang dikunci di-relaunch
+     * eksplisit dulu (bawa ke depan lewat launch intent-nya sendiri) baru
+     * LockScreenActivity ditutup.
+     */
+    private fun reopenLockedAppThenFinish(packageName: String) {
+        try {
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            if (launchIntent != null) {
+                launchIntent.addFlags(
+                    android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                            android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                )
+                startActivity(launchIntent)
+            }
+        } catch (e: Exception) {
+            // Kalau app-nya sudah di-uninstall atau launch intent tidak ada,
+            // tidak masalah -- lanjut finish() biasa seperti sebelumnya.
+        }
+        finish()
     }
 
     private fun startPersistenceTimer() {
