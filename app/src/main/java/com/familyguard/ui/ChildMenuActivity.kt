@@ -27,6 +27,7 @@ class ChildMenuActivity : BaseActivity() {
         FamilyLink.listenFamilyDeletion(this) {
             AppLockPrefs.saveFamilyCode(this, "")
             AppLockPrefs.saveFamilyName(this, "")
+            AppLockPrefs.clearFamilySecurityState(this)
             binding.tvFamilyNoticeText.text = "Keluarga telah dihapus oleh orang tua. Silakan gabung ke keluarga lain."
             binding.tvFamilyDeletedNotice.visibility = View.VISIBLE
             updateFamilyStatus()
@@ -35,6 +36,7 @@ class ChildMenuActivity : BaseActivity() {
         FamilyLink.listenForKick(this) {
             AppLockPrefs.saveFamilyCode(this, "")
             AppLockPrefs.saveFamilyName(this, "")
+            AppLockPrefs.clearFamilySecurityState(this)
             binding.tvFamilyNoticeText.text = "Kamu telah dikeluarkan dari keluarga oleh orang tua."
             binding.tvFamilyDeletedNotice.visibility = View.VISIBLE
             updateFamilyStatus()

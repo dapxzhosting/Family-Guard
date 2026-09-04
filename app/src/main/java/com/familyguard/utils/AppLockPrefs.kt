@@ -105,6 +105,34 @@ object AppLockPrefs {
 
     fun hasPin(context: Context): Boolean = getPin(context) != null
 
+    /**
+     * Reset SEMUA status keamanan yang tersimpan lokal di HP ini (PIN,
+     * daftar app terkunci, blokir notif, status kunci perangkat, unlock
+     * sementara yang disetujui).
+     *
+     * WAJIB dipanggil setiap kali hubungan device<->keluarga berubah (keluar
+     * keluarga, keluarga dihapus orang tua, kena kick, ganti keluarga) --
+     * kalau tidak, status lama nyangkut dan ke-carry over ke keluarga baru:
+     * PIN lama tetap aktif, dan registerDevice() bakal langsung nulis
+     * hasPin=true ke keluarga baru padahal orang tua belum pernah atur PIN
+     * untuk keluarga itu, jadi fitur Kunci Layar/Kunci App bisa langsung
+     * dipakai tanpa PIN baru pernah diset -- sekaligus bikin dialog "Atur
+     * PIN" di sisi orang tua gak nemu currentPin (karena currentPin memang
+     * belum pernah ditulis untuk keluarga baru ini) walau hasPin sudah true.
+     */
+    fun clearFamilySecurityState(context: Context) {
+        prefs(context).edit()
+            .remove(KEY_DEVICE_PIN)
+            .remove(KEY_LOCKED_APPS)
+            .remove(KEY_BLOCKED_NOTIF_APPS)
+            .remove(KEY_DEVICE_LOCKED)
+            .remove(KEY_LAST_UNLOCKED_PACKAGE)
+            .remove(KEY_LAST_UNLOCKED_TIME)
+            .remove(KEY_APPROVED_UNLOCK_PACKAGE)
+            .remove(KEY_APPROVED_UNLOCK_UNTIL)
+            .commit()
+    }
+
     fun saveFamilyCode(context: Context, code: String) {
         prefs(context).edit().putString(KEY_FAMILY_CODE, code).apply()
     }

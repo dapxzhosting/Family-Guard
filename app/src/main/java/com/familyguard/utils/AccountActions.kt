@@ -59,6 +59,7 @@ object AccountActions {
                         AppLockPrefs.saveFamilyCode(activity, "")
                         AppLockPrefs.saveFamilyName(activity, "")
                         AppLockPrefs.setDeviceLocked(activity, false)
+                        AppLockPrefs.clearFamilySecurityState(activity)
                         onDone()
                     }
             } else {
@@ -145,12 +146,14 @@ object AccountActions {
                                 AppLockPrefs.saveFamilyCode(activity, "")
                                 AppLockPrefs.saveFamilyName(activity, "")
                                 AppLockPrefs.setDeviceLocked(activity, false)
+                                AppLockPrefs.clearFamilySecurityState(activity)
                                 Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
                                 onDone?.invoke()
                             }
                     } else {
                         AppLockPrefs.saveFamilyCode(activity, "")
                         AppLockPrefs.saveFamilyName(activity, "")
+                        AppLockPrefs.clearFamilySecurityState(activity)
                         Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
                         onDone?.invoke()
                     }
