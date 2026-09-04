@@ -48,6 +48,7 @@ object UsageTracker {
      */
     fun recordSession(context: Context, packageName: String, sessionMs: Long) {
         if (sessionMs <= 0 || packageName.isBlank() || packageName == context.packageName) return
+        if (!AppFilter.isTrackableApp(context, packageName)) return
         val cappedMs = sessionMs.coerceAtMost(MAX_SESSION_MS)
 
         val date = todayKey()

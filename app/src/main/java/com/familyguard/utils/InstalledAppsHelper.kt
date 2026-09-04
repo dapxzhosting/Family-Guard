@@ -1,7 +1,6 @@
 package com.familyguard.utils
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -40,20 +39,9 @@ object InstalledAppsHelper {
 
     fun getInstalledApps(context: Context): List<AppInfo> {
         val pm = context.packageManager
-        val skipPackages = setOf(
-            "com.familyguard",
-            "android",
-            "com.android.systemui",
-            "com.android.settings"
-        )
 
         return pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { app ->
-
-                val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
-                val hasLaunchIntent = pm.getLaunchIntentForPackage(app.packageName) != null
-                (isUserApp || hasLaunchIntent) && !skipPackages.contains(app.packageName)
-            }
+            .filter { app -> AppFilter.isTrackableApp(pm, app.packageName) }
             .mapNotNull { app ->
                 try {
                     AppInfo(
