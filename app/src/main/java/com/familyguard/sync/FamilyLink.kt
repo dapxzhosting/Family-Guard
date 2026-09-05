@@ -100,6 +100,68 @@ object FamilyLink {
             }
     }
 
+    // Cache in-memory (BUKAN Firebase round-trip) status "keluarga ini
+    // masih valid apa enggak", di-update oleh startFamilyExistenceGuard().
+    // Semua fungsi yang nulis rutin ke families/{code}/... (updateCurrentApp
+    // yang dipanggil TIAP KALI app anak ganti, sendHeartbeat, updateLocation,
+    // syncUsageMinutes, syncPermissionStatus, registerDevice) HARUS cek ini
+    // dulu -- kalau tidak, tulisan itu "menghidupkan lagi" node keluarga
+    // yang sudah dihapus orang tua (Firebase otomatis bikin ulang parent
+    // node kosong begitu ada write ke path anaknya). Dulu cuma heartbeat
+    // yang dijaga (verifyFamilyStillExists one-shot, tiap 60 detik) --
+    // ternyata updateCurrentApp jauh lebih sering dipanggil (tiap app anak
+    // ganti foreground, bisa tiap beberapa detik) dan itu jalan TANPA
+    // proteksi sama sekali, jadi resurrection tetap kejadian jauh lebih
+    // cepat dari siklus 60 detik itu.
+    @Volatile private var familyExistsCache: Boolean = true
+    private var existenceListener: ValueEventListener? = null
+    private var existenceListenerCode: String? = null
+
+    fun isFamilyKnownValid(): Boolean = familyExistsCache
+
+    /**
+     * Pasang SATU listener realtime yang terus hidup selama GuardService
+     * hidup, meng-update familyExistsCache setiap ada perubahan -- jauh
+     * lebih murah daripada cek Firebase satu-satu di tiap fungsi tulis.
+     * Begitu keluarga terdeteksi hilang, [onGone] dipanggil (biasanya buat
+     * bersihin state lokal + matikan GuardService) SEBELUM tulisan
+     * berikutnya sempat jalan.
+     */
+    fun startFamilyExistenceGuard(context: Context, onGone: () -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            familyExistsCache = false
+            onGone()
+            return
+        }
+        if (existenceListenerCode == code && existenceListener != null) return
+        stopFamilyExistenceGuard()
+
+        familyExistsCache = true
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val exists = snapshot.exists()
+                familyExistsCache = exists
+                if (!exists) onGone()
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "startFamilyExistenceGuard cancelled: ${error.message}")
+            }
+        }
+        existenceListener = listener
+        existenceListenerCode = code
+        familyRef(code).addValueEventListener(listener)
+    }
+
+    fun stopFamilyExistenceGuard() {
+        val code = existenceListenerCode
+        if (code != null) {
+            existenceListener?.let { familyRef(code).removeEventListener(it) }
+        }
+        existenceListener = null
+        existenceListenerCode = null
+    }
+
     fun stopListeningFamilyDeletion() {
         val code = familyDeletionListenerCode
         val listener = familyDeletionListener
@@ -357,6 +419,7 @@ object FamilyLink {
         notifListenerActive: Boolean,
         locationActive: Boolean
     ) {
+        if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         deviceRef(code, id).updateChildren(
@@ -401,6 +464,7 @@ object FamilyLink {
      * sisi Orang Tua untuk generate laporan mingguan.
      */
     fun syncUsageMinutes(context: Context, date: String, packageName: String, minutes: Int) {
+        if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         deviceRef(code, id).child("usage").child(date).child(encodePackageKey(packageName)).setValue(minutes)
@@ -416,6 +480,7 @@ object FamilyLink {
      * mingguan.
      */
     fun updateCurrentApp(context: Context, packageName: String) {
+        if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         deviceRef(code, id).child("currentApp").setValue(
@@ -506,6 +571,13 @@ object FamilyLink {
     }
 
     fun registerDevice(context: Context) {
+        // Reset cache "keluarga valid" ke true di sini -- ini aksi JOIN
+        // eksplisit (dari FamilyCodeActivity atau GuardService yang baru
+        // konfirmasi keluarga masih ada), jadi selalu boleh nulis. Kalau
+        // gak di-reset, cache bisa masih "false" nempel dari keluarga
+        // SEBELUMNYA (yang baru dihapus), dan itu bakal salah nge-block
+        // join ke keluarga BARU.
+        familyExistsCache = true
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         val role = AppLockPrefs.getRole(context) ?: return
@@ -539,6 +611,7 @@ object FamilyLink {
     }
 
     fun sendHeartbeat(context: Context) {
+        if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
 
@@ -572,6 +645,7 @@ object FamilyLink {
     }
 
     fun updateLocation(context: Context, lat: Double, lng: Double) {
+        if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
 

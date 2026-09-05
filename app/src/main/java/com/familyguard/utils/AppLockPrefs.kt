@@ -138,7 +138,7 @@ object AppLockPrefs {
     }
 
     fun getFamilyCode(context: Context): String? =
-        prefs(context).getString(KEY_FAMILY_CODE, null)
+        prefs(context).getString(KEY_FAMILY_CODE, null)?.takeIf { it.isNotBlank() }
 
     fun saveRole(context: Context, role: String) {
         prefs(context).edit().putString(KEY_ROLE, role).apply()

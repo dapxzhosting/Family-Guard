@@ -62,6 +62,20 @@ class GuardService : Service() {
         com.familyguard.sync.FamilyLink.verifyFamilyStillExists(
             this,
             onExists = {
+                // Listener persisten yang jaga cache "keluarga masih valid"
+                // (FamilyLink.isFamilyKnownValid) tetap ke-update REALTIME
+                // selama service ini hidup -- ini yang dicek oleh SEMUA
+                // fungsi tulis rutin (updateCurrentApp, sendHeartbeat,
+                // updateLocation, syncUsageMinutes, syncPermissionStatus)
+                // sebelum nulis apapun. Beda dari verifyFamilyStillExists
+                // (one-shot, cuma dicek pas rebind/tiap 60 detik) --
+                // updateCurrentApp bisa dipanggil tiap beberapa detik
+                // (setiap app anak ganti foreground), jadi butuh cache yang
+                // selalu fresh, bukan cek satu-satu tiap kali nulis.
+                com.familyguard.sync.FamilyLink.startFamilyExistenceGuard(this) {
+                    com.familyguard.sync.FamilyLink.clearLocalFamilyState(this)
+                    stopSelf()
+                }
                 FamilyLink.registerDevice(this)
                 FamilyLink.stopListening(this, force = true)
                 FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
@@ -105,21 +119,13 @@ class GuardService : Service() {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
-                // Cek dulu keluarga masih ada sebelum nulis heartbeat/lokasi
-                // -- lihat verifyFamilyStillExists() untuk kenapa ini
-                // penting (mencegah write blind "menghidupkan lagi" node
-                // keluarga yang sudah dihapus orang tua).
-                com.familyguard.sync.FamilyLink.verifyFamilyStillExists(
-                    this@GuardService,
-                    onExists = {
-                        LocationHelper.updateCurrentLocation(this@GuardService)
-                        FamilyLink.sendHeartbeat(this@GuardService)
-                    },
-                    onGone = {
-                        com.familyguard.sync.FamilyLink.clearLocalFamilyState(this@GuardService)
-                        stopSelf()
-                    }
-                )
+                // Cukup cek cache in-memory (di-update realtime oleh
+                // startFamilyExistenceGuard di rebindToCurrentFamily) --
+                // gak perlu Firebase round-trip di sini lagi.
+                if (com.familyguard.sync.FamilyLink.isFamilyKnownValid()) {
+                    LocationHelper.updateCurrentLocation(this@GuardService)
+                    FamilyLink.sendHeartbeat(this@GuardService)
+                }
                 handler.postDelayed(this, 60_000)
             }
         }
@@ -140,6 +146,7 @@ class GuardService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this, force = true)
+        com.familyguard.sync.FamilyLink.stopFamilyExistenceGuard()
         com.familyguard.receiver.ScreenStateReceiver.unregister(this, screenStateReceiver)
         screenStateReceiver = null
         lockWatchRunnable?.let { lockWatchHandler.removeCallbacks(it) }
