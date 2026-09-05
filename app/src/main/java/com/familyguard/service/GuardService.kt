@@ -101,6 +101,20 @@ class GuardService : Service() {
         return START_STICKY
     }
 
+    /**
+     * Banyak OEM (termasuk Itel/Infinix/Tecno) menganggap "app di-swipe dari
+     * recent apps" sebagai sinyal buat langsung bunuh service-nya, terlepas
+     * dari START_STICKY atau status foreground. Restart diri sendiri di sini
+     * supaya listener command (FamilyLink.startListening) gak nunggu sampai
+     * GuardWatchdogReceiver jalan lagi (uang bisa 15 menit lagi).
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        if (AppLockPrefs.isGuardEnabled(this)) {
+            start(this)
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun buildNotification(): Notification {

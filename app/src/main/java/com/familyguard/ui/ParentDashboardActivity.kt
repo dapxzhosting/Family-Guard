@@ -64,6 +64,31 @@ class ParentDashboardActivity : BaseActivity() {
         return false
     }
 
+    /**
+     * Blok aksi "Kunci Layar" kalau Device Admin belum aktif di HP anak --
+     * sebelumnya cuma ada banner pasif (cardPermissionWarning) yang gampang
+     * kelewat, jadi orang tua bisa kirim perintah kunci yang sebenarnya
+     * gagal/gak berefek penuh tanpa tahu penyebabnya sampai ngecek manual.
+     * Kunci Aplikasi (per-app) TIDAK butuh ini karena jalurnya lewat
+     * Accessibility Service, bukan Device Admin.
+     */
+    private fun requireDeviceAdminActive(targetDeviceId: String): Boolean {
+        val device = childDevices.firstOrNull { it.deviceId == targetDeviceId }
+        if (device?.deviceAdminActive == true) return true
+
+        AlertDialog.Builder(this)
+            .setTitle("Device Admin Belum Aktif")
+            .setMessage(
+                "HP anak ini belum mengaktifkan izin Device Admin, jadi " +
+                        "Kunci Layar tidak akan berfungsi penuh. Minta anak buka " +
+                        "Dashboard-nya dan aktifkan semua status keamanan dulu " +
+                        "(termasuk Device Admin) sebelum kamu mengunci layarnya."
+            )
+            .setPositiveButton("Mengerti", null)
+            .show()
+        return false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -345,6 +370,7 @@ class ParentDashboardActivity : BaseActivity() {
         binding.btnLockScreen.setOnClickListener {
             val target = requireSelectedChildId() ?: return@setOnClickListener
             if (!requirePinSet(target)) return@setOnClickListener
+            if (!requireDeviceAdminActive(target)) return@setOnClickListener
             confirmAction("Kunci layar HP anak sekarang?") {
                 FamilyLink.sendLockScreen(this, target)
                 toast("Perintah kunci layar dikirim")

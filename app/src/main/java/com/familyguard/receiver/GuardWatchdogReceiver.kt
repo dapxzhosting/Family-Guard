@@ -10,7 +10,7 @@ import android.os.SystemClock
 import com.familyguard.service.GuardService
 import com.familyguard.utils.AppLockPrefs
 
-class GuardWatchdogReceiver : BroadcastReceiver() {
+class  GuardWatchdogReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
 
@@ -23,7 +23,7 @@ class GuardWatchdogReceiver : BroadcastReceiver() {
 
     companion object {
         private const val REQUEST_CODE = 4471
-        private const val INTERVAL_MS = 15 * 60 * 1000L
+        private const val INTERVAL_MS = 5 * 60 * 1000L
 
         private fun pendingIntent(context: Context): PendingIntent {
             val intent = Intent(context, GuardWatchdogReceiver::class.java)

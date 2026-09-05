@@ -199,6 +199,17 @@ class AppLockAccessibilityService : AccessibilityService() {
             watchdogHandler = bgHandler
             bgHandler.postDelayed(watchdog, WATCHDOG_INTERVAL_MS)
         }
+
+        // Accessibility Service ini jauh lebih jarang dibunuh & lebih cepat
+        // di-restart otomatis oleh sistem Android dibanding foreground
+        // service biasa (OS emang didesain buat selalu jaga koneksi ke
+        // service accessibility yang aktif) -- jadi setiap kali service ini
+        // (re)connect, pastikan juga GuardService (pemegang listener command
+        // Firebase, termasuk "set_pin") hidup. GuardService.start() aman
+        // dipanggil berkali-kali (idempotent lewat startForegroundService).
+        if (com.familyguard.utils.AppLockPrefs.isGuardEnabled(this)) {
+            com.familyguard.service.GuardService.start(this)
+        }
     }
 
     override fun onDestroy() {
