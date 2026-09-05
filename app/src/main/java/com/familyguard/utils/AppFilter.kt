@@ -17,6 +17,31 @@ import android.content.pm.PackageManager
  */
 object AppFilter {
 
+    // Sentinel value (BUKAN nama package asli) yang dikirim ke
+    // currentApp.packageName saat anak lagi di home screen / layar kunci --
+    // dashboard orang tua nge-render ini jadi label + ikon khusus, bukan
+    // nyari nama/ikon aplikasi lewat lookup biasa.
+    const val STATUS_HOME_SCREEN = "familyguard.status.home_screen"
+    const val STATUS_LOCK_SCREEN = "familyguard.status.lock_screen"
+
+    /**
+     * Tentuin apa yang harus dikirim ke currentApp buat package tertentu:
+     * nama package asli kalau itu aplikasi beneran, atau salah satu sentinel
+     * di atas kalau anak lagi di home screen / layar kunci-sistem.
+     */
+    fun classifyForCurrentApp(context: Context, packageName: String): String {
+        if (isTrackableApp(context, packageName)) return packageName
+
+        val pm = context.packageManager
+        val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val homePackage = pm.resolveActivity(homeIntent, 0)?.activityInfo?.packageName
+        if (homePackage != null && homePackage == packageName) return STATUS_HOME_SCREEN
+
+        // com.android.systemui (atau variannya di OEM tertentu) paling sering
+        // muncul sebagai foreground package pas layar kunci aktif.
+        return STATUS_LOCK_SCREEN
+    }
+
     // Package non-user-facing yang perlu selalu dikecualikan meski karena
     // alasan tertentu lolos dari cek launcher-intent/home-launcher di bawah
     // (mis. varian OEM yang aneh).

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.R
 import com.familyguard.databinding.ActivityParentDashboardBinding
 import com.familyguard.sync.FamilyDevice
 import com.familyguard.sync.FamilyLink
@@ -635,6 +636,24 @@ class ParentDashboardActivity : BaseActivity() {
             binding.tvCurrentAppName.text = "Tidak ada data"
             binding.tvCurrentAppSince.text = ""
             binding.ivCurrentAppIcon.setImageDrawable(null)
+            return
+        }
+
+        // Home screen / layar kunci dikirim sebagai status khusus (sentinel),
+        // bukan nama package asli -- render label + ikon bawaan, jangan coba
+        // di-lookup ke daftar app.
+        if (pkg == com.familyguard.utils.AppFilter.STATUS_HOME_SCREEN) {
+            binding.tvCurrentAppName.text = "Layar Utama"
+            binding.ivCurrentAppIcon.setImageResource(R.drawable.ic_home)
+            binding.tvCurrentAppSince.text =
+                if (since > 0) "sejak ${sdf.format(Date(since))}" else ""
+            return
+        }
+        if (pkg == com.familyguard.utils.AppFilter.STATUS_LOCK_SCREEN) {
+            binding.tvCurrentAppName.text = "Layar Terkunci"
+            binding.ivCurrentAppIcon.setImageResource(R.drawable.ic_lock)
+            binding.tvCurrentAppSince.text =
+                if (since > 0) "sejak ${sdf.format(Date(since))}" else ""
             return
         }
 
