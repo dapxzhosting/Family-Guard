@@ -861,6 +861,7 @@ object FamilyLink {
     }
 
     private var commandListener: ValueEventListener? = null
+    private var commandListenerCode: String? = null
     private var isGlobalListener = false
 
     fun startListening(context: Context, isGlobal: Boolean = false, onMessage: (title: String, body: String, fromDeviceId: String) -> Unit) {
@@ -1020,15 +1021,23 @@ object FamilyLink {
         }
 
         commandsRef(code).addValueEventListener(commandListener!!)
+        commandListenerCode = code
         Log.d(TAG, "Listening for commands in family: $code")
     }
 
     fun stopListening(context: Context, force: Boolean = false) {
         if (isGlobalListener && !force) return
 
-        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        // Sengaja pakai kode yang TERSIMPAN saat listener ini di-attach
+        // (commandListenerCode), BUKAN baca ulang AppLockPrefs.getFamilyCode()
+        // -- kalau keluarga sudah ganti sejak listener ini nempel, baca ulang
+        // bakal detach dari ref yang salah (ref keluarga baru yang gak pernah
+        // ditempeli listener ini), jadi listener lama bocor & tetap
+        // "dengerin" keluarga lama selamanya.
+        val code = commandListenerCode ?: return
         commandListener?.let { commandsRef(code).removeEventListener(it) }
         commandListener = null
+        commandListenerCode = null
         isGlobalListener = false
     }
 

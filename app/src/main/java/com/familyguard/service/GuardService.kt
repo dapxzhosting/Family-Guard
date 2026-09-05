@@ -29,11 +29,7 @@ class GuardService : Service() {
 
         screenStateReceiver = com.familyguard.receiver.ScreenStateReceiver.register(this)
 
-        FamilyLink.registerDevice(this)
-
-        FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
-            showGlobalMessage(title, message, fromDeviceId)
-        }
+        rebindToCurrentFamily()
 
         if (AppLockPrefs.isDeviceLocked(this)) {
             showDeviceLockScreen()
@@ -43,6 +39,31 @@ class GuardService : Service() {
         startPeriodicLocationUpdates()
 
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
+    }
+
+    /**
+     * Daftar ulang device + sambungkan ulang listener command ke kode
+     * keluarga yang SEDANG AKTIF sekarang (dibaca ulang dari AppLockPrefs).
+     *
+     * BUG YANG DIPERBAIKI: FamilyLink.startListening() sebelumnya cuma
+     * dipanggil sekali di onCreate() dan meng-capture kode keluarga saat itu
+     * ke closure listener-nya. Kalau keluarga dihapus lalu dibuat ulang
+     * SELAGI GuardService masih hidup (service foreground jarang mati
+     * sendiri), listener itu tetap nempel ke kode keluarga LAMA selamanya --
+     * onStartCommand() tidak pernah memanggil ulang onCreate(), jadi
+     * memanggil start() lagi (dari onServiceConnected/onTaskRemoved/dll)
+     * tidak pernah benar-benar rebind. Semua command baru (termasuk
+     * set_pin) numpuk gak pernah keproses karena yang dengerin salah
+     * alamat. Rebind ini dipanggil ulang setiap kali service di-start,
+     * bukan cuma sekali di onCreate, supaya selalu ikut kode keluarga
+     * TERBARU.
+     */
+    private fun rebindToCurrentFamily() {
+        FamilyLink.registerDevice(this)
+        FamilyLink.stopListening(this, force = true)
+        FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
+            showGlobalMessage(title, message, fromDeviceId)
+        }
     }
 
     private fun showDeviceLockScreen() {
@@ -98,6 +119,10 @@ class GuardService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Setiap kali service ini di-start ULANG (walau prosesnya masih
+        // hidup dari sebelumnya), pastikan listener command ikut kode
+        // keluarga TERBARU -- lihat penjelasan di rebindToCurrentFamily().
+        rebindToCurrentFamily()
         return START_STICKY
     }
 
