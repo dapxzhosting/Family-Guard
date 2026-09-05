@@ -207,12 +207,50 @@ object FamilyLink {
 
                 if (!name.isNullOrBlank()) AppLockPrefs.saveUserName(context, name)
                 if (!role.isNullOrBlank()) AppLockPrefs.saveRole(context, role)
-                if (!code.isNullOrBlank()) {
-                    AppLockPrefs.saveFamilyCode(context, code)
 
-                    registerDevice(context)
+                if (!code.isNullOrBlank()) {
+                    // JANGAN langsung percaya /users/{uid}/familyCode dan
+                    // langsung registerDevice(). Kalau keluarga ini sudah
+                    // dihapus orang tua (AccountActions.deleteFamily hanya
+                    // membersihkan /users/{PARENT_uid}/familyCode milik
+                    // ORANG TUA -- bukan /users/{CHILD_uid}/familyCode
+                    // milik tiap anak, karena parent tidak tahu uid semua
+                    // anaknya), field ini di sisi anak bisa tetap menunjuk
+                    // ke kode lama selamanya. registerDevice() langsung
+                    // nulis ke families/{code}/devices/{id} tanpa cek --
+                    // dan Firebase otomatis "menghidupkan lagi" node
+                    // families/{code} yang sudah dihapus itu HANYA karena
+                    // ada write ke path anaknya. Efeknya: tiap kali app
+                    // anak di-restart, keluarga yang sudah dihapus itu
+                    // resurrect sendiri, jadi status "Sudah Terhubung"
+                    // selalu balik lagi walau tadinya sempat benar-benar
+                    // clear (lihat listenFamilyDeletion). Makanya wajib
+                    // verify dulu di sini, sama seperti yang sudah
+                    // dilakukan GuardService.rebindToCurrentFamily().
+                    familyRef(code).get()
+                        .addOnSuccessListener { familySnap ->
+                            if (familySnap.exists()) {
+                                AppLockPrefs.saveFamilyCode(context, code)
+                                registerDevice(context)
+                            } else {
+                                // Keluarga sudah tidak ada -- bersihin state
+                                // lokal DAN /users/{uid}/familyCode yang basi
+                                // ini juga, supaya restart berikutnya tidak
+                                // membaca kode lama yang sama lagi.
+                                clearLocalFamilyState(context)
+                                userRef(uid).child("familyCode").removeValue()
+                            }
+                            onResult(!name.isNullOrBlank())
+                        }
+                        .addOnFailureListener {
+                            // Gagal cek (mis. offline) -- jangan anggap
+                            // "gone" supaya tidak salah menghapus state
+                            // cuma karena masalah koneksi sesaat.
+                            onResult(!name.isNullOrBlank())
+                        }
+                } else {
+                    onResult(!name.isNullOrBlank())
                 }
-                onResult(!name.isNullOrBlank())
             }
             .addOnFailureListener { e ->
 
@@ -311,8 +349,27 @@ object FamilyLink {
             onComplete?.invoke()
             return
         }
-        deviceRef(code, targetDeviceId).removeValue()
-            .addOnCompleteListener { onComplete?.invoke() }
+        // Baca uid pemilik device ini DULU (tersimpan dari registerDevice)
+        // sebelum node-nya dihapus -- supaya /users/{uid}/familyCode milik
+        // device yang dikeluarkan ini ikut dibersihkan langsung di Firebase.
+        // Tanpa ini, kalau device yang di-kick ini restart app-nya, dia
+        // masih baca familyCode lama dari /users/{uid} dan registerDevice()
+        // lagi ke keluarga yang sudah mengeluarkannya.
+        deviceRef(code, targetDeviceId).child("uid").get()
+            .addOnSuccessListener { uidSnap ->
+                val targetUid = uidSnap.getValue(String::class.java)
+                deviceRef(code, targetDeviceId).removeValue()
+                    .addOnCompleteListener {
+                        if (!targetUid.isNullOrBlank()) {
+                            userRef(targetUid).child("familyCode").removeValue()
+                        }
+                        onComplete?.invoke()
+                    }
+            }
+            .addOnFailureListener {
+                deviceRef(code, targetDeviceId).removeValue()
+                    .addOnCompleteListener { onComplete?.invoke() }
+            }
     }
 
     private var kickListenerRef: DatabaseReference? = null
@@ -382,8 +439,48 @@ object FamilyLink {
             onComplete?.invoke()
             return
         }
-        familyRef(code).removeValue()
-            .addOnCompleteListener { onComplete?.invoke() }
+        // Baca uid SEMUA anggota (devices/{id}/uid, disimpan oleh
+        // registerDevice) SEBELUM keluarga dihapus -- supaya
+        // /users/{uid}/familyCode milik tiap anggota (termasuk anak) ikut
+        // dibersihkan langsung di Firebase saat ini juga. Sebelumnya cuma
+        // /users/{PARENT_uid}/familyCode milik orang tua sendiri yang
+        // dibersihkan (lihat AccountActions.deleteFamily) -- field milik
+        // anak tidak pernah disentuh, jadi tiap kali app anak restart, dia
+        // baca familyCode lama dari /users/{childUid} dan registerDevice()
+        // lagi ke families/{code} yang sudah dihapus (Firebase otomatis
+        // menciptakan ulang node parent begitu ada write ke child-nya) --
+        // keluarga yang sudah dihapus "hidup lagi" terus-menerus.
+        devicesRef(code).get()
+            .addOnSuccessListener { devicesSnap ->
+                val uids = devicesSnap.children.mapNotNull {
+                    it.child("uid").getValue(String::class.java)
+                }.filter { it.isNotBlank() }
+
+                familyRef(code).removeValue()
+                    .addOnCompleteListener {
+                        if (uids.isEmpty()) {
+                            onComplete?.invoke()
+                        } else {
+                            var remaining = uids.size
+                            uids.forEach { memberUid ->
+                                userRef(memberUid).child("familyCode").removeValue()
+                                    .addOnCompleteListener {
+                                        remaining--
+                                        if (remaining <= 0) onComplete?.invoke()
+                                    }
+                            }
+                        }
+                    }
+            }
+            .addOnFailureListener {
+                // Gagal baca daftar device (mis. offline) -- tetap hapus
+                // keluarganya supaya aksi utama orang tua tidak gagal total,
+                // tapi familyCode anak tidak ikut kebersihin di sini
+                // (fetchUserProfile di sisi anak tetap jadi jaring pengaman
+                // kedua saat itu terjadi).
+                familyRef(code).removeValue()
+                    .addOnCompleteListener { onComplete?.invoke() }
+            }
     }
 
     fun updateUserName(context: Context, newName: String, onComplete: (() -> Unit)? = null) {
@@ -583,9 +680,19 @@ object FamilyLink {
         val role = AppLockPrefs.getRole(context) ?: return
         val userName = AppLockPrefs.getUserName(context) ?: ""
 
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+
         deviceRef(code, id).apply {
             child("role").setValue(role)
             child("userName").setValue(userName)
+            // Simpan uid pemilik device ini -- dipakai deleteFamilyEntirely()/
+            // kickDevice() supaya saat keluarga dihapus/anggota dikeluarkan,
+            // /users/{uid}/familyCode milik anggota itu ikut dibersihkan
+            // LANGSUNG di Firebase (bukan cuma dicek belakangan pas anak buka
+            // app lagi). Tanpa ini, familyCode lama nempel selamanya di
+            // /users/{uid} dan bikin keluarga yang sudah dihapus "hidup lagi"
+            // tiap kali app anak restart (lihat fetchUserProfile).
+            if (uid != null) child("uid").setValue(uid)
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
