@@ -49,6 +49,57 @@ object FamilyLink {
         familyRef(code).addValueEventListener(listener)
     }
 
+    /**
+     * Bersihin status keanggotaan keluarga yang tersimpan LOKAL di device
+     * ini -- dipakai bareng oleh ChildMenuActivity/ChildDashboardActivity
+     * (saat listener realtime mendeteksi keluarga dihapus/kena kick) DAN
+     * oleh GuardService (lihat verifyFamilyStillExists) supaya logic-nya
+     * gak dobel-dobel ditulis di banyak tempat.
+     */
+    fun clearLocalFamilyState(context: Context) {
+        AppLockPrefs.saveFamilyCode(context, "")
+        AppLockPrefs.saveFamilyName(context, "")
+        AppLockPrefs.clearFamilySecurityState(context)
+    }
+
+    /**
+     * Cek SEKALI (one-shot, bukan realtime listener) apakah families/{code}
+     * yang tersimpan di device ini masih benar-benar ada di Firebase.
+     *
+     * WAJIB dipanggil sebelum GuardService nulis APAPUN ke path
+     * families/{code}/... (heartbeat online/lastSeen, update lokasi,
+     * registerDevice, dll). Firebase Realtime Database otomatis MENCIPTAKAN
+     * ulang node parent yang kosong begitu ada write ke path anaknya --
+     * jadi kalau orang tua sudah hapus keluarga tapi GuardService di HP
+     * anak masih hidup di background (yang mana hampir selalu, karena dia
+     * foreground service persisten) dan nulis heartbeat/lokasi tiap 60
+     * detik TANPA cek ini dulu, node families/{code} yang sudah dihapus
+     * "hidup lagi" cuma dari sisa write itu -- child jadi keliatan masih
+     * "terhubung" walau di sisi orang tua sudah bersih, bahkan setelah
+     * app di-restart, karena listenFamilyDeletion cuma cek exists() dan
+     * node itu memang sudah "ada lagi" (walau isinya cuma sampah).
+     *
+     * Kalau ternyata sudah tidak ada, otomatis bersihin state lokal +
+     * matikan GuardService lewat [onGone], TANPA menulis apapun duluan.
+     */
+    fun verifyFamilyStillExists(context: Context, onExists: () -> Unit, onGone: () -> Unit) {
+        val code = AppLockPrefs.getFamilyCode(context)
+        if (code.isNullOrBlank()) {
+            onGone()
+            return
+        }
+        familyRef(code).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) onExists() else onGone()
+            }
+            .addOnFailureListener {
+                // Gagal cek (mis. offline) -- JANGAN anggap "gone", supaya
+                // heartbeat/lokasi tetap jalan normal selagi cuma masalah
+                // koneksi sesaat, bukan keluarga beneran dihapus.
+                onExists()
+            }
+    }
+
     fun stopListeningFamilyDeletion() {
         val code = familyDeletionListenerCode
         val listener = familyDeletionListener

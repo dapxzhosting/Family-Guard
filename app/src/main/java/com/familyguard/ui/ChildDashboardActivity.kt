@@ -92,9 +92,7 @@ class ChildDashboardActivity : BaseActivity() {
         setupFamilyMembersList()
 
         FamilyLink.listenFamilyDeletion(this) {
-            AppLockPrefs.saveFamilyCode(this, "")
-            AppLockPrefs.saveFamilyName(this, "")
-            AppLockPrefs.clearFamilySecurityState(this)
+            FamilyLink.clearLocalFamilyState(this)
             Toast.makeText(this, "Keluarga telah dihapus oleh orang tua", Toast.LENGTH_LONG).show()
             startActivity(Intent(this, ChildMenuActivity::class.java))
             finish()

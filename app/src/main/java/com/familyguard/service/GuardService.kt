@@ -59,11 +59,26 @@ class GuardService : Service() {
      * TERBARU.
      */
     private fun rebindToCurrentFamily() {
-        FamilyLink.registerDevice(this)
-        FamilyLink.stopListening(this, force = true)
-        FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
-            showGlobalMessage(title, message, fromDeviceId)
-        }
+        com.familyguard.sync.FamilyLink.verifyFamilyStillExists(
+            this,
+            onExists = {
+                FamilyLink.registerDevice(this)
+                FamilyLink.stopListening(this, force = true)
+                FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
+                    showGlobalMessage(title, message, fromDeviceId)
+                }
+            },
+            onGone = {
+                // Keluarga sudah dihapus orang tua (atau device sudah
+                // dikeluarkan) selagi GuardService ini hidup di background
+                // tanpa ada Activity yang membuka listenFamilyDeletion --
+                // bersihin state lokal & matikan diri sendiri, JANGAN
+                // registerDevice/startListening (itu bakal nulis ulang dan
+                // "menghidupkan lagi" node yang sudah dihapus).
+                com.familyguard.sync.FamilyLink.clearLocalFamilyState(this)
+                stopSelf()
+            }
+        )
     }
 
     private fun showDeviceLockScreen() {
@@ -90,8 +105,21 @@ class GuardService : Service() {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
-                LocationHelper.updateCurrentLocation(this@GuardService)
-                FamilyLink.sendHeartbeat(this@GuardService)
+                // Cek dulu keluarga masih ada sebelum nulis heartbeat/lokasi
+                // -- lihat verifyFamilyStillExists() untuk kenapa ini
+                // penting (mencegah write blind "menghidupkan lagi" node
+                // keluarga yang sudah dihapus orang tua).
+                com.familyguard.sync.FamilyLink.verifyFamilyStillExists(
+                    this@GuardService,
+                    onExists = {
+                        LocationHelper.updateCurrentLocation(this@GuardService)
+                        FamilyLink.sendHeartbeat(this@GuardService)
+                    },
+                    onGone = {
+                        com.familyguard.sync.FamilyLink.clearLocalFamilyState(this@GuardService)
+                        stopSelf()
+                    }
+                )
                 handler.postDelayed(this, 60_000)
             }
         }
@@ -111,7 +139,7 @@ class GuardService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        FamilyLink.stopListening(this)
+        FamilyLink.stopListening(this, force = true)
         com.familyguard.receiver.ScreenStateReceiver.unregister(this, screenStateReceiver)
         screenStateReceiver = null
         lockWatchRunnable?.let { lockWatchHandler.removeCallbacks(it) }
