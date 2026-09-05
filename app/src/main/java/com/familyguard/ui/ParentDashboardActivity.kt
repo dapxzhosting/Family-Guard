@@ -370,8 +370,8 @@ class ParentDashboardActivity : BaseActivity() {
 
         binding.btnLockScreen.setOnClickListener {
             val target = requireSelectedChildId() ?: return@setOnClickListener
-            if (!requirePinSet(target)) return@setOnClickListener
             if (!requireDeviceAdminActive(target)) return@setOnClickListener
+            if (!requirePinSet(target)) return@setOnClickListener
             confirmAction("Kunci layar HP anak sekarang?") {
                 FamilyLink.sendLockScreen(this, target)
                 toast("Perintah kunci layar dikirim")
