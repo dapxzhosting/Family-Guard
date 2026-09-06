@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.familyguard.R
 import com.familyguard.admin.LockManager
@@ -18,14 +17,12 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "FCM Token refreshed: $token")
 
         AppLockPrefs.saveFcmToken(this, token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.d(TAG, "FCM message received from: ${remoteMessage.from}")
 
         val data = remoteMessage.data
         val command = data["command"] ?: run {
@@ -39,22 +36,22 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
             CMD_SEND_MESSAGE -> handleSendMessage(data["title"], data["message"])
             CMD_LOCK_APP -> handleLockApp(data["package_name"], data["action"])
             CMD_BLOCK_NOTIF -> handleBlockNotif(data["package_name"], data["action"])
-            else -> Log.w(TAG, "Unknown command: $command")
+            else -> Unit
         }
     }
 
     private fun handleLockScreen() {
-        Log.d(TAG, "Executing: LOCK_SCREEN")
+
         val lockManager = LockManager(this)
         val result = lockManager.lockScreen()
         result.onFailure { e ->
-            Log.e(TAG, "Lock failed: ${e.message}")
+
             showMessageNotification("Kunci Gagal", "Device Admin belum diaktifkan di HP ini.")
         }
     }
 
     private fun handleSendMessage(title: String?, message: String?) {
-        Log.d(TAG, "Executing: SEND_MESSAGE → $title: $message")
+
         showMessageNotification(
             title = title ?: "Pesan dari Orang Tua",
             body = message ?: ""
@@ -63,7 +60,7 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun handleLockApp(packageName: String?, action: String?) {
         packageName ?: return
-        Log.d(TAG, "Executing: LOCK_APP → $action on $packageName")
+
         when (action) {
             ACTION_ADD -> AppLockPrefs.addLockedApp(this, packageName)
             ACTION_REMOVE -> AppLockPrefs.removeLockedApp(this, packageName)
@@ -72,7 +69,7 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun handleBlockNotif(packageName: String?, action: String?) {
         packageName ?: return
-        Log.d(TAG, "Executing: BLOCK_NOTIF → $action on $packageName")
+
         when (action) {
             ACTION_ADD -> AppLockPrefs.addBlockedNotifApp(this, packageName)
             ACTION_REMOVE -> AppLockPrefs.removeBlockedNotifApp(this, packageName)
@@ -115,7 +112,6 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     companion object {
-        private const val TAG = "FCMService"
 
         const val CMD_LOCK_SCREEN = "lock_screen"
         const val CMD_SEND_MESSAGE = "send_message"
@@ -126,3 +122,4 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         const val ACTION_REMOVE = "remove"
     }
 }
+

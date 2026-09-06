@@ -16,8 +16,7 @@ class FamilyMemberAdapter(
     private val myDeviceId: String? = null,
     private var selectedDeviceId: String? = null,
     private val onMemberClick: ((FamilyDevice) -> Unit)? = null,
-    // true kalau adapter ini dipakai di layar Dashboard Orang Tua --
-    // hanya di situ tombol "keluarkan anggota" boleh muncul.
+
     private val isParentView: Boolean = false,
     private val onKickClick: ((FamilyDevice) -> Unit)? = null
 ) : RecyclerView.Adapter<FamilyMemberAdapter.ViewHolder>() {
@@ -28,6 +27,9 @@ class FamilyMemberAdapter(
         val role: TextView = view.findViewById(R.id.tvMemberRole)
         val dot: View = view.findViewById(R.id.dotMemberOnline)
         val btnKick: ImageButton = view.findViewById(R.id.btnKickMember)
+        // Simpan ripple bawaan dari XML, supaya bisa dimatikan kalau item ini
+        // memang tidak bisa di-tap (biar tidak terlihat seperti tombol padahal bukan).
+        val defaultForeground: android.graphics.drawable.Drawable? = view.foreground
     }
 
     fun submitList(newMembers: List<FamilyDevice>) {
@@ -82,7 +84,13 @@ class FamilyMemberAdapter(
 
         if (onMemberClick != null) {
             holder.itemView.isClickable = true
+            holder.itemView.foreground = holder.defaultForeground
             holder.itemView.setOnClickListener { onMemberClick.invoke(member) }
+        } else {
+            // Bukan tombol -> jangan tampilkan efek ripple/tekan sama sekali
+            holder.itemView.isClickable = false
+            holder.itemView.foreground = null
+            holder.itemView.setOnClickListener(null)
         }
         val canKick = isParentView && onKickClick != null && member.deviceId != myDeviceId
         if (canKick) {
@@ -96,3 +104,4 @@ class FamilyMemberAdapter(
 
     override fun getItemCount(): Int = members.size
 }
+

@@ -101,3 +101,4 @@ class SettingsActivity : BaseActivity() {
         overridePendingTransition(com.familyguard.R.anim.stay_undim, com.familyguard.R.anim.slide_down_out)
     }
 }
+

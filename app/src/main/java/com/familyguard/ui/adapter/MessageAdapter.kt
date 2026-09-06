@@ -12,11 +12,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Daftar pesan (FamilyLink.ChatMessage) di MessageInboxActivity, diurutkan
- * terbaru dulu (sudah di-sort oleh FamilyLink.observeMessages). Titik hijau
- * di kiri nampil kalau pesan belum dibaca (read == false).
- */
 class MessageAdapter(
     private var items: List<FamilyLink.ChatMessage> = emptyList(),
     private val onClick: (FamilyLink.ChatMessage) -> Unit,
@@ -59,3 +54,4 @@ class MessageAdapter(
 
     override fun getItemCount(): Int = items.size
 }
+

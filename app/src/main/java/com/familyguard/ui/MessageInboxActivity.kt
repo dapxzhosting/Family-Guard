@@ -11,14 +11,6 @@ import com.familyguard.ui.adapter.MessageAdapter
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.database.ValueEventListener
 
-/**
- * Riwayat pesan (families/{code}/messages/{myDeviceId}) untuk device INI --
- * dipakai baik oleh Orang Tua maupun Anak, keduanya lewat activity yang
- * sama, karena FamilyLink.sendMessage() menyimpan salinan persisten di
- * kedua arah (lihat FamilyLink.kt). Dibuka dari tombol inbox di dashboard/
- * menu masing-masing role. Tap 1 pesan -> tandai terbaca. Tombol X di baris
- * -> hapus pesan itu saja.
- */
 class MessageInboxActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMessageInboxBinding
@@ -88,3 +80,4 @@ class MessageInboxActivity : BaseActivity() {
         messagesListener?.let { FamilyLink.removeMessagesListener(this, myDeviceId, it) }
     }
 }
+

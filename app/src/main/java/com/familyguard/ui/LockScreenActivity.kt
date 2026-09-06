@@ -83,18 +83,9 @@ class LockScreenActivity : Activity() {
                 val body = intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: ""
                 messageFromDeviceId = intent.getStringExtra(EXTRA_MESSAGE_FROM) ?: ""
 
-                // title dari pengirim SUDAH berbentuk kalimat lengkap ("Pesan
-                // dari Orang Tua" / "Balasan dari Anak"), jadi jangan ditempel
-                // prefix "Pesan:" lagi -- itu penyebab teksnya jadi dobel
-                // ("Pesan: Pesan dari Orang Tua").
                 binding.tvTitle.text = title
                 binding.tvTitle.textSize = 18f
 
-                // Isi pesan (body) adalah konten UTAMA yang perlu dibaca anak,
-                // jadi dibuat menonjol -- bukan style subtitle kecil/redup
-                // bawaan mode PIN. Lebar dibuat match_parent (bawaannya
-                // wrap_content) supaya teks panjang membungkus rapi & rata
-                // kiri, bukan numpuk sempit di tengah.
                 binding.tvSubtitle.text = body
                 binding.tvSubtitle.textSize = 19f
                 binding.tvSubtitle.setTextColor(0xFFFFFFFF.toInt())
@@ -241,13 +232,6 @@ class LockScreenActivity : Activity() {
         startActivity(intent)
     }
 
-    /**
-     * Kirim balasan ke pengirim pesan asli (messageFromDeviceId, diambil
-     * dari field "from" command send_message -- lihat FamilyLink) memakai
-     * mekanisme send_message yang sama, cuma arahnya kebalik. Bisa dipakai
-     * dari kedua sisi (Anak membalas Orang Tua, atau sebaliknya) karena
-     * LockScreenActivity mode MESSAGE ini generik untuk keduanya.
-     */
     private fun sendReply() {
         val text = binding.etReplyMessage.text?.toString()?.trim() ?: ""
         if (text.isEmpty()) {
@@ -268,13 +252,6 @@ class LockScreenActivity : Activity() {
         finish()
     }
 
-    /**
-     * Kirim approval request ke Orang Tua (families/{code}/approvalRequests)
-     * lalu dengarkan balik statusnya secara realtime -- kalau disetujui,
-     * app langsung dibuka (durasi bukanya ditentukan oleh
-     * AppLockPrefs.setApprovedTemporaryUnlock lewat command temp_unlock_app
-     * yang dikirim FamilyLink.respondApprovalRequest).
-     */
     private fun requestApproval() {
         val pkg = lockedPackage ?: return
         val appName = try {
@@ -355,16 +332,6 @@ class LockScreenActivity : Activity() {
         }
     }
 
-    /**
-     * LockScreenActivity dibuka dari AccessibilityService pakai
-     * FLAG_ACTIVITY_NEW_TASK (wajib, karena Service bukan Activity context),
-     * yang artinya dia jalan di TASK TERPISAH dari aplikasi yang dikunci --
-     * bukan numpuk di atas task app tersebut. Akibatnya kalau cuma
-     * finish(), sistem tidak tahu harus balik ke app yang dikunci dan malah
-     * menampilkan Home. Makanya di sini app yang dikunci di-relaunch
-     * eksplisit dulu (bawa ke depan lewat launch intent-nya sendiri) baru
-     * LockScreenActivity ditutup.
-     */
     private fun reopenLockedAppThenFinish(packageName: String) {
         try {
             val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
@@ -376,8 +343,7 @@ class LockScreenActivity : Activity() {
                 startActivity(launchIntent)
             }
         } catch (e: Exception) {
-            // Kalau app-nya sudah di-uninstall atau launch intent tidak ada,
-            // tidak masalah -- lanjut finish() biasa seperti sebelumnya.
+
         }
         finish()
     }
@@ -537,7 +503,6 @@ class LockScreenActivity : Activity() {
                 context.startActivity(intent)
             } catch (e: Exception) {
 
-                android.util.Log.w("LockScreenActivity", "requestDeviceLock gagal: ${e.message}")
             }
         }
 
@@ -555,3 +520,4 @@ class LockScreenActivity : Activity() {
         const val MAX_PIN_LENGTH = 6
     }
 }
+

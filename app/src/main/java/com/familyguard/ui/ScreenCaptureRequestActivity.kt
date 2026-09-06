@@ -44,3 +44,4 @@ class ScreenCaptureRequestActivity : Activity() {
         private const val REQ_CODE = 5501
     }
 }
+

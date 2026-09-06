@@ -35,19 +35,8 @@ object AccountActions {
             .show()
     }
 
-    /**
-     * Melepas keanggotaan dari keluarga saat ini di Firebase & local prefs.
-     * Dipanggil setelah kode keluarga baru berhasil divalidasi, supaya
-     * pengguna tidak berakhir di kondisi "tanpa keluarga" kalau proses
-     * ganti keluarga dibatalkan di tengah jalan.
-     */
     fun leaveCurrentFamily(activity: Activity, onDone: () -> Unit) {
-        // Matikan dulu listener "kick" SEBELUM device node kita sendiri
-        // dihapus -- listenForKick() cuma lihat "device node ini hilang
-        // sementara keluarga masih ada" tanpa tahu SIAPA yang menghapusnya,
-        // jadi kalau tidak dimatikan dulu, penghapusan yang kita lakukan
-        // sendiri (leave/ganti keluarga) akan salah terdeteksi sebagai
-        // "dikeluarkan oleh orang tua".
+
         FamilyLink.stopListeningForKick()
 
         FamilyLink.removeDeviceFromCurrentFamily(activity) {
@@ -87,13 +76,6 @@ object AccountActions {
             .show()
     }
 
-    /**
-     * Khusus role Anak: keluar dari keluarga saat ini TANPA langsung join
-     * keluarga lain (beda dengan changeFamily). Sebelum device node
-     * dihapus, kirim dulu notice ke families/{code}/childLeftNotice supaya
-     * Orang Tua tetap tahu anaknya keluar walau device-nya sudah tercabut
-     * dari daftar anggota.
-     */
     fun leaveFamily(activity: Activity, onDone: () -> Unit) {
         AlertDialog.Builder(activity)
             .setTitle("Keluar dari Keluarga?")
@@ -208,3 +190,4 @@ object AccountActions {
         else -> "-"
     }
 }
+

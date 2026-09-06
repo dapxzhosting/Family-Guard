@@ -1,7 +1,6 @@
 package com.familyguard.sync
 
 import android.content.Context
-import android.util.Log
 import com.familyguard.admin.LockManager
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.database.DataSnapshot
@@ -12,7 +11,6 @@ import com.google.firebase.database.ValueEventListener
 
 object FamilyLink {
 
-    private const val TAG = "FamilyLink"
     private val db = FirebaseDatabase.getInstance().reference
 
     private var familyDeletionListener: ValueEventListener? = null
@@ -20,14 +18,6 @@ object FamilyLink {
 
     private fun userRef(uid: String) = db.child("users").child(uid)
 
-    /**
-     * Memantau node families/{code} secara realtime. Kalau orang tua
-     * menghapus keluarga (families/{code} dihapus dari Firebase), node ini
-     * jadi tidak ada lagi -- callback [onDeleted] dipanggil supaya UI bisa
-     * kasih tau anak & sembunyiin akses ke dashboard. Listener otomatis
-     * langsung dicek juga saat dipasang, jadi kasus "keluarga sudah
-     * dihapus sebelum app dibuka lagi" ikut ketangkep.
-     */
     fun listenFamilyDeletion(context: Context, onDeleted: () -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) return
@@ -41,7 +31,7 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "listenFamilyDeletion cancelled: ${error.message}")
+
             }
         }
         familyDeletionListener = listener
@@ -49,39 +39,20 @@ object FamilyLink {
         familyRef(code).addValueEventListener(listener)
     }
 
-    /**
-     * Bersihin status keanggotaan keluarga yang tersimpan LOKAL di device
-     * ini -- dipakai bareng oleh ChildMenuActivity/ChildDashboardActivity
-     * (saat listener realtime mendeteksi keluarga dihapus/kena kick) DAN
-     * oleh GuardService (lihat verifyFamilyStillExists) supaya logic-nya
-     * gak dobel-dobel ditulis di banyak tempat.
-     */
     fun clearLocalFamilyState(context: Context) {
         AppLockPrefs.saveFamilyCode(context, "")
         AppLockPrefs.saveFamilyName(context, "")
         AppLockPrefs.clearFamilySecurityState(context)
+
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            userRef(uid).child("familyCode").removeValue()
+                .addOnFailureListener { e ->
+
+                }
+        }
     }
 
-    /**
-     * Cek SEKALI (one-shot, bukan realtime listener) apakah families/{code}
-     * yang tersimpan di device ini masih benar-benar ada di Firebase.
-     *
-     * WAJIB dipanggil sebelum GuardService nulis APAPUN ke path
-     * families/{code}/... (heartbeat online/lastSeen, update lokasi,
-     * registerDevice, dll). Firebase Realtime Database otomatis MENCIPTAKAN
-     * ulang node parent yang kosong begitu ada write ke path anaknya --
-     * jadi kalau orang tua sudah hapus keluarga tapi GuardService di HP
-     * anak masih hidup di background (yang mana hampir selalu, karena dia
-     * foreground service persisten) dan nulis heartbeat/lokasi tiap 60
-     * detik TANPA cek ini dulu, node families/{code} yang sudah dihapus
-     * "hidup lagi" cuma dari sisa write itu -- child jadi keliatan masih
-     * "terhubung" walau di sisi orang tua sudah bersih, bahkan setelah
-     * app di-restart, karena listenFamilyDeletion cuma cek exists() dan
-     * node itu memang sudah "ada lagi" (walau isinya cuma sampah).
-     *
-     * Kalau ternyata sudah tidak ada, otomatis bersihin state lokal +
-     * matikan GuardService lewat [onGone], TANPA menulis apapun duluan.
-     */
     fun verifyFamilyStillExists(context: Context, onExists: () -> Unit, onGone: () -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -93,40 +64,17 @@ object FamilyLink {
                 if (snapshot.exists()) onExists() else onGone()
             }
             .addOnFailureListener {
-                // Gagal cek (mis. offline) -- JANGAN anggap "gone", supaya
-                // heartbeat/lokasi tetap jalan normal selagi cuma masalah
-                // koneksi sesaat, bukan keluarga beneran dihapus.
+
                 onExists()
             }
     }
 
-    // Cache in-memory (BUKAN Firebase round-trip) status "keluarga ini
-    // masih valid apa enggak", di-update oleh startFamilyExistenceGuard().
-    // Semua fungsi yang nulis rutin ke families/{code}/... (updateCurrentApp
-    // yang dipanggil TIAP KALI app anak ganti, sendHeartbeat, updateLocation,
-    // syncUsageMinutes, syncPermissionStatus, registerDevice) HARUS cek ini
-    // dulu -- kalau tidak, tulisan itu "menghidupkan lagi" node keluarga
-    // yang sudah dihapus orang tua (Firebase otomatis bikin ulang parent
-    // node kosong begitu ada write ke path anaknya). Dulu cuma heartbeat
-    // yang dijaga (verifyFamilyStillExists one-shot, tiap 60 detik) --
-    // ternyata updateCurrentApp jauh lebih sering dipanggil (tiap app anak
-    // ganti foreground, bisa tiap beberapa detik) dan itu jalan TANPA
-    // proteksi sama sekali, jadi resurrection tetap kejadian jauh lebih
-    // cepat dari siklus 60 detik itu.
     @Volatile private var familyExistsCache: Boolean = true
     private var existenceListener: ValueEventListener? = null
     private var existenceListenerCode: String? = null
 
     fun isFamilyKnownValid(): Boolean = familyExistsCache
 
-    /**
-     * Pasang SATU listener realtime yang terus hidup selama GuardService
-     * hidup, meng-update familyExistsCache setiap ada perubahan -- jauh
-     * lebih murah daripada cek Firebase satu-satu di tiap fungsi tulis.
-     * Begitu keluarga terdeteksi hilang, [onGone] dipanggil (biasanya buat
-     * bersihin state lokal + matikan GuardService) SEBELUM tulisan
-     * berikutnya sempat jalan.
-     */
     fun startFamilyExistenceGuard(context: Context, onGone: () -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -145,7 +93,7 @@ object FamilyLink {
                 if (!exists) onGone()
             }
             override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "startFamilyExistenceGuard cancelled: ${error.message}")
+
             }
         }
         existenceListener = listener
@@ -186,9 +134,6 @@ object FamilyLink {
             userRef(uid).updateChildren(updates)
                 .addOnFailureListener { e ->
 
-                    Log.e(TAG, "GAGAL simpan profil user ke /users/$uid -- kemungkinan besar " +
-                            "Firebase Realtime Database Rules belum izinkan path ini. " +
-                            "Error: ${e.message}", e)
                 }
         }
     }
@@ -209,43 +154,21 @@ object FamilyLink {
                 if (!role.isNullOrBlank()) AppLockPrefs.saveRole(context, role)
 
                 if (!code.isNullOrBlank()) {
-                    // JANGAN langsung percaya /users/{uid}/familyCode dan
-                    // langsung registerDevice(). Kalau keluarga ini sudah
-                    // dihapus orang tua (AccountActions.deleteFamily hanya
-                    // membersihkan /users/{PARENT_uid}/familyCode milik
-                    // ORANG TUA -- bukan /users/{CHILD_uid}/familyCode
-                    // milik tiap anak, karena parent tidak tahu uid semua
-                    // anaknya), field ini di sisi anak bisa tetap menunjuk
-                    // ke kode lama selamanya. registerDevice() langsung
-                    // nulis ke families/{code}/devices/{id} tanpa cek --
-                    // dan Firebase otomatis "menghidupkan lagi" node
-                    // families/{code} yang sudah dihapus itu HANYA karena
-                    // ada write ke path anaknya. Efeknya: tiap kali app
-                    // anak di-restart, keluarga yang sudah dihapus itu
-                    // resurrect sendiri, jadi status "Sudah Terhubung"
-                    // selalu balik lagi walau tadinya sempat benar-benar
-                    // clear (lihat listenFamilyDeletion). Makanya wajib
-                    // verify dulu di sini, sama seperti yang sudah
-                    // dilakukan GuardService.rebindToCurrentFamily().
+
                     familyRef(code).get()
                         .addOnSuccessListener { familySnap ->
                             if (familySnap.exists()) {
                                 AppLockPrefs.saveFamilyCode(context, code)
                                 registerDevice(context)
                             } else {
-                                // Keluarga sudah tidak ada -- bersihin state
-                                // lokal DAN /users/{uid}/familyCode yang basi
-                                // ini juga, supaya restart berikutnya tidak
-                                // membaca kode lama yang sama lagi.
+
                                 clearLocalFamilyState(context)
                                 userRef(uid).child("familyCode").removeValue()
                             }
                             onResult(!name.isNullOrBlank())
                         }
                         .addOnFailureListener {
-                            // Gagal cek (mis. offline) -- jangan anggap
-                            // "gone" supaya tidak salah menghapus state
-                            // cuma karena masalah koneksi sesaat.
+
                             onResult(!name.isNullOrBlank())
                         }
                 } else {
@@ -254,9 +177,6 @@ object FamilyLink {
             }
             .addOnFailureListener { e ->
 
-                Log.e(TAG, "GAGAL ambil profil user dari /users/$uid -- kemungkinan besar " +
-                        "Firebase Realtime Database Rules belum izinkan path ini (bukan " +
-                        "berarti user memang belum pernah setup). Error: ${e.message}", e)
                 onResult(false)
             }
     }
@@ -272,16 +192,6 @@ object FamilyLink {
             .addOnCompleteListener { onComplete?.invoke() }
     }
 
-    /**
-     * Dipanggil dari sisi ANAK saat memilih "Keluar dari Keluarga" (beda
-     * dengan Ganti Keluarga -- di sini anak TIDAK langsung join keluarga
-     * lain). Ditulis SEBELUM device node dihapus (lihat
-     * removeDeviceFromCurrentFamily / AccountActions.leaveFamily) karena
-     * begitu device node hilang, nama anak sudah tidak bisa diambil lagi.
-     * Disimpan di families/{code}/childLeftNotice (bukan di node devices) supaya
-     * tetap ada walau device-nya sudah tercabut, dan dibaca realtime oleh
-     * ParentDashboardActivity untuk nampilin banner peringatan.
-     */
     fun notifyChildLeftFamily(context: Context, onComplete: (() -> Unit)? = null) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
@@ -297,11 +207,6 @@ object FamilyLink {
         ).addOnCompleteListener { onComplete?.invoke() }
     }
 
-    /**
-     * Dengarkan notice "anak keluar dari keluarga" secara realtime di sisi
-     * Orang Tua. onChange dipanggil dengan null kalau notice-nya sudah
-     * di-dismiss/dihapus (lihat dismissChildLeftNotice).
-     */
     fun observeChildLeftNotice(
         context: Context,
         onChange: (userName: String?, timestamp: Long) -> Unit
@@ -319,7 +224,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "childLeftNotice observer cancelled: ${error.message}")
+
             }
         }
         familyRef(code).child("childLeftNotice").addValueEventListener(listener)
@@ -331,57 +236,25 @@ object FamilyLink {
         familyRef(code).child("childLeftNotice").removeEventListener(listener)
     }
 
-    /** Dipanggil saat Orang Tua menutup (dismiss) banner notice di dashboard. */
     fun dismissChildLeftNotice(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         familyRef(code).child("childLeftNotice").removeValue()
     }
 
-    /**
-     * Dipanggil dari sisi ORANG TUA untuk mengeluarkan satu anggota
-     * keluarga (biasanya anak) tanpa menghapus keluarganya secara
-     * keseluruhan. Cukup hapus node families/{code}/devices/{targetDeviceId}
-     * -- anggota lain tetap ada, hanya device ini yang tercabut.
-     */
     fun kickDevice(context: Context, targetDeviceId: String, onComplete: (() -> Unit)? = null) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) {
             onComplete?.invoke()
             return
         }
-        // Baca uid pemilik device ini DULU (tersimpan dari registerDevice)
-        // sebelum node-nya dihapus -- supaya /users/{uid}/familyCode milik
-        // device yang dikeluarkan ini ikut dibersihkan langsung di Firebase.
-        // Tanpa ini, kalau device yang di-kick ini restart app-nya, dia
-        // masih baca familyCode lama dari /users/{uid} dan registerDevice()
-        // lagi ke keluarga yang sudah mengeluarkannya.
-        deviceRef(code, targetDeviceId).child("uid").get()
-            .addOnSuccessListener { uidSnap ->
-                val targetUid = uidSnap.getValue(String::class.java)
-                deviceRef(code, targetDeviceId).removeValue()
-                    .addOnCompleteListener {
-                        if (!targetUid.isNullOrBlank()) {
-                            userRef(targetUid).child("familyCode").removeValue()
-                        }
-                        onComplete?.invoke()
-                    }
-            }
-            .addOnFailureListener {
-                deviceRef(code, targetDeviceId).removeValue()
-                    .addOnCompleteListener { onComplete?.invoke() }
-            }
+
+        deviceRef(code, targetDeviceId).removeValue()
+            .addOnCompleteListener { onComplete?.invoke() }
     }
 
     private var kickListenerRef: DatabaseReference? = null
     private var kickListener: ValueEventListener? = null
 
-    /**
-     * Dipantau dari sisi ANAK. Kalau node device milik HP ini
-     * (families/{code}/devices/{myDeviceId}) tiba-tiba hilang padahal
-     * keluarganya sendiri masih ada, berarti orang tua baru saja
-     * mengeluarkan (kick) device ini secara spesifik -- beda dengan kasus
-     * keluarga dihapus total (itu ditangani listenFamilyDeletion()).
-     */
     fun listenForKick(context: Context, onKicked: () -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) return
@@ -401,7 +274,7 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "listenForKick cancelled: ${error.message}")
+
             }
         }
         kickListenerRef = ref
@@ -439,47 +312,13 @@ object FamilyLink {
             onComplete?.invoke()
             return
         }
-        // Baca uid SEMUA anggota (devices/{id}/uid, disimpan oleh
-        // registerDevice) SEBELUM keluarga dihapus -- supaya
-        // /users/{uid}/familyCode milik tiap anggota (termasuk anak) ikut
-        // dibersihkan langsung di Firebase saat ini juga. Sebelumnya cuma
-        // /users/{PARENT_uid}/familyCode milik orang tua sendiri yang
-        // dibersihkan (lihat AccountActions.deleteFamily) -- field milik
-        // anak tidak pernah disentuh, jadi tiap kali app anak restart, dia
-        // baca familyCode lama dari /users/{childUid} dan registerDevice()
-        // lagi ke families/{code} yang sudah dihapus (Firebase otomatis
-        // menciptakan ulang node parent begitu ada write ke child-nya) --
-        // keluarga yang sudah dihapus "hidup lagi" terus-menerus.
-        devicesRef(code).get()
-            .addOnSuccessListener { devicesSnap ->
-                val uids = devicesSnap.children.mapNotNull {
-                    it.child("uid").getValue(String::class.java)
-                }.filter { it.isNotBlank() }
 
-                familyRef(code).removeValue()
-                    .addOnCompleteListener {
-                        if (uids.isEmpty()) {
-                            onComplete?.invoke()
-                        } else {
-                            var remaining = uids.size
-                            uids.forEach { memberUid ->
-                                userRef(memberUid).child("familyCode").removeValue()
-                                    .addOnCompleteListener {
-                                        remaining--
-                                        if (remaining <= 0) onComplete?.invoke()
-                                    }
-                            }
-                        }
-                    }
-            }
-            .addOnFailureListener {
-                // Gagal baca daftar device (mis. offline) -- tetap hapus
-                // keluarganya supaya aksi utama orang tua tidak gagal total,
-                // tapi familyCode anak tidak ikut kebersihin di sini
-                // (fetchUserProfile di sisi anak tetap jadi jaring pengaman
-                // kedua saat itu terjadi).
-                familyRef(code).removeValue()
-                    .addOnCompleteListener { onComplete?.invoke() }
+        familyRef(code).removeValue()
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+
+                }
+                onComplete?.invoke()
             }
     }
 
@@ -530,36 +369,15 @@ object FamilyLink {
         )
     }
 
-    /**
-     * Update SATU field deviceAdminActive=false tanpa menimpa status
-     * permission lain -- dipanggil dari FamilyDeviceAdminReceiver.onDisabled
-     * (fitur 4: Approval & Notifikasi / proteksi uninstall) supaya
-     * cardPermissionWarning di ParentDashboardActivity langsung nyala
-     * real-time begitu anak menonaktifkan Device Admin, tanpa perlu
-     * menunggu sinkronisasi penuh dari updateStatusIcons().
-     */
     fun markDeviceAdminDisabled(context: Context) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
         deviceRef(code, id).child("deviceAdminActive").setValue(false)
     }
 
-    /**
-     * Firebase RTDB key TIDAK BOLEH mengandung titik (`.`), padahal package
-     * name Android selalu pakai titik (mis. "com.whatsapp") -- jadi titiknya
-     * diganti koma (karakter yang tidak pernah muncul di package name asli)
-     * supaya bisa dipakai sebagai key node, dan dibalikin lagi pas dibaca.
-     */
     private fun encodePackageKey(packageName: String) = packageName.replace(".", ",")
     private fun decodePackageKey(key: String) = key.replace(",", ".")
 
-    /**
-     * Sinkron total menit pemakaian [packageName] pada tanggal [date]
-     * (format yyyy-MM-dd) ke families/{code}/devices/{deviceId}/usage/{date}.
-     * Dipanggil dari UsageTracker, throttled supaya cuma nulis kalau angka
-     * menitnya beneran naik. Dibaca lagi oleh ScreenTimeReportActivity di
-     * sisi Orang Tua untuk generate laporan mingguan.
-     */
     fun syncUsageMinutes(context: Context, date: String, packageName: String, minutes: Int) {
         if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
@@ -567,15 +385,6 @@ object FamilyLink {
         deviceRef(code, id).child("usage").child(date).child(encodePackageKey(packageName)).setValue(minutes)
     }
 
-    /**
-     * Update aplikasi yang SEDANG dibuka (realtime) ke
-     * families/{code}/devices/{deviceId}/currentApp -- dipanggil dari
-     * AppLockAccessibilityService.evaluatePackage() setiap foreground app
-     * berganti (bukan numpang di flow menit UsageTracker, supaya update-nya
-     * instan tanpa nunggu threshold 1 menit). Dibaca via listener realtime
-     * oleh ParentDashboardActivity, bukan one-shot get() seperti laporan
-     * mingguan.
-     */
     fun updateCurrentApp(context: Context, packageName: String) {
         if (!isFamilyKnownValid()) return
         val code = AppLockPrefs.getFamilyCode(context) ?: return
@@ -588,11 +397,6 @@ object FamilyLink {
         )
     }
 
-    /**
-     * Dengarkan perubahan currentApp milik [targetDeviceId] secara realtime.
-     * Dipanggil saat orang tua memilih/melihat detail 1 HP anak, dilepas
-     * lewat removeCurrentAppListener() saat pindah anak / activity ditutup.
-     */
     fun observeCurrentApp(
         context: Context,
         targetDeviceId: String,
@@ -607,7 +411,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "currentApp observer cancelled: ${error.message}")
+
             }
         }
         deviceRef(code, targetDeviceId).child("currentApp").addValueEventListener(listener)
@@ -619,12 +423,6 @@ object FamilyLink {
         deviceRef(code, targetDeviceId).child("currentApp").removeEventListener(listener)
     }
 
-    /**
-     * Ambil rekap pemakaian [daysBack] hari terakhir (termasuk hari ini) dari
-     * HP anak [targetDeviceId], lalu kembalikan sebagai flat list yang siap
-     * dipakai ScreenTimeReportGenerator. Satu-shot read (bukan listener
-     * real-time) karena laporan cukup di-refresh manual/tiap buka halaman.
-     */
     fun fetchUsageHistory(
         context: Context,
         targetDeviceId: String,
@@ -668,12 +466,7 @@ object FamilyLink {
     }
 
     fun registerDevice(context: Context) {
-        // Reset cache "keluarga valid" ke true di sini -- ini aksi JOIN
-        // eksplisit (dari FamilyCodeActivity atau GuardService yang baru
-        // konfirmasi keluarga masih ada), jadi selalu boleh nulis. Kalau
-        // gak di-reset, cache bisa masih "false" nempel dari keluarga
-        // SEBELUMNYA (yang baru dihapus), dan itu bakal salah nge-block
-        // join ke keluarga BARU.
+
         familyExistsCache = true
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val id = AppLockPrefs.getDeviceId(context)
@@ -685,27 +478,17 @@ object FamilyLink {
         deviceRef(code, id).apply {
             child("role").setValue(role)
             child("userName").setValue(userName)
-            // Simpan uid pemilik device ini -- dipakai deleteFamilyEntirely()/
-            // kickDevice() supaya saat keluarga dihapus/anggota dikeluarkan,
-            // /users/{uid}/familyCode milik anggota itu ikut dibersihkan
-            // LANGSUNG di Firebase (bukan cuma dicek belakangan pas anak buka
-            // app lagi). Tanpa ini, familyCode lama nempel selamanya di
-            // /users/{uid} dan bikin keluarga yang sudah dihapus "hidup lagi"
-            // tiap kali app anak restart (lihat fetchUserProfile).
-            if (uid != null) child("uid").setValue(uid)
+
+            if (uid != null) {
+                child("uid").setValue(uid)
+                    .addOnFailureListener { e ->
+
+                    }
+            }
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
 
-            // JANGAN timpa hasPin jadi false di sini kalau baca lokalnya false --
-            // status "PIN sudah diset" harus monoton (sekali true, jangan pernah
-            // balik false lewat re-registrasi). Kalau kita selalu ikutin nilai
-            // lokal apa adanya, proses yang sempat kebunuh & restart sebelum
-            // SharedPreferences ke-flush ke disk bisa bikin flag ini kebalik ke
-            // false di Firebase padahal PIN sebenarnya sudah ada -- efeknya SEMUA
-            // tombol fitur yang butuh PIN (Kunci Semua, Kunci Layar, dll) jadi
-            // minta set PIN lagi terus-menerus. Command "set_pin" sendiri tetap
-            // yang berwenang menuliskan hasPin=true begitu PIN baru masuk.
             if (AppLockPrefs.hasPin(context)) {
                 child("hasPin").setValue(true)
             }
@@ -714,7 +497,7 @@ object FamilyLink {
             child("online").onDisconnect().setValue(false)
             child("lastSeen").onDisconnect().setValue(System.currentTimeMillis())
         }
-        Log.d(TAG, "Device registered: $id as $role in family $code")
+
     }
 
     fun sendHeartbeat(context: Context) {
@@ -773,14 +556,6 @@ object FamilyLink {
     fun sendSetPin(context: Context, pin: String, targetDeviceId: String) =
         sendCommand(context, "set_pin", mapOf("pin" to pin), targetDeviceId)
 
-    /**
-     * Kirim pesan popup (send_message command -- tetap sama seperti
-     * sebelumnya, dibaca via startListening() lalu ditampilkan sebagai
-     * LockScreenActivity mode MESSAGE) SEKALIGUS simpan salinannya secara
-     * persisten ke families/{code}/messages/{targetDeviceId}/{pushId}
-     * supaya tidak hilang kalau popup-nya kelewat/di-dismiss -- ini yang
-     * dibaca ParentDashboardActivity/ChildDashboardActivity buat inbox.
-     */
     fun sendMessage(context: Context, title: String, message: String, targetDeviceId: String) {
         sendCommand(context, "send_message", mapOf("title" to title, "message" to message), targetDeviceId)
 
@@ -813,11 +588,6 @@ object FamilyLink {
         val read: Boolean
     )
 
-    /**
-     * Dengarkan seluruh pesan masuk untuk [ownDeviceId] secara realtime,
-     * diurutkan dari yang terbaru. Dipakai oleh MessageInboxActivity (list
-     * lengkap) dan dashboard (badge jumlah belum dibaca).
-     */
     fun observeMessages(
         context: Context,
         ownDeviceId: String,
@@ -839,7 +609,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "observeMessages cancelled: ${error.message}")
+
             }
         }
         familyRef(code).child("messages").child(ownDeviceId).addValueEventListener(listener)
@@ -861,19 +631,6 @@ object FamilyLink {
         familyRef(code).child("messages").child(ownDeviceId).child(messageId).removeValue()
     }
 
-    // ================= APPROVAL REQUEST (fitur 4: Approval & Notifikasi) =================
-    //
-    // Alur: Anak kena lock screen app terkunci -> tekan "Minta Izin ke Orang
-    // Tua" -> request ditulis ke families/{code}/approvalRequests/{id} berisi
-    // siapa yang minta + app apa + berapa lama. Orang Tua yang sedang buka
-    // ParentDashboardActivity mendengar node ini secara realtime (selama app
-    // dibuka -- app ini memang belum punya infrastruktur push notification
-    // server-side, jadi konsisten dengan pola notifikasi in-app yang sudah
-    // ada seperti badge pesan masuk) dan bisa Setuju/Tolak dari sana. Anak
-    // mendengarkan balik status request miliknya sendiri lewat
-    // observeApprovalRequestStatus, dan begitu disetujui, AppLockPrefs akan
-    // buka sementara app itu untuk durasi yang diminta.
-
     data class ApprovalRequest(
         val id: String,
         val packageName: String,
@@ -881,16 +638,12 @@ object FamilyLink {
         val childDeviceId: String,
         val childName: String,
         val durationMinutes: Int,
-        val status: String, // pending | approved | rejected
+        val status: String,
         val timestamp: Long
     )
 
     private fun approvalRequestsRef(code: String) = familyRef(code).child("approvalRequests")
 
-    /**
-     * Dipanggil dari sisi ANAK (LockScreenActivity) saat menekan tombol
-     * "Minta Izin ke Orang Tua" pada app yang terkunci.
-     */
     fun sendApprovalRequest(
         context: Context,
         packageName: String,
@@ -920,17 +673,11 @@ object FamilyLink {
         ).addOnSuccessListener {
             onComplete(ref.key)
         }.addOnFailureListener {
-            Log.e(TAG, "Gagal kirim approval request: ${it.message}")
+
             onComplete(null)
         }
     }
 
-    /**
-     * Dipanggil dari sisi ORANG TUA (ParentDashboardActivity) -- dengarkan
-     * semua approval request se-keluarga secara realtime, terurut request
-     * terbaru duluan. UI yang memanggil ini sebaiknya filter status=="pending"
-     * kalau cuma mau tampilkan yang masih perlu diputuskan.
-     */
     fun observeApprovalRequests(
         context: Context,
         onChange: (List<ApprovalRequest>) -> Unit
@@ -951,7 +698,7 @@ object FamilyLink {
                 onChange(list)
             }
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "observeApprovalRequests cancelled: ${error.message}")
+
             }
         }
         approvalRequestsRef(code).addValueEventListener(listener)
@@ -963,11 +710,6 @@ object FamilyLink {
         approvalRequestsRef(code).removeEventListener(listener)
     }
 
-    /**
-     * Dengarkan SATU request milik anak sendiri (dipanggil dari
-     * LockScreenActivity setelah request dikirim) supaya begitu Orang Tua
-     * Setuju/Tolak, anak langsung tahu tanpa perlu polling manual.
-     */
     fun observeApprovalRequestStatus(
         context: Context,
         requestId: String,
@@ -991,13 +733,6 @@ object FamilyLink {
         approvalRequestsRef(code).child(requestId).removeEventListener(listener)
     }
 
-    /**
-     * Dipanggil dari sisi ORANG TUA saat menekan Setuju/Tolak. Kalau
-     * disetujui, otomatis kirim juga perintah buka kunci sementara ke HP
-     * anak (dipakai kalau anak sedang online) -- tapi status di
-     * approvalRequests tetap sumber kebenaran utama karena LockScreenActivity
-     * anak mendengarkannya langsung.
-     */
     fun respondApprovalRequest(
         context: Context,
         request: ApprovalRequest,
@@ -1028,14 +763,6 @@ object FamilyLink {
             targetDeviceId
         )
 
-    /**
-     * Kirim aksi kunci/buka untuk BANYAK aplikasi sekaligus dalam SATU command,
-     * bukan satu command per-aplikasi. Dipakai oleh tombol "Kunci Semua" /
-     * "Buka Semua" supaya diproses atomic di HP anak (lihat catatan bug lama:
-     * mengirim N command terpisah untuk aksi massal bikin sebagian command
-     * "remove" telat/ke-skip saat listener commands memproses ulang seluruh
-     * daftar berkali-kali secara reentrant).
-     */
     fun sendLockAppsBulk(context: Context, packageNames: List<String>, lock: Boolean, targetDeviceId: String) {
         if (packageNames.isEmpty()) return
         sendCommand(
@@ -1086,9 +813,9 @@ object FamilyLink {
                 "done" to false
             )
         ).addOnSuccessListener {
-            Log.d(TAG, "Command sent: $type")
+
         }.addOnFailureListener {
-            Log.e(TAG, "Failed to send command: $type", it)
+
         }
     }
 
@@ -1098,7 +825,7 @@ object FamilyLink {
 
     fun startListening(context: Context, isGlobal: Boolean = false, onMessage: (title: String, body: String, fromDeviceId: String) -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context) ?: run {
-            Log.w(TAG, "No family code — not listening")
+
             return
         }
 
@@ -1123,8 +850,6 @@ object FamilyLink {
 
                     val type = cmdSnap.child("type").getValue(String::class.java) ?: continue
                     val payload = cmdSnap.child("payload")
-
-                    Log.d(TAG, "Executing command: $type")
 
                     when (type) {
                         "lock_screen" -> {
@@ -1158,16 +883,13 @@ object FamilyLink {
                                 val code = AppLockPrefs.getFamilyCode(context)
                                 val id = AppLockPrefs.getDeviceId(context)
                                 if (!code.isNullOrBlank()) {
-                                    // Satu write batch (updateChildren) supaya hasPin & currentPin
-                                    // konsisten diterapkan bareng, dan pasang failure listener
-                                    // supaya kegagalan (mis. Firebase rules, offline) kelihatan
-                                    // di log, bukan gagal diam-diam seperti sebelumnya.
+
                                     deviceRef(code, id).updateChildren(
                                         mapOf("hasPin" to true, "currentPin" to pin)
                                     ).addOnSuccessListener {
-                                        Log.d(TAG, "hasPin/currentPin berhasil disinkron ke Firebase")
+
                                     }.addOnFailureListener { e ->
-                                        Log.e(TAG, "GAGAL sinkron hasPin/currentPin ke Firebase: ${e.message}", e)
+
                                     }
                                 }
                             }
@@ -1189,11 +911,7 @@ object FamilyLink {
                         }
 
                         "temp_unlock_app" -> {
-                            // Hasil approval request yang disetujui Orang Tua
-                            // (lihat FamilyLink.respondApprovalRequest) --
-                            // buka app ini sementara tanpa menghapusnya dari
-                            // daftar app terkunci, supaya otomatis terkunci
-                            // lagi begitu durasinya habis.
+
                             val pkg = payload.child("package_name").getValue(String::class.java) ?: continue
                             val durationMinutes = payload.child("duration_minutes").getValue(Int::class.java) ?: 15
                             AppLockPrefs.setApprovedTemporaryUnlock(context, pkg, durationMinutes)
@@ -1248,24 +966,18 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Command listener cancelled: ${error.message}")
+
             }
         }
 
         commandsRef(code).addValueEventListener(commandListener!!)
         commandListenerCode = code
-        Log.d(TAG, "Listening for commands in family: $code")
+
     }
 
     fun stopListening(context: Context, force: Boolean = false) {
         if (isGlobalListener && !force) return
 
-        // Sengaja pakai kode yang TERSIMPAN saat listener ini di-attach
-        // (commandListenerCode), BUKAN baca ulang AppLockPrefs.getFamilyCode()
-        // -- kalau keluarga sudah ganti sejak listener ini nempel, baca ulang
-        // bakal detach dari ref yang salah (ref keluarga baru yang gak pernah
-        // ditempeli listener ini), jadi listener lama bocor & tetap
-        // "dengerin" keluarga lama selamanya.
         val code = commandListenerCode ?: return
         commandListener?.let { commandsRef(code).removeEventListener(it) }
         commandListener = null
@@ -1303,7 +1015,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Device observer cancelled: ${error.message}")
+
             }
         }
         devicesRef(code).addValueEventListener(listener)
@@ -1339,7 +1051,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Location observer cancelled: ${error.message}")
+
             }
         }
         devicesRef(code).addValueEventListener(listener)
@@ -1385,7 +1097,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Screen stream observer cancelled: ${error.message}")
+
             }
         }
 
@@ -1400,7 +1112,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Gagal cari device anak: ${error.message}")
+
             }
         })
 
@@ -1517,3 +1229,4 @@ data class FamilyDevice(
     val notifListenerActive: Boolean = false,
     val locationActive: Boolean = false
 )
+

@@ -65,14 +65,6 @@ class ParentDashboardActivity : BaseActivity() {
         return false
     }
 
-    /**
-     * Blok aksi "Kunci Layar" kalau Device Admin belum aktif di HP anak --
-     * sebelumnya cuma ada banner pasif (cardPermissionWarning) yang gampang
-     * kelewat, jadi orang tua bisa kirim perintah kunci yang sebenarnya
-     * gagal/gak berefek penuh tanpa tahu penyebabnya sampai ngecek manual.
-     * Kunci Aplikasi (per-app) TIDAK butuh ini karena jalurnya lewat
-     * Accessibility Service, bukan Device Admin.
-     */
     private fun requireDeviceAdminActive(targetDeviceId: String): Boolean {
         val device = childDevices.firstOrNull { it.deviceId == targetDeviceId }
         if (device?.deviceAdminActive == true) return true
@@ -115,15 +107,6 @@ class ParentDashboardActivity : BaseActivity() {
         setupApprovalRequests()
     }
 
-    /**
-     * Fitur Approval & Notifikasi: dengarkan permintaan izin dari anak
-     * (families/{code}/approvalRequests) secara realtime. Selama dashboard
-     * ini terbuka, request baru langsung tampil sebagai card di atas + notif
-     * sistem (app belum punya infrastruktur push server-side, jadi notifikasi
-     * realtime hanya jalan selagi Orang Tua sedang membuka salah satu layar
-     * yang mendengarkan node ini -- sama seperti badge pesan masuk yang
-     * sudah ada).
-     */
     private fun setupApprovalRequests() {
         binding.btnApprovalApprove.setOnClickListener {
             pendingApprovalRequests.firstOrNull()?.let { req ->
@@ -141,8 +124,6 @@ class ParentDashboardActivity : BaseActivity() {
         approvalRequestsListener = FamilyLink.observeApprovalRequests(this) { requests ->
             val pending = requests.filter { it.status == "pending" }
 
-            // Notif sistem cuma untuk request BARU yang belum pernah dilihat
-            // di sesi ini, supaya tidak nge-spam ulang tiap kali node berubah.
             pending.forEach { req ->
                 if (seenApprovalRequestIds.add(req.id)) {
                     showApprovalNotification(req)
@@ -192,13 +173,6 @@ class ParentDashboardActivity : BaseActivity() {
         nm.notify(request.id.hashCode(), notif)
     }
 
-    /**
-     * Badge jumlah pesan belum dibaca di ikon amplop header, dan buka
-     * MessageInboxActivity saat di-tap. Pesannya sendiri dikirim balik oleh
-     * Anak lewat LockScreenActivity mode MESSAGE (lihat FamilyLink.sendMessage
-     * -- ditulis ke families/{code}/messages/{myDeviceId}, ownDeviceId di
-     * sini = device Orang Tua sendiri).
-     */
     private fun setupInbox() {
         val myDeviceId = AppLockPrefs.getDeviceId(this)
         binding.btnOpenInbox.setOnClickListener {
@@ -215,13 +189,6 @@ class ParentDashboardActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Dengarkan notice "anak keluar dari keluarga" (families/{code}/childLeftNotice)
-     * dan tampilkan banner peringatan di atas dashboard. Banner tetap
-     * tampil sampai Orang Tua menutupnya manual (btnDismissChildLeftNotice)
-     * -- ini penting karena begitu anak keluar, device-nya sudah tercabut
-     * dari daftar anggota, jadi banner ini satu-satunya jejak yang tersisa.
-     */
     private fun observeChildLeftNotice() {
         childLeftNoticeListener = FamilyLink.observeChildLeftNotice(this) { userName, _ ->
             if (userName != null) {
@@ -511,14 +478,7 @@ class ParentDashboardActivity : BaseActivity() {
                     binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator
                 )
             } else {
-                // Belum ada anak SAAT INI, tapi rvFamilyMembers tetap harus
-                // di-reveal sekarang -- kalau tidak, dia nyangkut di GONE
-                // selamanya (cuma crossFadeToContent() di atas yang set jadi
-                // VISIBLE, dan isFirstMemberLoad cuma true sekali). Update
-                // berikutnya pas anak beneran join (real-time dari Firebase)
-                // jadi tidak pernah kelihatan sampai activity dibuka ulang --
-                // ini akar masalah "harus keluar-masuk dashboard dulu baru
-                // muncul".
+
                 memberSkeletonAnimator?.cancel()
                 binding.layoutMemberSkeleton.visibility = android.view.View.GONE
                 binding.rvFamilyMembers.visibility = android.view.View.VISIBLE
@@ -529,14 +489,6 @@ class ParentDashboardActivity : BaseActivity() {
         updatePermissionWarning()
     }
 
-    /**
-     * Tampilkan banner peringatan kalau HP anak yang sedang dikontrol belum
-     * mengaktifkan salah satu izin keamanan (Device Admin, Accessibility,
-     * Overlay, Notification Listener, Lokasi) -- supaya orang tua langsung
-     * tahu kenapa fitur seperti Kunci Aplikasi/Layar mungkin belum berfungsi
-     * penuh, tanpa harus menebak-nebak sendiri. Statusnya disinkron dari
-     * ChildDashboardActivity.updateStatusIcons() lewat FamilyLink.syncPermissionStatus().
-     */
     private fun updatePermissionWarning() {
         val device = childDevices.firstOrNull { it.deviceId == selectedChildId }
         if (device == null) {
@@ -620,11 +572,6 @@ class ParentDashboardActivity : BaseActivity() {
         deviceRef.addValueEventListener(appListListener!!)
     }
 
-    /**
-     * Render card "Sedang digunakan sekarang" dari node currentApp
-     * (packageName + since), pakai nameLookup/iconLookup dari appList yang
-     * sudah dimuat di listener yang sama supaya tidak perlu fetch terpisah.
-     */
     private fun updateCurrentAppUI(
         currentAppSnap: com.google.firebase.database.DataSnapshot,
         appListData: List<com.familyguard.model.AppInfo>
@@ -639,9 +586,6 @@ class ParentDashboardActivity : BaseActivity() {
             return
         }
 
-        // Home screen / layar kunci dikirim sebagai status khusus (sentinel),
-        // bukan nama package asli -- render label + ikon bawaan, jangan coba
-        // di-lookup ke daftar app.
         if (pkg == com.familyguard.utils.AppFilter.STATUS_HOME_SCREEN) {
             binding.tvCurrentAppName.text = "Layar Utama"
             binding.ivCurrentAppIcon.setImageResource(R.drawable.ic_home)
@@ -751,3 +695,4 @@ class ParentDashboardActivity : BaseActivity() {
         approvalRequestsListener?.let { FamilyLink.removeApprovalRequestsListener(this, it) }
     }
 }
+

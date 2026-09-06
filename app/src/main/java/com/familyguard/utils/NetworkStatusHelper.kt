@@ -6,11 +6,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 
-/**
- * Util untuk cek koneksi internet saat ini dan memantau perubahannya
- * (dipakai bareng dengan LoadingStateController supaya skeleton loading
- * bisa "stuck" dan diganti pesan "Tidak ada jaringan" saat internet mati).
- */
 object NetworkStatusHelper {
 
     fun isConnected(context: Context): Boolean {
@@ -22,10 +17,6 @@ object NetworkStatusHelper {
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
-    /**
-     * Daftarkan listener perubahan koneksi. Kembalikan callback [unregister]
-     * yang WAJIB dipanggil di onDestroy/onStop activity supaya tidak leak.
-     */
     fun observe(
         context: Context,
         onChanged: (connected: Boolean) -> Unit
@@ -57,10 +48,10 @@ object NetworkStatusHelper {
             }
         }
 
-        // Kirim status awal segera
         onChanged(isConnected(context))
 
         cm.registerNetworkCallback(request, callback)
         return { cm.unregisterNetworkCallback(callback) }
     }
 }
+

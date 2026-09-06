@@ -9,15 +9,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.familyguard.R
 
-/**
- * Menampilkan daftar aplikasi dengan pemakaian terbanyak (hasil
- * ScreenTimeReportGenerator.getTopApps()) di ScreenTimeReportActivity.
- * [iconLookup] & [nameLookup] diisi dari data appList yang sudah disinkron
- * lebih dulu oleh AppListAdapter (lihat ScreenTimeReportActivity) -- jadi
- * tidak perlu sinkron ulang icon/nama khusus untuk laporan ini.
- */
 class UsageAppAdapter(
-    private val items: List<Pair<String, Long>>, // packageName to minutes
+    private val items: List<Pair<String, Long>>,
     private val nameLookup: Map<String, String>,
     private val iconLookup: Map<String, String>
 ) : RecyclerView.Adapter<UsageAppAdapter.ViewHolder>() {
@@ -60,3 +53,4 @@ class UsageAppAdapter(
 
     override fun getItemCount(): Int = items.size
 }
+

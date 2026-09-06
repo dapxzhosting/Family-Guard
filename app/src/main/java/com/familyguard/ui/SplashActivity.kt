@@ -10,7 +10,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -70,12 +69,6 @@ class SplashActivity : BaseActivity() {
         }, SPLASH_MIN_DURATION_MS)
     }
 
-    /**
-     * Kalau HP ini sudah pernah pilih role "Anak" sebelumnya (tersimpan lokal,
-     * tidak perlu nunggu network), splash pakai gradient & status bar hijau
-     * senada dengan dashboard/menu anak. Kalau belum login / belum pilih role
-     * / role-nya orang tua, tetap pakai biru default dari tema.
-     */
     private fun applyRoleTheme() {
         val role = AppLockPrefs.getRole(this)
         if (role == AppLockPrefs.ROLE_CHILD) {
@@ -229,12 +222,7 @@ class SplashActivity : BaseActivity() {
             val name = AppLockPrefs.getUserName(this)
 
             if (!found && name.isNullOrBlank()) {
-                Log.d(
-                    "SplashActivity",
-                    "Tidak ada profil ditemukan untuk akun ini di Firebase -- kalau " +
-                            "seharusnya akun ini SUDAH pernah setup di HP lain, cek Firebase " +
-                            "Realtime Database Rules untuk path /users/{uid} (lihat log tag FamilyLink)."
-                )
+
             }
 
             val target = when {
@@ -381,3 +369,4 @@ class SplashActivity : BaseActivity() {
         }
     }
 }
+

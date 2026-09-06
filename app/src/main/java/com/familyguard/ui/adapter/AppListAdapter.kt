@@ -69,3 +69,4 @@ class AppListAdapter(
                     old.iconBase64 == new.iconBase64
     }
 }
+

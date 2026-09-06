@@ -54,3 +54,4 @@ object InstalledAppsHelper {
             .sortedBy { it.appName.lowercase() }
     }
 }
+

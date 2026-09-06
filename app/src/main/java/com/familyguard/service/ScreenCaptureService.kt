@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.util.DisplayMetrics
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.familyguard.R
 import com.familyguard.sync.FamilyLink
@@ -110,7 +109,7 @@ class ScreenCaptureService : Service() {
 
     fun reconnectPeer() {
         if (videoTrack == null || peerConnectionFactory == null) {
-            Log.w(TAG, "reconnectPeer dipanggil tapi capturer belum siap")
+
             return
         }
 
@@ -182,7 +181,7 @@ class ScreenCaptureService : Service() {
                     com.familyguard.service.AppLockAccessibilityService.instance
                         ?.executeRemoteInputJson(json)
                 } catch (e: Exception) {
-                    Log.w(TAG, "Gagal parse data channel message: ${e.message}")
+
                 }
             }
         })
@@ -221,7 +220,7 @@ class ScreenCaptureService : Service() {
                             val bitrate = stat.members["bytesSent"]
                             val width = stat.members["frameWidth"]
                             val height = stat.members["frameHeight"]
-                            Log.d(TAG, "STATS outbound: fps=$fps res=${width}x${height} bytesSent=$bitrate")
+
                         }
                     }
                 }
@@ -244,7 +243,7 @@ class ScreenCaptureService : Service() {
                 }
             }
             override fun onSetSuccess() {}
-            override fun onCreateFailure(error: String?) { Log.w(TAG, "Gagal buat offer: $error") }
+            override fun onCreateFailure(error: String?) { }
             override fun onSetFailure(error: String?) {}
         }, constraints)
     }
@@ -288,7 +287,6 @@ class ScreenCaptureService : Service() {
     }
 
     companion object {
-        private const val TAG = "ScreenCaptureService"
         private const val NOTIF_ID = 9911
         private const val MAX_CAPTURE_WIDTH = 480
 
@@ -312,3 +310,4 @@ object RemoteControlState {
     @Volatile var realScreenWidth: Int = 1080
     @Volatile var realScreenHeight: Int = 2400
 }
+

@@ -14,19 +14,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-/**
- * Laporan screen time mingguan untuk HP anak tertentu -- dibuka dari
- * ParentDashboardActivity (EXTRA_DEVICE_ID + EXTRA_CHILD_NAME, pola sama
- * dengan AppListActivity). Datanya berasal dari UsageTracker (numpang di
- * polling AppLockAccessibilityService, lihat file itu) yang disinkron ke
- * families/{code}/devices/{deviceId}/usage/{date}/{package}=menit, diambil
- * lewat FamilyLink.fetchUsageHistory() lalu diolah oleh
- * ScreenTimeReportGenerator (total, trend %, top 5 aplikasi).
- *
- * Nama & ikon aplikasi diambil dari node appList yang sudah disinkron
- * duluan oleh fitur "Aplikasi HP Anak" (AppListActivity) -- tidak perlu
- * sinkronisasi terpisah khusus laporan ini.
- */
 class ScreenTimeReportActivity : BaseActivity() {
 
     private lateinit var binding: ActivityScreenTimeReportBinding
@@ -52,9 +39,6 @@ class ScreenTimeReportActivity : BaseActivity() {
         loadAppNamesThenReport(deviceId)
     }
 
-    /** Ambil dulu node appList (buat resolve nama & ikon aplikasi), baru
-     *  ambil riwayat pemakaian -- supaya pas laporan dirender, nama
-     *  aplikasinya sudah siap (bukan tampil package name mentah). */
     private fun loadAppNamesThenReport(deviceId: String) {
         val code = AppLockPrefs.getFamilyCode(this)
         if (code.isNullOrBlank()) {
@@ -137,6 +121,7 @@ class ScreenTimeReportActivity : BaseActivity() {
     companion object {
         const val EXTRA_DEVICE_ID = "extra_device_id"
         const val EXTRA_CHILD_NAME = "extra_child_name"
-        private const val DAYS_TOTAL = 14 // 7 hari ini + 7 hari sebelumnya (buat trend)
+        private const val DAYS_TOTAL = 14
     }
 }
+

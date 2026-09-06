@@ -34,8 +34,6 @@ class RoleSelectionActivity : BaseActivity() {
 
         binding = ActivityRoleSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.btnRoleSelectionBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
-
         binding.btnRoleParent.setOnClickListener {
             AppLockPrefs.saveRole(this, AppLockPrefs.ROLE_PARENT)
             com.familyguard.sync.FamilyLink.saveUserProfile(this)
@@ -49,13 +47,6 @@ class RoleSelectionActivity : BaseActivity() {
         }
     }
 
-    /** Baik Orang Tua maupun Anak sekarang sama-sama masuk ke menu dulu
-     *  (ParentMenuActivity / ChildMenuActivity) -- BUKAN langsung dipaksa
-     *  masukkan kode keluarga. Kalau anak dipaksa ke FamilyCodeActivity
-     *  duluan tanpa kode yang valid di tangan, dia kejebak di situ tanpa
-     *  jalan keluar (dulu tidak ada tombol Logout/Reset Role di layar itu).
-     *  Sekarang "Gabung Keluarga" jadi salah satu kartu di ChildMenuActivity,
-     *  sama seperti "Buat Keluarga" di menu Orang Tua. */
     private fun goToNextStep(role: String) {
         val target = if (role == AppLockPrefs.ROLE_PARENT) {
             ParentMenuActivity::class.java
@@ -76,3 +67,4 @@ class RoleSelectionActivity : BaseActivity() {
         finish()
     }
 }
+

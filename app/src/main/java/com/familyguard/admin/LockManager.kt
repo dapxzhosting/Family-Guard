@@ -3,7 +3,6 @@ package com.familyguard.admin
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
 
 class LockManager(private val context: Context) {
 
@@ -20,11 +19,11 @@ class LockManager(private val context: Context) {
                 Result.failure(Exception("Device Admin belum aktif. Aktifkan terlebih dahulu."))
             } else {
                 dpm.lockNow()
-                Log.d(TAG, "Screen locked successfully")
+
                 Result.success(Unit)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to lock screen", e)
+
             Result.failure(e)
         }
     }
@@ -46,6 +45,6 @@ class LockManager(private val context: Context) {
     }
 
     companion object {
-        private const val TAG = "LockManager"
     }
 }
+

@@ -10,3 +10,4 @@ data class AppInfo(
     var isNotifBlocked: Boolean = false,
     val iconBase64: String? = null
 )
+

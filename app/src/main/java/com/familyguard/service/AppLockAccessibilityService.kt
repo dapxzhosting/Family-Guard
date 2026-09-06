@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityWindowInfo
 import com.familyguard.ui.LockScreenActivity
@@ -49,7 +48,6 @@ class AppLockAccessibilityService : AccessibilityService() {
             evaluatePackage(packageName)
         } catch (e: Exception) {
 
-            Log.w(TAG, "checkForegroundApp gagal: ${e.message}")
         }
     }
 
@@ -65,9 +63,6 @@ class AppLockAccessibilityService : AccessibilityService() {
 
         if (packageName == lastPackage) return
 
-        // Catat durasi package SEBELUMNYA (yang baru saja ditinggalkan) untuk
-        // laporan screen time -- lihat UsageTracker untuk kenapa ini numpang
-        // di sini (tidak butuh izin UsageStatsManager terpisah).
         val previousPackage = lastPackage
         val now = System.currentTimeMillis()
         if (previousPackage.isNotEmpty()) {
@@ -78,13 +73,6 @@ class AppLockAccessibilityService : AccessibilityService() {
 
         if (packageName == "com.familyguard") return
 
-        // Update "sedang dipakai sekarang" secara realtime ke dashboard --
-        // terpisah dari UsageTracker (yang cuma nyatat total menit per
-        // hari) supaya orang tua bisa lihat app apa yang aktif SEKARANG
-        // tanpa nunggu package-nya ditinggalkan dulu. Home screen & layar
-        // kunci TETAP dikirim sebagai status khusus (bukan di-skip total)
-        // supaya dashboard nampilin "Layar Utama"/"Layar Terkunci" yang jelas,
-        // bukan cuma diam nampilin app terakhir yang sudah lama ditinggalkan.
         val status = com.familyguard.utils.AppFilter.classifyForCurrentApp(this, packageName)
         com.familyguard.sync.FamilyLink.updateCurrentApp(this, status)
 
@@ -92,11 +80,10 @@ class AppLockAccessibilityService : AccessibilityService() {
         if (lockedApps.contains(packageName)) {
 
             if (AppLockPrefs.isPackageTemporarilyUnlocked(this, packageName)) {
-                Log.d(TAG, "App $packageName is temporarily unlocked, skipping lock")
+
                 return
             }
 
-            Log.d(TAG, "Blocked app detected: $packageName → showing lock screen")
             showLockScreen(packageName, false)
         }
     }
@@ -113,7 +100,7 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Log.w(TAG, "AppLockAccessibilityService interrupted")
+
     }
 
     fun executeRemoteInput(type: String, payload: com.google.firebase.database.DataSnapshot) {
@@ -189,7 +176,7 @@ class AppLockAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Log.d(TAG, "AppLock Accessibility Service connected")
+
         instance = this
         if (!watchdogRunning) {
             watchdogRunning = true
@@ -200,13 +187,6 @@ class AppLockAccessibilityService : AccessibilityService() {
             bgHandler.postDelayed(watchdog, WATCHDOG_INTERVAL_MS)
         }
 
-        // Accessibility Service ini jauh lebih jarang dibunuh & lebih cepat
-        // di-restart otomatis oleh sistem Android dibanding foreground
-        // service biasa (OS emang didesain buat selalu jaga koneksi ke
-        // service accessibility yang aktif) -- jadi setiap kali service ini
-        // (re)connect, pastikan juga GuardService (pemegang listener command
-        // Firebase, termasuk "set_pin") hidup. GuardService.start() aman
-        // dipanggil berkali-kali (idempotent lewat startForegroundService).
         if (com.familyguard.utils.AppLockPrefs.isGuardEnabled(this)) {
             com.familyguard.service.GuardService.start(this)
         }
@@ -223,10 +203,10 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     companion object {
-        private const val TAG = "AppLockService"
         private const val WATCHDOG_INTERVAL_MS = 600L
 
         @Volatile
         var instance: AppLockAccessibilityService? = null
     }
 }
+

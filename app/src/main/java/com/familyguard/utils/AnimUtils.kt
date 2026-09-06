@@ -86,7 +86,15 @@ object AnimUtils {
     }
 
     fun attachPressAnimationRecursively(root: View) {
-        if (root is android.widget.Button || root is androidx.cardview.widget.CardView) {
+        // Cuma pasang animasi "tekan" ke Button, atau CardView yang MEMANG
+        // dimaksudkan bisa ditekan (android:clickable="true" di layout-nya,
+        // atau di-set clickable=true secara programatik). Tanpa cek ini,
+        // CardView non-interaktif (mis. card status "Sudah Terhubung" yang
+        // cuma nampilin info, bukan tombol) ikut kepasang OnTouchListener
+        // dan jadi kelihatan "kepencet" (scale down/up) walau nggak
+        // seharusnya bisa ditekan sama sekali -- setOnTouchListener tetap
+        // nerima event sentuh terlepas dari nilai isClickable.
+        if (root is android.widget.Button || (root is androidx.cardview.widget.CardView && root.isClickable)) {
             attachPressAnimation(root)
         }
         if (root is ViewGroup) {
@@ -151,3 +159,4 @@ object AnimUtils {
         }
     }
 }
+

@@ -2,7 +2,6 @@ package com.familyguard.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -82,12 +81,7 @@ class LoginActivity : BaseActivity() {
             val name = AppLockPrefs.getUserName(this)
 
             if (!found && name.isNullOrBlank()) {
-                Log.d(
-                    "LoginActivity",
-                    "Tidak ada profil ditemukan untuk akun ini di Firebase -- kalau " +
-                            "seharusnya akun ini SUDAH pernah setup di HP lain, cek Firebase " +
-                            "Realtime Database Rules untuk path /users/{uid} (lihat log tag FamilyLink)."
-                )
+
             }
 
             val target = when {
@@ -101,3 +95,4 @@ class LoginActivity : BaseActivity() {
         }
     }
 }
+

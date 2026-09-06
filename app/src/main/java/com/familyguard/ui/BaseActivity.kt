@@ -14,18 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.R
 import com.familyguard.utils.NetworkStatusHelper
 
-/**
- * Semua Activity di app ini extend class ini (bukan langsung AppCompatActivity)
- * supaya otomatis dapat 2 hal di SETIAP halaman tanpa perlu ubah layout XML
- * satu-satu:
- *
- * 1. Banner "Tidak ada jaringan" yang muncul otomatis di atas layar begitu
- *    koneksi internet putus, dan hilang lagi begitu tersambung.
- * 2. Skeleton loading yang "macet" (animasi pulse berhenti, bukan terus
- *    berkedip seolah masih memuat) selama tidak ada internet -- supaya user
- *    sadar itu bukan lambat, tapi memang tidak ada jaringan. Skeleton yang
- *    ingin ikut dibekukan tinggal didaftarkan lewat registerSkeletonAnimator().
- */
 abstract class BaseActivity : AppCompatActivity() {
 
     private var unregisterNetworkCallback: (() -> Unit)? = null
@@ -33,11 +21,6 @@ abstract class BaseActivity : AppCompatActivity() {
     private val skeletonAnimators = mutableListOf<ObjectAnimator>()
     private var isConnected = true
 
-    /**
-     * Panggil ini dari onCreate turunan setelah membuat ObjectAnimator
-     * skeleton (mis. hasil AnimUtils.startSkeletonPulse(...)) supaya ikut
-     * dibekukan otomatis saat jaringan putus.
-     */
     protected fun registerSkeletonAnimator(animator: ObjectAnimator) {
         skeletonAnimators.add(animator)
         if (!isConnected) animator.pause()
@@ -66,8 +49,7 @@ abstract class BaseActivity : AppCompatActivity() {
             skeletonAnimators.forEach { if (it.isPaused) it.resume() }
             networkBanner?.visibility = View.GONE
         } else {
-            // Bekukan skeleton di posisi/alpha terakhirnya -- jadi kelihatan
-            // "stuck", bukan tetap berkedip seolah masih memuat data.
+
             skeletonAnimators.forEach { if (it.isRunning) it.pause() }
             showNetworkBanner()
         }
@@ -117,3 +99,4 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun dp(value: Int): Int =
         (value * resources.displayMetrics.density).toInt()
 }
+

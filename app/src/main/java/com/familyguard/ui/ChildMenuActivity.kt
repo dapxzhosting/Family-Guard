@@ -54,9 +54,7 @@ class ChildMenuActivity : BaseActivity() {
 
         binding.btnMenuChangeFamily.setOnClickListener {
             if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
-                // Belum pernah gabung keluarga -- langsung ke layar masukkan
-                // kode, tanpa dialog konfirmasi "keluar dari keluarga saat
-                // ini" yang tidak relevan (memang belum ada keluarga).
+
                 startActivity(Intent(this, FamilyCodeActivity::class.java))
             } else {
                 AccountActions.changeFamily(this)
@@ -124,3 +122,4 @@ class ChildMenuActivity : BaseActivity() {
         }
     }
 }
+

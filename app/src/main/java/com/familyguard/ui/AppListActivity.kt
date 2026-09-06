@@ -251,3 +251,4 @@ class AppListActivity : BaseActivity() {
         const val EXTRA_CHILD_NAME = "extra_child_name"
     }
 }
+

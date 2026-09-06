@@ -41,37 +41,11 @@ class GuardService : Service() {
         com.familyguard.receiver.GuardWatchdogReceiver.schedule(this)
     }
 
-    /**
-     * Daftar ulang device + sambungkan ulang listener command ke kode
-     * keluarga yang SEDANG AKTIF sekarang (dibaca ulang dari AppLockPrefs).
-     *
-     * BUG YANG DIPERBAIKI: FamilyLink.startListening() sebelumnya cuma
-     * dipanggil sekali di onCreate() dan meng-capture kode keluarga saat itu
-     * ke closure listener-nya. Kalau keluarga dihapus lalu dibuat ulang
-     * SELAGI GuardService masih hidup (service foreground jarang mati
-     * sendiri), listener itu tetap nempel ke kode keluarga LAMA selamanya --
-     * onStartCommand() tidak pernah memanggil ulang onCreate(), jadi
-     * memanggil start() lagi (dari onServiceConnected/onTaskRemoved/dll)
-     * tidak pernah benar-benar rebind. Semua command baru (termasuk
-     * set_pin) numpuk gak pernah keproses karena yang dengerin salah
-     * alamat. Rebind ini dipanggil ulang setiap kali service di-start,
-     * bukan cuma sekali di onCreate, supaya selalu ikut kode keluarga
-     * TERBARU.
-     */
     private fun rebindToCurrentFamily() {
         com.familyguard.sync.FamilyLink.verifyFamilyStillExists(
             this,
             onExists = {
-                // Listener persisten yang jaga cache "keluarga masih valid"
-                // (FamilyLink.isFamilyKnownValid) tetap ke-update REALTIME
-                // selama service ini hidup -- ini yang dicek oleh SEMUA
-                // fungsi tulis rutin (updateCurrentApp, sendHeartbeat,
-                // updateLocation, syncUsageMinutes, syncPermissionStatus)
-                // sebelum nulis apapun. Beda dari verifyFamilyStillExists
-                // (one-shot, cuma dicek pas rebind/tiap 60 detik) --
-                // updateCurrentApp bisa dipanggil tiap beberapa detik
-                // (setiap app anak ganti foreground), jadi butuh cache yang
-                // selalu fresh, bukan cek satu-satu tiap kali nulis.
+
                 com.familyguard.sync.FamilyLink.startFamilyExistenceGuard(this) {
                     com.familyguard.sync.FamilyLink.clearLocalFamilyState(this)
                     stopSelf()
@@ -83,12 +57,7 @@ class GuardService : Service() {
                 }
             },
             onGone = {
-                // Keluarga sudah dihapus orang tua (atau device sudah
-                // dikeluarkan) selagi GuardService ini hidup di background
-                // tanpa ada Activity yang membuka listenFamilyDeletion --
-                // bersihin state lokal & matikan diri sendiri, JANGAN
-                // registerDevice/startListening (itu bakal nulis ulang dan
-                // "menghidupkan lagi" node yang sudah dihapus).
+
                 com.familyguard.sync.FamilyLink.clearLocalFamilyState(this)
                 stopSelf()
             }
@@ -119,9 +88,7 @@ class GuardService : Service() {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
-                // Cukup cek cache in-memory (di-update realtime oleh
-                // startFamilyExistenceGuard di rebindToCurrentFamily) --
-                // gak perlu Firebase round-trip di sini lagi.
+
                 if (com.familyguard.sync.FamilyLink.isFamilyKnownValid()) {
                     LocationHelper.updateCurrentLocation(this@GuardService)
                     FamilyLink.sendHeartbeat(this@GuardService)
@@ -154,20 +121,11 @@ class GuardService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Setiap kali service ini di-start ULANG (walau prosesnya masih
-        // hidup dari sebelumnya), pastikan listener command ikut kode
-        // keluarga TERBARU -- lihat penjelasan di rebindToCurrentFamily().
+
         rebindToCurrentFamily()
         return START_STICKY
     }
 
-    /**
-     * Banyak OEM (termasuk Itel/Infinix/Tecno) menganggap "app di-swipe dari
-     * recent apps" sebagai sinyal buat langsung bunuh service-nya, terlepas
-     * dari START_STICKY atau status foreground. Restart diri sendiri di sini
-     * supaya listener command (FamilyLink.startListening) gak nunggu sampai
-     * GuardWatchdogReceiver jalan lagi (uang bisa 15 menit lagi).
-     */
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         if (AppLockPrefs.isGuardEnabled(this)) {
@@ -219,3 +177,4 @@ class GuardService : Service() {
         }
     }
 }
+

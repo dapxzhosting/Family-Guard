@@ -43,14 +43,12 @@ object AppLockPrefs {
         prefs(context).edit().putStringSet(KEY_LOCKED_APPS, current).apply()
     }
 
-    /** Tambah banyak package ke locked_apps dalam SATU write (atomic, bukan loop per-app). */
     fun addLockedApps(context: Context, packageNames: Collection<String>) {
         val current = getLockedApps(context).toMutableSet()
         current.addAll(packageNames)
         prefs(context).edit().putStringSet(KEY_LOCKED_APPS, current).apply()
     }
 
-    /** Hapus banyak package dari locked_apps dalam SATU write (atomic, bukan loop per-app). */
     fun removeLockedApps(context: Context, packageNames: Collection<String>) {
         val current = getLockedApps(context).toMutableSet()
         current.removeAll(packageNames.toSet())
@@ -90,13 +88,7 @@ object AppLockPrefs {
         prefs(context).getString(KEY_FCM_TOKEN, null)
 
     fun savePin(context: Context, pin: String) {
-        // Pakai commit() (sinkron), BUKAN apply() (async) -- PIN ini status kritis
-        // yang harus sudah pasti nyimpen ke disk sebelum command "set_pin" dianggap
-        // selesai. Kalau proses HP anak kebunuh (battery killer OEM semacam
-        // Itel/Tecno/Infinix) tepat setelah apply() tapi sebelum write ke disk
-        // kelar, restart berikutnya bakal baca PIN sebagai "belum ada" lagi --
-        // dan itu bikin registerDevice() menimpa balik hasPin jadi false di
-        // Firebase padahal barusan sudah diset (lihat registerDevice()).
+
         prefs(context).edit().putString(KEY_DEVICE_PIN, pin).commit()
     }
 
@@ -105,21 +97,6 @@ object AppLockPrefs {
 
     fun hasPin(context: Context): Boolean = getPin(context) != null
 
-    /**
-     * Reset SEMUA status keamanan yang tersimpan lokal di HP ini (PIN,
-     * daftar app terkunci, blokir notif, status kunci perangkat, unlock
-     * sementara yang disetujui).
-     *
-     * WAJIB dipanggil setiap kali hubungan device<->keluarga berubah (keluar
-     * keluarga, keluarga dihapus orang tua, kena kick, ganti keluarga) --
-     * kalau tidak, status lama nyangkut dan ke-carry over ke keluarga baru:
-     * PIN lama tetap aktif, dan registerDevice() bakal langsung nulis
-     * hasPin=true ke keluarga baru padahal orang tua belum pernah atur PIN
-     * untuk keluarga itu, jadi fitur Kunci Layar/Kunci App bisa langsung
-     * dipakai tanpa PIN baru pernah diset -- sekaligus bikin dialog "Atur
-     * PIN" di sisi orang tua gak nemu currentPin (karena currentPin memang
-     * belum pernah ditulis untuk keluarga baru ini) walau hasPin sudah true.
-     */
     fun clearFamilySecurityState(context: Context) {
         prefs(context).edit()
             .remove(KEY_DEVICE_PIN)
@@ -175,14 +152,6 @@ object AppLockPrefs {
         return isPackageApprovedUnlocked(context, packageName)
     }
 
-    /**
-     * Buka sementara satu app untuk [durationMinutes] menit setelah Orang
-     * Tua menyetujui approval request (lihat FamilyLink.respondApprovalRequest
-     * dan FamilyFirebaseMessagingService/GuardCommand handler untuk
-     * "temp_unlock_app"). Beda dengan setPackageUnlocked() yang cuma untuk
-     * jeda 30 detik pasca-PIN -- ini bisa berdurasi berjam-jam sesuai yang
-     * disetujui Orang Tua.
-     */
     fun setApprovedTemporaryUnlock(context: Context, packageName: String, durationMinutes: Int) {
         val untilMillis = System.currentTimeMillis() + (durationMinutes.coerceAtLeast(1) * 60_000L)
         prefs(context).edit()
@@ -224,3 +193,4 @@ object AppLockPrefs {
         prefs(context).edit().clear().apply()
     }
 }
+

@@ -137,7 +137,6 @@ class ChildDashboardActivity : BaseActivity() {
                     FamilyLink.updateAppList(this, apps)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ChildDashboardActivity", "Gagal sync app list: ${e.message}", e)
             }
         }.start()
     }
@@ -265,9 +264,6 @@ class ChildDashboardActivity : BaseActivity() {
         ) == PackageManager.PERMISSION_GRANTED
         setStatus(binding.statusLocation, binding.btnLocation, isLocationActive)
 
-        // Kirim SEMUA status izin ke Firebase (bukan cuma accessibility) supaya
-        // dashboard Orang Tua bisa kasih tahu izin mana saja yang belum aktif
-        // di HP anak -- cuma nulis kalau ada yang beneran berubah, hemat write.
         val combined = Statuses(isAdminActive, isAccessibilityActive, isOverlayActive, isNotifActive, isLocationActive)
         if (combined != lastSyncedStatuses) {
             lastSyncedStatuses = combined
@@ -311,12 +307,6 @@ class ChildDashboardActivity : BaseActivity() {
 
     private fun checkPermissions() {
 
-        // GuardService (listener command Firebase: set_pin, lock_screen,
-        // lock_app, dll) HARUS selalu jalan begitu dashboard anak dibuka,
-        // TIDAK BOLEH menunggu izin lokasi di-grant dulu -- kalau tidak,
-        // command dari orang tua bisa nyangkut tidak pernah diproses selama
-        // anak belum kasih izin lokasi (lihat LocationHelper, yang sudah
-        // punya pengecekan izin sendiri dan aman dipanggil kapan saja).
         startGuardService()
 
         val permissions = arrayOf(
@@ -374,3 +364,4 @@ class ChildDashboardActivity : BaseActivity() {
     private fun formatCode(code: String) =
         if (code.length == 6) "${code.take(3)}-${code.drop(3)}" else code
 }
+
