@@ -27,6 +27,7 @@
     <color name="dash_child_primary_dark">#0F7A4C</color>
     <color name="dash_child_primary_soft">#E4F8EF</color>
     <color name="dash_child_primary_deep">#0B4A2E</color>
+    <color name="dash_primary_deep">#10164F</color>
 
     <color name="dash_primary_text_soft">#CCD4FF</color>
     <color name="dash_primary_text_muted">#99AAFF</color>

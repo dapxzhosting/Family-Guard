@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:text="Melindungi keluarga Anda"
-        android:textColor="#B7BEF2"
+        android:textColor="@color/dash_primary_text_muted"
         android:textSize="13sp"
         android:alpha="0"
         android:translationY="16dp"
@@ -88,7 +88,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="0%"
-            android:textColor="#D6DAFB"
+            android:textColor="@color/dash_primary_text_soft"
             android:textSize="12sp" />
     </LinearLayout>
     <LinearLayout
