@@ -5,13 +5,10 @@
     android:layout_height="match_parent"
     android:background="#F5F7FA"
     android:fillViewport="true">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
-        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,19 +19,16 @@
             android:paddingTop="32dp"
             android:paddingEnd="20dp"
             android:paddingBottom="24dp">
-
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:src="@drawable/ic_shield"
                 android:contentDescription="FamilyGuard" />
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:orientation="vertical">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -42,7 +36,6 @@
                     android:textColor="#FFFFFF"
                     android:textSize="24sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -52,15 +45,12 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
-
         <LinearLayout
             android:id="@+id/rootMenuContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
-
-            <!-- Notif Keluarga Dihapus -->
             <LinearLayout
                 android:id="@+id/tvFamilyDeletedNotice"
                 android:layout_width="match_parent"
@@ -71,14 +61,12 @@
                 android:gravity="center_vertical"
                 android:padding="14dp"
                 android:visibility="gone">
-
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_menu_delete"
                     app:tint="#C62828"
                     android:contentDescription="Peringatan" />
-
                 <TextView
                     android:id="@+id/tvFamilyNoticeText"
                     android:layout_width="0dp"
@@ -90,8 +78,6 @@
                     android:textSize="13sp"
                     android:textStyle="bold" />
             </LinearLayout>
-
-            <!-- Dashboard -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuDashboard"
                 android:layout_width="match_parent"
@@ -102,19 +88,16 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
-
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -122,14 +105,12 @@
                             android:src="@drawable/ic_menu_dashboard"
                             android:contentDescription="Dashboard" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -137,7 +118,6 @@
                             android:textColor="#212121"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -145,7 +125,6 @@
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
@@ -153,8 +132,6 @@
                         android:contentDescription="Buka" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Info Keluarga -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -162,19 +139,16 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
-
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -182,14 +156,12 @@
                             android:src="@drawable/ic_check_circle"
                             android:contentDescription="Info Keluarga" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:id="@+id/tvMenuFamilyTitle"
                             android:layout_width="wrap_content"
@@ -198,7 +170,6 @@
                             android:textColor="#212121"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:id="@+id/tvMenuFamilyStatus"
                             android:layout_width="wrap_content"
@@ -209,8 +180,6 @@
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Pengaturan -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuSettings"
                 android:layout_width="match_parent"
@@ -221,19 +190,16 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
-
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -241,14 +207,12 @@
                             android:src="@drawable/ic_menu_settings"
                             android:contentDescription="Pengaturan" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -256,7 +220,6 @@
                             android:textColor="#212121"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -264,7 +227,6 @@
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
@@ -272,8 +234,6 @@
                         android:contentDescription="Buka" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Ganti Keluarga -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuChangeFamily"
                 android:layout_width="match_parent"
@@ -284,19 +244,16 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
-
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -304,14 +261,12 @@
                             android:src="@drawable/ic_menu_family"
                             android:contentDescription="Ganti Keluarga" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:id="@+id/tvMenuChangeFamilyTitle"
                             android:layout_width="wrap_content"
@@ -320,7 +275,6 @@
                             android:textColor="#212121"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:id="@+id/tvMenuChangeFamilySubtitle"
                             android:layout_width="wrap_content"
@@ -329,7 +283,6 @@
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
@@ -337,8 +290,6 @@
                         android:contentDescription="Buka" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Keluar dari Keluarga -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuLeaveFamily"
                 android:layout_width="match_parent"
@@ -350,19 +301,16 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_icon_circle_warning">
-
                         <ImageView
                             android:layout_width="22dp"
                             android:layout_height="22dp"
@@ -371,14 +319,12 @@
                             app:tint="#C62828"
                             android:contentDescription="Keluar dari Keluarga" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -386,7 +332,6 @@
                             android:textColor="#C62828"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -394,7 +339,6 @@
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
@@ -402,15 +346,12 @@
                         android:contentDescription="Buka" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="20dp"
                 android:background="#E0E0E0" />
-
-            <!-- Kebijakan Privasi & Syarat -->
             <Button
                 android:id="@+id/btnPrivacyPolicy"
                 android:layout_width="match_parent"
@@ -423,8 +364,6 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="8dp" />
-
-            <!-- Reset Role -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuResetRole"
                 android:layout_width="match_parent"
@@ -435,19 +374,16 @@
                 app:cardBackgroundColor="#FFEBEE"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar_danger">
-
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -456,14 +392,12 @@
                             app:tint="#C62828"
                             android:contentDescription="Reset Role" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -471,7 +405,6 @@
                             android:textColor="#C62828"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -481,8 +414,6 @@
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Logout -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuLogout"
                 android:layout_width="match_parent"
@@ -493,20 +424,17 @@
                 app:cardBackgroundColor="#FFEBEE"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="18dp">
-
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_menu_logout"
                         android:contentDescription="Logout" />
-
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -518,7 +446,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

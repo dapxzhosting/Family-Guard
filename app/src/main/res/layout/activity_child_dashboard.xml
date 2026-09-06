@@ -4,27 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F7FA">
-
     <LinearLayout
         android:id="@+id/rootContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
-
-        <!-- Header -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
-
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#00695C">
-
                 <ImageView
                     android:id="@+id/btnChildDashboardBack"
                     android:layout_width="40dp"
@@ -39,14 +34,12 @@
                     android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     app:tint="#FFFFFF" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="24dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -58,7 +51,6 @@
                         android:drawableTint="#FFFFFF"
                         android:drawablePadding="8dp"
                         android:gravity="center_vertical" />
-
                     <TextView
                         android:id="@+id/tvFamilyName"
                         android:layout_width="wrap_content"
@@ -68,7 +60,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
                         android:textStyle="bold" />
-
                     <TextView
                         android:id="@+id/tvFamilyCode"
                         android:layout_width="wrap_content"
@@ -77,7 +68,6 @@
                         android:text="Kode: ---"
                         android:textColor="#B2DFDB"
                         android:fontFamily="sans-serif"/>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -87,11 +77,8 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
-
             </FrameLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Anggota Keluarga -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -100,23 +87,15 @@
             android:textColor="#424242"
             android:textSize="13sp"
             android:textStyle="bold" />
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
-
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-                <!-- Skeleton loading (tampil duluan sebelum data Firebase
-                     pertama nyampe, supaya tidak ada jeda "kosong" yang
-                     kelihatan kayak nge-render pas rvFamilyMembers masih
-                     kosong. Di-crossfade ke rvFamilyMembers begitu data
-                     pertama datang  lihat ChildDashboardActivity). -->
                 <LinearLayout
                     android:id="@+id/layoutMemberSkeleton"
                     android:layout_width="match_parent"
@@ -124,7 +103,6 @@
                     android:orientation="vertical"
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -134,24 +112,20 @@
                         android:paddingEnd="16dp"
                         android:paddingTop="12dp"
                         android:paddingBottom="12dp">
-
                         <View
                             android:layout_width="44dp"
                             android:layout_height="44dp"
                             android:background="@drawable/bg_skeleton_circle" />
-
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <View
                                 android:layout_width="120dp"
                                 android:layout_height="12dp"
                                 android:background="@drawable/bg_skeleton_block" />
-
                             <View
                                 android:layout_width="70dp"
                                 android:layout_height="10dp"
@@ -159,7 +133,6 @@
                                 android:background="@drawable/bg_skeleton_block" />
                         </LinearLayout>
                     </LinearLayout>
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -169,24 +142,20 @@
                         android:paddingEnd="16dp"
                         android:paddingTop="12dp"
                         android:paddingBottom="12dp">
-
                         <View
                             android:layout_width="44dp"
                             android:layout_height="44dp"
                             android:background="@drawable/bg_skeleton_circle" />
-
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <View
                                 android:layout_width="150dp"
                                 android:layout_height="12dp"
                                 android:background="@drawable/bg_skeleton_block" />
-
                             <View
                                 android:layout_width="50dp"
                                 android:layout_height="10dp"
@@ -195,7 +164,6 @@
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvFamilyMembers"
                     android:layout_width="match_parent"
@@ -205,21 +173,17 @@
                     android:visibility="gone" />
             </FrameLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Status Izin (PENTING) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -227,8 +191,6 @@
                     android:textColor="#212121"
                     android:textSize="16sp"
                     android:textStyle="bold" />
-
-                <!-- Device Admin -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -238,8 +200,6 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Device Admin" android:textColor="#212121"/>
                     <Button android:id="@+id/btnActivateAdmin" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
-
-                <!-- Accessibility -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -249,8 +209,6 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="App Lock Service" android:textColor="#212121"/>
                     <Button android:id="@+id/btnAccessibility" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
-
-                <!-- Overlay Permission -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -260,8 +218,6 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Tampil di Atas App" android:textColor="#212121"/>
                     <Button android:id="@+id/btnOverlay" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Izinkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
-
-                <!-- Notif Listener -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -271,8 +227,6 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Blokir Notifikasi" android:textColor="#212121"/>
                     <Button android:id="@+id/btnNotifListener" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
-
-                <!-- Location Permission -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -284,7 +238,6 @@
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -293,6 +246,5 @@
             android:text="HP ini dalam perlindungan FamilyGuard.\nJangan hapus aplikasi ini."
             android:textColor="#78909C"
             android:textSize="12sp" />
-
     </LinearLayout>
 </ScrollView>

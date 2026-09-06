@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- Judul section kecil di atas tiap kartu (mis. "Aksi Cepat", "Lokasi Terakhir") -->
     <style name="DashSectionTitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -11,10 +9,6 @@
         <item name="android:letterSpacing">0.02</item>
         <item name="android:paddingStart">4dp</item>
     </style>
-
-    <!-- Satu tile aksi cepat (ikon bulat + label 2 baris), 4 tile disusun horizontal.
-         minHeight 88dp + padding lebih besar supaya area sentuh nyaman (rekomendasi
-         Android: minimal 48dp, kita kasih lebih lega karena ada 4 tile berdempetan). -->
     <style name="DashQuickAction">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -30,18 +24,15 @@
         <item name="android:paddingStart">2dp</item>
         <item name="android:paddingEnd">2dp</item>
     </style>
-
     <style name="DashQuickAction.IconWrap">
         <item name="android:layout_width">64dp</item>
         <item name="android:layout_height">64dp</item>
     </style>
-
     <style name="DashQuickAction.Icon">
         <item name="android:layout_width">32dp</item>
         <item name="android:layout_height">32dp</item>
         <item name="android:layout_gravity">center</item>
     </style>
-
     <style name="DashQuickAction.Label">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -52,5 +43,4 @@
         <item name="android:gravity">center</item>
         <item name="android:lineSpacingExtra">1dp</item>
     </style>
-
 </resources>

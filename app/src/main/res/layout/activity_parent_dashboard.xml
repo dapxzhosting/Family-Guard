@@ -5,19 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dash_bg">
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="24dp">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <!-- ============ HEADER ============ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -27,13 +23,11 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="28dp"
                 android:paddingBottom="24dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
-
                     <ImageView
                         android:id="@+id/btnParentDashboardBack"
                         android:layout_width="36dp"
@@ -47,14 +41,12 @@
                         android:focusable="true"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         app:tint="#FFFFFF" />
-
                     <ImageView
                         android:layout_width="26dp"
                         android:layout_height="26dp"
                         android:src="@drawable/ic_shield"
                         app:tint="#FFFFFF"
                         android:contentDescription="FamilyGuard" />
-
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -64,13 +56,10 @@
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
                         android:textStyle="bold" />
-
-                    <!-- Tombol buka Pesan Masuk, badge merah muncul kalau ada yang belum dibaca -->
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="6dp">
-
                         <ImageView
                             android:id="@+id/btnOpenInbox"
                             android:layout_width="36dp"
@@ -82,7 +71,6 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:background="?attr/selectableItemBackgroundBorderless" />
-
                         <TextView
                             android:id="@+id/tvInboxBadge"
                             android:layout_width="wrap_content"
@@ -101,8 +89,6 @@
                             android:textStyle="bold"
                             android:visibility="gone" />
                     </FrameLayout>
-
-                    <!-- Chip status koneksi ringkas di pojok header -->
                     <LinearLayout
                         android:id="@+id/chipHeaderStatus"
                         android:layout_width="wrap_content"
@@ -114,13 +100,11 @@
                         android:paddingEnd="10dp"
                         android:paddingTop="6dp"
                         android:paddingBottom="6dp">
-
                         <View
                             android:id="@+id/dotHeaderStatus"
                             android:layout_width="8dp"
                             android:layout_height="8dp"
                             android:background="@drawable/dot_offline" />
-
                         <TextView
                             android:id="@+id/tvHeaderStatus"
                             android:layout_width="wrap_content"
@@ -132,8 +116,6 @@
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
-
-                <!-- Nama keluarga (diisi orang tua sekali di awal, lewat FamilyNameActivity) -->
                 <TextView
                     android:id="@+id/tvFamilyName"
                     android:layout_width="wrap_content"
@@ -144,7 +126,6 @@
                     android:textColor="#CCD4FF"
                     android:textSize="13sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -154,7 +135,6 @@
                     android:textSize="10sp"
                     android:letterSpacing="0.15"
                     android:textStyle="bold" />
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -166,7 +146,6 @@
                     android:paddingEnd="14dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp">
-
                     <TextView
                         android:id="@+id/tvFamilyCode"
                         android:layout_width="wrap_content"
@@ -179,8 +158,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
-
-            <!-- ============ NOTIFIKASI: ANAK KELUAR DARI KELUARGA ============ -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardChildLeftNotice"
                 android:layout_width="match_parent"
@@ -194,21 +171,18 @@
                 app:strokeWidth="1dp"
                 app:strokeColor="@color/dash_warning"
                 app:cardBackgroundColor="@color/dash_warning_soft">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:padding="14dp">
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_status_error"
                         app:tint="@color/dash_warning"
                         android:contentDescription="Peringatan" />
-
                     <TextView
                         android:id="@+id/tvChildLeftNotice"
                         android:layout_width="0dp"
@@ -219,7 +193,6 @@
                         android:textColor="@color/dash_text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
-
                     <ImageView
                         android:id="@+id/btnDismissChildLeftNotice"
                         android:layout_width="20dp"
@@ -231,8 +204,6 @@
                         android:contentDescription="Tutup" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============ APPROVAL REQUEST: ANAK MINTA IZIN BUKA APP TERKUNCI ============ -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardApprovalRequest"
                 android:layout_width="match_parent"
@@ -246,26 +217,22 @@
                 app:strokeWidth="1dp"
                 app:strokeColor="#FF8F00"
                 app:cardBackgroundColor="#FFF3E0">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="14dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
-
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_status_error"
                             app:tint="#FF8F00"
                             android:contentDescription="Permintaan izin" />
-
                         <TextView
                             android:id="@+id/tvApprovalRequestDetail"
                             android:layout_width="0dp"
@@ -276,7 +243,6 @@
                             android:textColor="@color/dash_text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:id="@+id/tvApprovalRequestCount"
                             android:layout_width="wrap_content"
@@ -287,13 +253,11 @@
                             android:textSize="12sp"
                             android:visibility="gone" />
                     </LinearLayout>
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:orientation="horizontal">
-
                         <Button
                             android:id="@+id/btnApprovalReject"
                             android:layout_width="0dp"
@@ -306,7 +270,6 @@
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             app:cornerRadius="10dp" />
-
                         <Button
                             android:id="@+id/btnApprovalApprove"
                             android:layout_width="0dp"
@@ -322,8 +285,6 @@
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============ ANGGOTA KELUARGA (tap nama anak untuk kontrol HP-nya) ============ -->
             <LinearLayout
                 android:id="@+id/layoutChildSelector"
                 android:layout_width="match_parent"
@@ -333,11 +294,9 @@
                 android:paddingEnd="16dp"
                 android:paddingTop="16dp"
                 android:visibility="visible">
-
                 <TextView
                     style="@style/DashSectionTitle"
                     android:text="Anggota Keluarga" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -346,7 +305,6 @@
                     android:text="Ketuk nama anak untuk kontrol HP-nya"
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="12sp" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -355,16 +313,9 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider"
                     app:cardBackgroundColor="@color/dash_surface">
-
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-
-                        <!-- Skeleton loading (tampil duluan sebelum data Firebase
-                             pertama nyampe, supaya tidak ada jeda "kosong" yang
-                             kelihatan kayak nge-render pas rvFamilyMembers masih
-                             kosong. Di-crossfade ke rvFamilyMembers begitu data
-                             pertama datang (lihat ParentDashboardActivity). -->
                         <LinearLayout
                             android:id="@+id/layoutMemberSkeleton"
                             android:layout_width="match_parent"
@@ -372,7 +323,6 @@
                             android:orientation="vertical"
                             android:paddingTop="4dp"
                             android:paddingBottom="4dp">
-
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -382,24 +332,20 @@
                                 android:paddingEnd="16dp"
                                 android:paddingTop="12dp"
                                 android:paddingBottom="12dp">
-
                                 <View
                                     android:layout_width="44dp"
                                     android:layout_height="44dp"
                                     android:background="@drawable/bg_skeleton_circle" />
-
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="12dp"
                                     android:layout_weight="1"
                                     android:orientation="vertical">
-
                                     <View
                                         android:layout_width="120dp"
                                         android:layout_height="12dp"
                                         android:background="@drawable/bg_skeleton_block" />
-
                                     <View
                                         android:layout_width="70dp"
                                         android:layout_height="10dp"
@@ -407,7 +353,6 @@
                                         android:background="@drawable/bg_skeleton_block" />
                                 </LinearLayout>
                             </LinearLayout>
-
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -417,24 +362,20 @@
                                 android:paddingEnd="16dp"
                                 android:paddingTop="12dp"
                                 android:paddingBottom="12dp">
-
                                 <View
                                     android:layout_width="44dp"
                                     android:layout_height="44dp"
                                     android:background="@drawable/bg_skeleton_circle" />
-
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="12dp"
                                     android:layout_weight="1"
                                     android:orientation="vertical">
-
                                     <View
                                         android:layout_width="150dp"
                                         android:layout_height="12dp"
                                         android:background="@drawable/bg_skeleton_block" />
-
                                     <View
                                         android:layout_width="50dp"
                                         android:layout_height="10dp"
@@ -443,7 +384,6 @@
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
-
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvFamilyMembers"
                             android:layout_width="match_parent"
@@ -454,8 +394,6 @@
                     </FrameLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-
-            <!-- Belum ada HP anak yang terhubung sama sekali -->
             <LinearLayout
                 android:id="@+id/layoutNoChildYet"
                 android:layout_width="match_parent"
@@ -466,7 +404,6 @@
                 android:paddingEnd="32dp"
                 android:paddingTop="48dp"
                 android:visibility="visible">
-
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -474,7 +411,6 @@
                     android:src="@drawable/ic_menu_family"
                     app:tint="@color/dash_text_secondary"
                     android:contentDescription="Belum ada HP anak" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -484,7 +420,6 @@
                     android:textColor="@color/dash_text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -494,8 +429,6 @@
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
-
-            <!-- Ada HP anak, tapi belum ada yang dipilih untuk dikontrol -->
             <LinearLayout
                 android:id="@+id/layoutNoChildSelected"
                 android:layout_width="match_parent"
@@ -506,7 +439,6 @@
                 android:paddingEnd="32dp"
                 android:paddingTop="40dp"
                 android:visibility="gone">
-
                 <ImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
@@ -514,7 +446,6 @@
                     android:src="@drawable/ic_role_child"
                     app:tint="@color/dash_text_secondary"
                     android:contentDescription="Pilih anak" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -524,8 +455,6 @@
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
-
-            <!-- ============ KONTEN (kontrol HP anak, muncul setelah nama anak diketuk di list Anggota Keluarga) ============ -->
             <LinearLayout
                 android:id="@+id/layoutDeviceControls"
                 android:layout_width="match_parent"
@@ -535,8 +464,6 @@
                 android:paddingEnd="16dp"
                 android:paddingTop="16dp"
                 android:visibility="gone">
-
-                <!-- Nama anak yang lagi dikontrol, biar orang tua selalu tahu sedang di HP anak yang mana -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -547,14 +474,12 @@
                     android:padding="14dp"
                     android:layout_marginStart="-16dp"
                     android:layout_marginEnd="-16dp">
-
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_role_child"
                         app:tint="#FFFFFF"
                         android:contentDescription="Sedang mengontrol" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -562,7 +487,6 @@
                         android:text="Sedang mengontrol:"
                         android:textColor="#C5CAE9"
                         android:textSize="12sp" />
-
                     <TextView
                         android:id="@+id/tvControllingChildName"
                         android:layout_width="0dp"
@@ -576,8 +500,6 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
-
-                <!-- Aplikasi yang sedang dibuka anak SEKARANG (realtime, dari currentApp) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCurrentApp"
                     android:layout_width="match_parent"
@@ -587,35 +509,30 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:padding="14dp">
-
                         <ImageView
                             android:id="@+id/ivCurrentAppIcon"
                             android:layout_width="36dp"
                             android:layout_height="36dp"
                             android:background="@drawable/bg_app_icon_placeholder"
                             android:contentDescription="Ikon aplikasi aktif" />
-
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Sedang digunakan sekarang"
                                 android:textColor="@color/dash_text_secondary"
                                 android:textSize="11sp" />
-
                             <TextView
                                 android:id="@+id/tvCurrentAppName"
                                 android:layout_width="wrap_content"
@@ -628,7 +545,6 @@
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
-
                         <TextView
                             android:id="@+id/tvCurrentAppSince"
                             android:layout_width="wrap_content"
@@ -638,8 +554,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- Peringatan: sebagian izin keamanan belum diaktifkan di HP anak -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPermissionWarning"
                     android:layout_width="match_parent"
@@ -651,28 +565,24 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_warning"
                     app:cardBackgroundColor="@color/dash_warning_soft">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:padding="14dp">
-
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_status_error"
                             app:tint="@color/dash_warning"
                             android:contentDescription="Peringatan" />
-
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="10dp"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -680,7 +590,6 @@
                                 android:textColor="@color/dash_text_primary"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
-
                             <TextView
                                 android:id="@+id/tvPermissionWarningDetail"
                                 android:layout_width="match_parent"
@@ -692,8 +601,6 @@
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- Kartu Status Perangkat -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -702,27 +609,23 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider"
                     app:cardBackgroundColor="@color/dash_surface">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:padding="16dp">
-
                         <View
                             android:id="@+id/dotDeviceStatus"
                             android:layout_width="10dp"
                             android:layout_height="10dp"
                             android:background="@drawable/dot_offline" />
-
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="12dp"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -730,7 +633,6 @@
                                 android:textColor="@color/dash_text_secondary"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
-
                             <TextView
                                 android:id="@+id/tvDeviceStatus"
                                 android:layout_width="match_parent"
@@ -743,13 +645,10 @@
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- Aksi Cepat -->
                 <TextView
                     style="@style/DashSectionTitle"
                     android:layout_marginTop="24dp"
                     android:text="Aksi Cepat" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -759,25 +658,18 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider"
                     app:cardBackgroundColor="@color/dash_surface">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:paddingTop="18dp"
                         android:paddingBottom="14dp">
-
-                        <!-- Aksi Cepat: pakai MaterialButton asli (2x2 grid), lebih
-                             reliable ditekan daripada tile custom, karena widget bawaan
-                             Android sudah punya touch-handling teruji, tanpa perlu
-                             workaround requestDisallowInterceptTouchEvent segala. -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp">
-
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnLockScreen"
                                 style="@style/Widget.MaterialComponents.Button"
@@ -795,7 +687,6 @@
                                 app:iconPadding="6dp"
                                 app:backgroundTint="@color/dash_danger"
                                 app:cornerRadius="12dp" />
-
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnUnlockScreen"
                                 style="@style/Widget.MaterialComponents.Button"
@@ -814,7 +705,6 @@
                                 app:backgroundTint="@color/dash_success"
                                 app:cornerRadius="12dp" />
                         </LinearLayout>
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -822,7 +712,6 @@
                             android:orientation="horizontal"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp">
-
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSendMessage"
                                 style="@style/Widget.MaterialComponents.Button"
@@ -840,7 +729,6 @@
                                 app:iconPadding="6dp"
                                 app:backgroundTint="@color/dash_info"
                                 app:cornerRadius="12dp" />
-
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSetPin"
                                 style="@style/Widget.MaterialComponents.Button"
@@ -859,15 +747,12 @@
                                 app:backgroundTint="@color/dash_purple"
                                 app:cornerRadius="12dp" />
                         </LinearLayout>
-
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_marginTop="16dp"
                             android:layout_marginBottom="4dp"
                             android:background="@color/dash_divider" />
-
-                        <!-- Lihat dan Kontrol Layar, aksi utama, dibuat menonjol -->
                         <LinearLayout
                             android:id="@+id/btnViewScreen"
                             android:layout_width="match_parent"
@@ -883,7 +768,6 @@
                             android:focusable="true"
                             android:foreground="?attr/selectableItemBackground"
                             android:padding="14dp">
-
                             <FrameLayout
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
@@ -896,14 +780,12 @@
                                     app:tint="@color/dash_purple"
                                     android:contentDescription="Lihat Layar" />
                             </FrameLayout>
-
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:layout_marginStart="12dp"
                                 android:orientation="vertical">
-
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -911,7 +793,6 @@
                                     android:textColor="@color/dash_text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
-
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -919,7 +800,6 @@
                                     android:textColor="@color/dash_text_secondary"
                                     android:textSize="12sp" />
                             </LinearLayout>
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -930,13 +810,10 @@
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- Lokasi -->
                 <TextView
                     style="@style/DashSectionTitle"
                     android:layout_marginTop="24dp"
                     android:text="Lokasi Terakhir" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -946,19 +823,16 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider"
                     app:cardBackgroundColor="@color/dash_surface">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:gravity="center_vertical">
-
                             <FrameLayout
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
@@ -971,7 +845,6 @@
                                     app:tint="@color/dash_info"
                                     android:contentDescription="Lokasi" />
                             </FrameLayout>
-
                             <TextView
                                 android:id="@+id/tvLocation"
                                 android:layout_width="0dp"
@@ -982,14 +855,12 @@
                                 android:textColor="@color/dash_text_secondary"
                                 android:textSize="13sp" />
                         </LinearLayout>
-
                         <org.osmdroid.views.MapView
                             android:id="@+id/mapView"
                             android:layout_width="match_parent"
                             android:layout_height="200dp"
                             android:layout_marginTop="14dp"
                             android:visibility="gone" />
-
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnOpenMap"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -1003,13 +874,10 @@
                             app:strokeColor="@color/dash_primary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- Aplikasi HP Anak -->
                 <TextView
                     style="@style/DashSectionTitle"
                     android:layout_marginTop="24dp"
                     android:text="Aplikasi HP Anak" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1019,7 +887,6 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/dash_divider"
                     app:cardBackgroundColor="@color/dash_surface">
-
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvChildApps"
                         android:layout_width="match_parent"
@@ -1028,7 +895,6 @@
                         android:paddingBottom="6dp"
                         android:clipToPadding="false" />
                 </com.google.android.material.card.MaterialCardView>
-
                 <Button
                     android:id="@+id/btnViewAllApps"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -1041,7 +907,6 @@
                     android:textColor="@color/dash_primary"
                     app:icon="@drawable/ic_menu_dashboard"
                     app:iconTint="@color/dash_primary" />
-
                 <Button
                     android:id="@+id/btnScreenTimeReport"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -1054,7 +919,6 @@
                     android:textColor="@color/dash_primary"
                     app:icon="@drawable/ic_report"
                     app:iconTint="@color/dash_primary" />
-
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

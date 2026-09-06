@@ -4,14 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F7FA">
-
-    <!-- Peta full screen -->
     <org.osmdroid.views.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <!-- Header atas: back button + judul + waktu update terakhir -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,14 +15,12 @@
         app:cardCornerRadius="0dp"
         app:cardElevation="4dp"
         app:cardBackgroundColor="#1A237E">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp">
-
             <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="40dp"
@@ -35,14 +29,12 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 app:tint="#FFFFFF"
                 android:contentDescription="Kembali" />
-
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:orientation="vertical">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -54,7 +46,6 @@
                     android:drawableTint="#FFFFFF"
                     android:drawablePadding="6dp"
                     android:gravity="center_vertical" />
-
                 <TextView
                     android:id="@+id/tvLastUpdate"
                     android:layout_width="wrap_content"
@@ -65,8 +56,6 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
-    <!-- Kartu koordinat di bawah -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardCoords"
         android:layout_width="match_parent"
@@ -75,25 +64,19 @@
         android:layout_margin="16dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-                <!-- Skeleton kecil selagi nunggu update lokasi pertama dari
-                     HP anak (lihat LocationMapActivity). -->
                 <View
                     android:id="@+id/skeletonCoords"
                     android:layout_width="150dp"
                     android:layout_height="14dp"
                     android:background="@drawable/bg_skeleton_block" />
-
                 <TextView
                     android:id="@+id/tvCoords"
                     android:layout_width="match_parent"
@@ -104,7 +87,6 @@
                     android:fontFamily="monospace"
                     android:visibility="gone" />
             </FrameLayout>
-
             <Button
                 android:id="@+id/btnRecenter"
                 android:layout_width="match_parent"
@@ -116,7 +98,6 @@
                 android:drawableStart="@drawable/ic_target"
                 android:drawableTint="#FFFFFF"
                 android:drawablePadding="8dp" />
-
             <Button
                 android:id="@+id/btnOpenExternal"
                 android:layout_width="match_parent"
@@ -130,5 +111,4 @@
                 android:drawablePadding="8dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
 </RelativeLayout>

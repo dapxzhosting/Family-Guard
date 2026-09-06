@@ -4,14 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F7FA">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="24dp">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +22,6 @@
             android:drawableTint="#1A237E"
             android:drawablePadding="8dp"
             android:gravity="center_vertical" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -34,8 +31,6 @@
             android:text="Satu kode untuk menghubungkan HP orang tua dan HP anak"
             android:textColor="#546E7A"
             android:textSize="14sp" />
-
-        <!-- CARD ORANG TUA -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardParent"
             android:layout_width="match_parent"
@@ -44,13 +39,11 @@
             android:visibility="gone"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -62,7 +55,6 @@
                     android:drawableTint="#212121"
                     android:drawablePadding="6dp"
                     android:gravity="center_vertical" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -71,7 +63,6 @@
                     android:text="Bagikan kode ini ke HP anak"
                     android:textColor="#78909C"
                     android:textSize="13sp" />
-
                 <TextView
                     android:id="@+id/tvFamilyCode"
                     android:layout_width="match_parent"
@@ -84,12 +75,10 @@
                     android:textColor="#1A237E"
                     android:textSize="36sp"
                     android:textStyle="bold" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <Button
                         android:id="@+id/btnCopyCode"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -100,7 +89,6 @@
                         android:text="Salin"
                         app:icon="@drawable/ic_copy"
                         app:iconTint="#1A237E" />
-
                     <Button
                         android:id="@+id/btnShareCode"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -111,7 +99,6 @@
                         app:icon="@drawable/ic_share"
                         app:iconTint="#1A237E" />
                 </LinearLayout>
-
                 <Button
                     android:id="@+id/btnParentDone"
                     android:layout_width="match_parent"
@@ -121,11 +108,8 @@
                     android:padding="14dp"
                     android:text="Lanjutkan →"
                     android:textColor="#FFFFFF" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- CARD ANAK -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardChild"
             android:layout_width="match_parent"
@@ -133,13 +117,11 @@
             android:visibility="gone"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
-
                 <TextView
                     android:id="@+id/btnBackToDashboardChild"
                     android:layout_width="wrap_content"
@@ -154,7 +136,6 @@
                     android:padding="4dp"
                     android:clickable="true"
                     android:focusable="true" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -166,7 +147,6 @@
                     android:drawableTint="#212121"
                     android:drawablePadding="6dp"
                     android:gravity="center_vertical" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -175,13 +155,11 @@
                     android:text="Minta kode dari HP orang tua"
                     android:textColor="#78909C"
                     android:textSize="13sp" />
-
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="20dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFamilyCode"
                         android:layout_width="match_parent"
@@ -191,9 +169,7 @@
                         android:inputType="textCapCharacters"
                         android:maxLength="7"
                         android:textSize="28sp" />
-
                 </com.google.android.material.textfield.TextInputLayout>
-
                 <Button
                     android:id="@+id/btnConnect"
                     android:layout_width="match_parent"
@@ -202,9 +178,7 @@
                     android:padding="14dp"
                     android:text="Hubungkan →"
                     android:textColor="#FFFFFF" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
     </LinearLayout>
 </ScrollView>

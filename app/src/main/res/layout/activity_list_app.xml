@@ -5,8 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F5F7FA"
     android:orientation="vertical">
-
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,7 +15,6 @@
         android:paddingTop="28dp"
         android:paddingEnd="20dp"
         android:paddingBottom="20dp">
-
         <ImageView
             android:id="@+id/btnAppListBack"
             android:layout_width="40dp"
@@ -30,14 +27,12 @@
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="#FFFFFF" />
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:orientation="vertical">
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -45,7 +40,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
-
             <TextView
                 android:id="@+id/tvAppListChildName"
                 android:layout_width="wrap_content"
@@ -56,8 +50,6 @@
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
-
-    <!-- Pencarian -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -68,14 +60,12 @@
         android:paddingTop="10dp"
         android:paddingEnd="16dp"
         android:paddingBottom="10dp">
-
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_search"
             app:tint="#9E9E9E"
             android:contentDescription="Cari" />
-
         <EditText
             android:id="@+id/etAppSearch"
             android:layout_width="0dp"
@@ -90,8 +80,6 @@
             android:textColorHint="#9E9E9E"
             android:textSize="14sp" />
     </LinearLayout>
-
-    <!-- Aksi Massal -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -100,7 +88,6 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="12dp">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -108,12 +95,10 @@
             android:text="Pilih semua aplikasi:"
             android:textColor="#757575"
             android:textSize="12sp" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
             <Button
                 android:id="@+id/btnLockAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -126,7 +111,6 @@
                 android:textSize="12sp"
                 app:strokeColor="#C62828"
                 android:textColor="#C62828" />
-
             <Button
                 android:id="@+id/btnUnlockAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -140,7 +124,6 @@
                 android:textSize="12sp"
                 app:strokeColor="#1A237E"
                 android:textColor="#1A237E" />
-
             <Button
                 android:id="@+id/btnBlockNotifAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -154,7 +137,6 @@
                 android:textSize="12sp"
                 app:strokeColor="#EF6C00"
                 android:textColor="#EF6C00" />
-
             <Button
                 android:id="@+id/btnAllowNotifAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -169,7 +151,6 @@
                 android:textColor="#00695C" />
         </LinearLayout>
     </LinearLayout>
-
     <TextView
         android:id="@+id/tvAppListEmpty"
         android:layout_width="match_parent"
@@ -180,22 +161,17 @@
         android:textColor="#9E9E9E"
         android:textSize="14sp"
         android:visibility="gone" />
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="#FFFFFF">
-
-        <!-- Skeleton loading daftar aplikasi (tampil duluan sebelum data
-             aplikasi HP anak nyampe dari Firebase, lihat AppListActivity). -->
         <LinearLayout
             android:id="@+id/layoutAppListSkeleton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="4dp">
-
             <include layout="@layout/item_skeleton_app_row" />
             <include layout="@layout/item_skeleton_app_row" />
             <include layout="@layout/item_skeleton_app_row" />
@@ -203,7 +179,6 @@
             <include layout="@layout/item_skeleton_app_row" />
             <include layout="@layout/item_skeleton_app_row" />
         </LinearLayout>
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvAllApps"
             android:layout_width="match_parent"
@@ -212,5 +187,4 @@
             android:paddingBottom="12dp"
             android:visibility="gone" />
     </FrameLayout>
-
 </LinearLayout>

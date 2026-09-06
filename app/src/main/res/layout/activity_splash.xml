@@ -5,8 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_splash_gradient">
-
-    <!-- Glow lembut di belakang logo, membesar pelan (breathing effect) -->
     <View
         android:id="@+id/glowCircle"
         android:layout_width="180dp"
@@ -17,8 +15,6 @@
         app:layout_constraintBottom_toBottomOf="@id/logoImage"
         app:layout_constraintStart_toStartOf="@id/logoImage"
         app:layout_constraintEnd_toEndOf="@id/logoImage" />
-
-    <!-- Logo utama (foreground), masuk dengan scale + fade + sedikit rotasi -->
     <ImageView
         android:id="@+id/logoImage"
         android:layout_width="112dp"
@@ -34,7 +30,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintVertical_bias="0.42"
         app:layout_constraintVertical_chainStyle="packed" />
-
     <TextView
         android:id="@+id/appNameText"
         android:layout_width="wrap_content"
@@ -51,7 +46,6 @@
         app:layout_constraintBottom_toTopOf="@id/appTagline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
     <TextView
         android:id="@+id/appTagline"
         android:layout_width="wrap_content"
@@ -66,9 +60,6 @@
         app:layout_constraintBottom_toTopOf="@id/progressContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Progress loading 0%-100%, mengikuti tahapan proses nyata (cek jaringan,
-         cek akun, ambil data), bukan animasi kosong yang cuma nunggu timer. -->
     <LinearLayout
         android:id="@+id/progressContainer"
         android:layout_width="0dp"
@@ -81,7 +72,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
         <ProgressBar
             android:id="@+id/loadingProgressBar"
             style="?android:attr/progressBarStyleHorizontal"
@@ -91,7 +81,6 @@
             android:progress="0"
             android:progressTint="#FFFFFF"
             android:progressBackgroundTint="#33FFFFFF" />
-
         <TextView
             android:id="@+id/progressPercentText"
             android:layout_width="match_parent"
@@ -101,12 +90,7 @@
             android:text="0%"
             android:textColor="#D6DAFB"
             android:textSize="12sp" />
-
     </LinearLayout>
-
-    <!-- Peringatan jaringan tidak tersedia: strip kecil rata kiri menempel di
-         paling bawah layar (mirip status bar/snackbar), BUKAN kotak/dialog
-         di tengah layar. Tersembunyi secara default. -->
     <LinearLayout
         android:id="@+id/networkWarningContainer"
         android:layout_width="wrap_content"
@@ -119,7 +103,6 @@
         android:alpha="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
         <ImageView
             android:id="@+id/networkWarningIcon"
             android:layout_width="16dp"
@@ -127,7 +110,6 @@
             android:src="@drawable/ic_network_off"
             android:contentDescription="Jaringan tidak tersedia"
             app:tint="#FFB4B4" />
-
         <TextView
             android:id="@+id/networkWarningText"
             android:layout_width="wrap_content"
@@ -136,7 +118,5 @@
             android:text="Jaringan tidak tersedia"
             android:textColor="#FFB4B4"
             android:textSize="12sp" />
-
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
