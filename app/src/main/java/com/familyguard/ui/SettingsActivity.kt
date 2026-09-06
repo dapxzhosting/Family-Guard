@@ -6,6 +6,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.R
 import com.familyguard.databinding.ActivitySettingsBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AnimUtils
@@ -98,7 +99,7 @@ class SettingsActivity : BaseActivity() {
     private fun closeWithSlideDown() {
         super.onBackPressed()
         @Suppress("DEPRECATION")
-        overridePendingTransition(com.familyguard.R.anim.stay_undim, com.familyguard.R.anim.slide_down_out)
+        overridePendingTransition(R.anim.stay_undim, R.anim.slide_down_out)
     }
 }
 
