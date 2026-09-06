@@ -20,7 +20,7 @@ class ChildMenuActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChildMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+        window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
 
         updateFamilyStatus()
 

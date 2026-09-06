@@ -84,7 +84,7 @@ class ChildDashboardActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChildDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+        window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
         binding.btnChildDashboardBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         val code = AppLockPrefs.getFamilyCode(this) ?: "—"

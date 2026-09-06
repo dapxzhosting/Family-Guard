@@ -35,6 +35,16 @@
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
+    <style name="Theme.FamilyGuard.Child" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/dash_child_primary</item>
+        <item name="colorPrimaryVariant">@color/dash_child_primary_dark</item>
+        <item name="colorOnPrimary">@color/dash_white</item>
+        <item name="colorSecondary">@color/dash_child_primary</item>
+        <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="android:statusBarColor">@color/dash_child_primary</item>
+        <item name="android:fontFamily">@font/skynight_family</item>
+        <item name="fontFamily">@font/skynight_family</item>
+    </style>
     <style name="LockScreen.HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/dash_child_primary_soft</item>

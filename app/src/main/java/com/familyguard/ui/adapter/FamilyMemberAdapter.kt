@@ -73,12 +73,16 @@ class FamilyMemberAdapter(
         }
 
         val isSelected = member.deviceId == selectedDeviceId
-        holder.itemView.setBackgroundColor(
-            if (isSelected) 0xFFE8EAF6.toInt() else 0x00000000
+        val context = holder.itemView.context
+        val accentSoft = androidx.core.content.ContextCompat.getColor(
+            context, if (isParentView) R.color.dash_primary_soft else R.color.dash_child_primary_soft
         )
-        holder.name.setTextColor(
-            if (isSelected) 0xFF1A237E.toInt() else 0xFF212121.toInt()
+        val accentColor = androidx.core.content.ContextCompat.getColor(
+            context, if (isParentView) R.color.dash_primary else R.color.dash_child_primary
         )
+        val defaultTextColor = androidx.core.content.ContextCompat.getColor(context, R.color.dash_text_primary)
+        holder.itemView.setBackgroundColor(if (isSelected) accentSoft else 0x00000000)
+        holder.name.setTextColor(if (isSelected) accentColor else defaultTextColor)
 
         if (onMemberClick != null) {
             holder.itemView.isClickable = true

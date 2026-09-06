@@ -22,8 +22,8 @@ class SettingsActivity : BaseActivity() {
         setContentView(binding.root)
 
         if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_CHILD) {
-            binding.settingsHeader.setBackgroundColor(android.graphics.Color.parseColor("#00695C"))
-            window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+            binding.settingsHeader.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary))
+            window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
         }
 
         refreshName()

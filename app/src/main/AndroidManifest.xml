@@ -53,8 +53,8 @@
             android:exported="false"
             android:launchMode="singleTop" />
         <activity android:name=".ui.FamilyCodeActivity" android:exported="false" android:theme="@style/Theme.FamilyGuard.Plain" />
-        <activity android:name=".ui.ChildDashboardActivity" android:exported="false" />
-        <activity android:name=".ui.ChildMenuActivity" android:exported="false" />
+        <activity android:name=".ui.ChildDashboardActivity" android:exported="false" android:theme="@style/Theme.FamilyGuard.Child" />
+        <activity android:name=".ui.ChildMenuActivity" android:exported="false" android:theme="@style/Theme.FamilyGuard.Child" />
         <activity android:name=".ui.ParentDashboardActivity" android:exported="false" />
         <activity android:name=".ui.ParentMenuActivity" android:exported="false" />
         <activity android:name=".ui.SettingsActivity" android:exported="false" />

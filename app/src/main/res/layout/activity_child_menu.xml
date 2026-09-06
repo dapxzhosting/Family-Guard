@@ -97,7 +97,7 @@
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
-                        android:background="@drawable/bg_member_avatar">
+                        android:background="@drawable/bg_member_avatar_child">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -148,7 +148,7 @@
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
-                        android:background="@drawable/bg_member_avatar">
+                        android:background="@drawable/bg_member_avatar_child">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -199,7 +199,7 @@
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
-                        android:background="@drawable/bg_member_avatar">
+                        android:background="@drawable/bg_member_avatar_child">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
@@ -253,7 +253,7 @@
                     <FrameLayout
                         android:layout_width="44dp"
                         android:layout_height="44dp"
-                        android:background="@drawable/bg_member_avatar">
+                        android:background="@drawable/bg_member_avatar_child">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"

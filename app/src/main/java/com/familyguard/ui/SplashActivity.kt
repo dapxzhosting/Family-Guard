@@ -75,9 +75,9 @@ class SplashActivity : BaseActivity() {
             window.setBackgroundDrawableResource(R.drawable.bg_splash_gradient_green)
             binding.root.setBackgroundResource(R.drawable.bg_splash_gradient_green)
             binding.glowCircle.setBackgroundResource(R.drawable.bg_splash_logo_glow_green)
-            binding.appTagline.setTextColor(android.graphics.Color.parseColor("#B9EFE6"))
-            binding.progressPercentText.setTextColor(android.graphics.Color.parseColor("#CFF3EC"))
-            window.statusBarColor = android.graphics.Color.parseColor("#00695C")
+            binding.appTagline.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_text_muted))
+            binding.progressPercentText.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_text_soft))
+            window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
         }
     }
 

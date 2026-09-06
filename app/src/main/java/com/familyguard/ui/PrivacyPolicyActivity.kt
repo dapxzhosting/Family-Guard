@@ -22,7 +22,7 @@ class PrivacyPolicyActivity : BaseActivity() {
         setContentView(layoutRes)
 
         if (role == AppLockPrefs.ROLE_CHILD) {
-            window.statusBarColor = Color.parseColor("#00695C")
+            window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
         }
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
