@@ -108,12 +108,102 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvFamilyMembers"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp" />
+                android:layout_height="wrap_content">
+
+                <!-- Skeleton loading (tampil duluan sebelum data Firebase
+                     pertama nyampe, supaya tidak ada jeda "kosong" yang
+                     kelihatan kayak nge-render pas rvFamilyMembers masih
+                     kosong. Di-crossfade ke rvFamilyMembers begitu data
+                     pertama datang -- lihat ChildDashboardActivity). -->
+                <LinearLayout
+                    android:id="@+id/layoutMemberSkeleton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <View
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_skeleton_circle" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:background="@drawable/bg_skeleton_block" />
+
+                            <View
+                                android:layout_width="70dp"
+                                android:layout_height="10dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_skeleton_block" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <View
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_skeleton_circle" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="150dp"
+                                android:layout_height="12dp"
+                                android:background="@drawable/bg_skeleton_block" />
+
+                            <View
+                                android:layout_width="50dp"
+                                android:layout_height="10dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_skeleton_block" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvFamilyMembers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:visibility="gone" />
+            </FrameLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Status Izin (PENTING) -->

@@ -34,6 +34,8 @@ class ChildDashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityChildDashboardBinding
     private lateinit var memberAdapter: FamilyMemberAdapter
     private var devicesListener: com.google.firebase.database.ValueEventListener? = null
+    private var memberSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var isFirstMemberLoad = true
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -199,8 +201,24 @@ class ChildDashboardActivity : BaseActivity() {
         binding.rvFamilyMembers.isNestedScrollingEnabled = false
         com.familyguard.utils.AnimUtils.applySlideInItemAnimator(binding.rvFamilyMembers)
 
+        memberSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutMemberSkeleton)
+        memberSkeletonAnimator?.let { registerSkeletonAnimator(it) }
+
         devicesListener = FamilyLink.observeDevices(this) { devices ->
             memberAdapter.submitList(devices)
+
+            if (isFirstMemberLoad) {
+                isFirstMemberLoad = false
+                if (devices.isNotEmpty()) {
+                    com.familyguard.utils.AnimUtils.crossFadeToContent(
+                        binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator
+                    )
+                } else {
+                    memberSkeletonAnimator?.cancel()
+                    binding.layoutMemberSkeleton.visibility = View.GONE
+                    binding.rvFamilyMembers.visibility = View.VISIBLE
+                }
+            }
         }
     }
 
@@ -325,11 +343,14 @@ class ChildDashboardActivity : BaseActivity() {
         }
     }
 
+
+
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this)
         FamilyLink.stopListeningFamilyDeletion()
         devicesListener?.let { FamilyLink.removeDeviceObserver(this, it) }
+        memberSkeletonAnimator?.cancel()
     }
 
     private fun showMessageDialog(title: String, message: String) {
