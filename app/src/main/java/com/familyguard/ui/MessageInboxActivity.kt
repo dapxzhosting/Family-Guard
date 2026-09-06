@@ -60,10 +60,6 @@ class MessageInboxActivity : BaseActivity() {
 
             if (isFirstLoad) {
                 isFirstLoad = false
-                // Sembunyikan yang tidak relevan sekarang juga (aman, tidak
-                // kelihatan), tapi yang relevan baru di-tampilkan lewat
-                // finishSkeleton supaya nggak numpuk di atas skeleton
-                // sebelum durasi minimalnya kelar.
                 otherContent.visibility = View.GONE
                 com.familyguard.utils.AnimUtils.finishSkeleton(
                     binding.layoutInboxSkeleton, targetContent, skeletonAnimator, skeletonStartedAt, hasContent = true

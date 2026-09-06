@@ -19,12 +19,6 @@ object AnimUtils {
         return animator
     }
 
-    // Skeleton loading kadang datang duluan dari cache lokal Firebase, jadi bisa
-    // selesai dalam hitungan milidetik -- keliatannya kayak nggak ada transisi/
-    // "langsung muncul". Pakai fungsi ini supaya skeleton MINIMAL kelihatan
-    // sekian lama, walau datanya sebenarnya sudah nyampe duluan. Kalau jaringan
-    // lag, skeleton otomatis tetap jalan sampai data beneran datang (tidak ada
-    // batas maksimal, cuma batas minimal).
     const val MIN_SKELETON_DURATION_MS = 500L
 
     fun finishSkeleton(
@@ -115,14 +109,6 @@ object AnimUtils {
     }
 
     fun attachPressAnimationRecursively(root: View) {
-        // Cuma pasang animasi "tekan" ke Button, atau CardView yang MEMANG
-        // dimaksudkan bisa ditekan (android:clickable="true" di layout-nya,
-        // atau di-set clickable=true secara programatik). Tanpa cek ini,
-        // CardView non-interaktif (mis. card status "Sudah Terhubung" yang
-        // cuma nampilin info, bukan tombol) ikut kepasang OnTouchListener
-        // dan jadi kelihatan "kepencet" (scale down/up) walau nggak
-        // seharusnya bisa ditekan sama sekali -- setOnTouchListener tetap
-        // nerima event sentuh terlepas dari nilai isClickable.
         if (root is android.widget.Button || (root is androidx.cardview.widget.CardView && root.isClickable)) {
             attachPressAnimation(root)
         }

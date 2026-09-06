@@ -27,8 +27,6 @@ class FamilyMemberAdapter(
         val role: TextView = view.findViewById(R.id.tvMemberRole)
         val dot: View = view.findViewById(R.id.dotMemberOnline)
         val btnKick: ImageButton = view.findViewById(R.id.btnKickMember)
-        // Simpan ripple bawaan dari XML, supaya bisa dimatikan kalau item ini
-        // memang tidak bisa di-tap (biar tidak terlihat seperti tombol padahal bukan).
         val defaultForeground: android.graphics.drawable.Drawable? = view.foreground
     }
 
@@ -87,7 +85,6 @@ class FamilyMemberAdapter(
             holder.itemView.foreground = holder.defaultForeground
             holder.itemView.setOnClickListener { onMemberClick.invoke(member) }
         } else {
-            // Bukan tombol -> jangan tampilkan efek ripple/tekan sama sekali
             holder.itemView.isClickable = false
             holder.itemView.foreground = null
             holder.itemView.setOnClickListener(null)
