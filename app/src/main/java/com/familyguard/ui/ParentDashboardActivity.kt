@@ -28,6 +28,7 @@ class ParentDashboardActivity : BaseActivity() {
     private lateinit var appAdapter: com.familyguard.ui.adapter.AppListAdapter
     private lateinit var memberAdapter: FamilyMemberAdapter
     private var memberSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var memberSkeletonStartedAt: Long = 0L
     private var isFirstMemberLoad = true
     private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
@@ -284,6 +285,7 @@ class ParentDashboardActivity : BaseActivity() {
         binding.rvFamilyMembers.isNestedScrollingEnabled = false
         memberSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutMemberSkeleton)
         memberSkeletonAnimator?.let { registerSkeletonAnimator(it) }
+        memberSkeletonStartedAt = System.currentTimeMillis()
     }
 
     private fun setupAppRecyclerView() {
@@ -473,16 +475,10 @@ class ParentDashboardActivity : BaseActivity() {
 
         if (isFirstMemberLoad) {
             isFirstMemberLoad = false
-            if (childDevices.isNotEmpty()) {
-                com.familyguard.utils.AnimUtils.crossFadeToContent(
-                    binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator
-                )
-            } else {
-
-                memberSkeletonAnimator?.cancel()
-                binding.layoutMemberSkeleton.visibility = android.view.View.GONE
-                binding.rvFamilyMembers.visibility = android.view.View.VISIBLE
-            }
+            com.familyguard.utils.AnimUtils.finishSkeleton(
+                binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator,
+                memberSkeletonStartedAt, hasContent = true
+            )
         }
 
         updateControlsVisibility()

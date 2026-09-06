@@ -18,6 +18,7 @@ class MessageInboxActivity : BaseActivity() {
     private var messagesListener: ValueEventListener? = null
     private var myDeviceId: String = ""
     private var skeletonAnimator: android.animation.ObjectAnimator? = null
+    private var skeletonStartedAt: Long = 0L
     private var isFirstLoad = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,21 +50,28 @@ class MessageInboxActivity : BaseActivity() {
 
         skeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutInboxSkeleton)
         skeletonAnimator?.let { registerSkeletonAnimator(it) }
+        skeletonStartedAt = System.currentTimeMillis()
 
         messagesListener = FamilyLink.observeMessages(this, myDeviceId) { messages ->
             adapter.submitList(messages)
 
+            val targetContent = if (messages.isEmpty()) binding.layoutInboxEmpty else binding.rvMessages
+            val otherContent = if (messages.isEmpty()) binding.rvMessages else binding.layoutInboxEmpty
+
             if (isFirstLoad) {
                 isFirstLoad = false
-                com.familyguard.utils.AnimUtils.crossFadeToContent(
-                    binding.layoutInboxSkeleton,
-                    if (messages.isEmpty()) binding.layoutInboxEmpty else binding.rvMessages,
-                    skeletonAnimator
+                // Sembunyikan yang tidak relevan sekarang juga (aman, tidak
+                // kelihatan), tapi yang relevan baru di-tampilkan lewat
+                // finishSkeleton supaya nggak numpuk di atas skeleton
+                // sebelum durasi minimalnya kelar.
+                otherContent.visibility = View.GONE
+                com.familyguard.utils.AnimUtils.finishSkeleton(
+                    binding.layoutInboxSkeleton, targetContent, skeletonAnimator, skeletonStartedAt, hasContent = true
                 )
+            } else {
+                targetContent.visibility = View.VISIBLE
+                otherContent.visibility = View.GONE
             }
-
-            binding.layoutInboxEmpty.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
-            binding.rvMessages.visibility = if (messages.isEmpty()) View.GONE else View.VISIBLE
 
             val unread = messages.count { !it.read }
             binding.tvInboxSubtitle.text = if (unread > 0) {

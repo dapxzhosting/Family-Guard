@@ -24,6 +24,9 @@ class LocationMapActivity : BaseActivity() {
     private var lastLat: Double? = null
     private var lastLng: Double? = null
     private val sdf = SimpleDateFormat("HH:mm:ss, dd MMM yyyy", Locale("id", "ID"))
+    private var coordsSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var coordsSkeletonStartedAt: Long = 0L
+    private var isFirstLocationUpdate = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +39,10 @@ class LocationMapActivity : BaseActivity() {
 
         setupMap()
         setupButtons()
+
+        coordsSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.skeletonCoords)
+        registerSkeletonAnimator(coordsSkeletonAnimator!!)
+        coordsSkeletonStartedAt = System.currentTimeMillis()
     }
 
     private fun setupMap() {
@@ -103,11 +110,22 @@ class LocationMapActivity : BaseActivity() {
                 } else {
                     "Update terakhir: baru saja"
                 }
+                finishCoordsSkeletonIfNeeded()
             },
             onNoData = {
                 binding.tvLastUpdate.text = "Belum ada data lokasi dari HP anak"
                 binding.tvCoords.text = "Koordinat: —"
+                finishCoordsSkeletonIfNeeded()
             }
+        )
+    }
+
+    private fun finishCoordsSkeletonIfNeeded() {
+        if (!isFirstLocationUpdate) return
+        isFirstLocationUpdate = false
+        com.familyguard.utils.AnimUtils.finishSkeleton(
+            binding.skeletonCoords, binding.tvCoords,
+            coordsSkeletonAnimator, coordsSkeletonStartedAt, hasContent = true
         )
     }
 
@@ -134,6 +152,7 @@ class LocationMapActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        coordsSkeletonAnimator?.cancel()
         locationListener?.let { FamilyLink.removeLocationObserver(this, it) }
     }
 }

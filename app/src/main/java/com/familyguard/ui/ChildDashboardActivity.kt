@@ -35,6 +35,7 @@ class ChildDashboardActivity : BaseActivity() {
     private lateinit var memberAdapter: FamilyMemberAdapter
     private var devicesListener: com.google.firebase.database.ValueEventListener? = null
     private var memberSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var memberSkeletonStartedAt: Long = 0L
     private var isFirstMemberLoad = true
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -203,21 +204,17 @@ class ChildDashboardActivity : BaseActivity() {
 
         memberSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutMemberSkeleton)
         memberSkeletonAnimator?.let { registerSkeletonAnimator(it) }
+        memberSkeletonStartedAt = System.currentTimeMillis()
 
         devicesListener = FamilyLink.observeDevices(this) { devices ->
             memberAdapter.submitList(devices)
 
             if (isFirstMemberLoad) {
                 isFirstMemberLoad = false
-                if (devices.isNotEmpty()) {
-                    com.familyguard.utils.AnimUtils.crossFadeToContent(
-                        binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator
-                    )
-                } else {
-                    memberSkeletonAnimator?.cancel()
-                    binding.layoutMemberSkeleton.visibility = View.GONE
-                    binding.rvFamilyMembers.visibility = View.VISIBLE
-                }
+                com.familyguard.utils.AnimUtils.finishSkeleton(
+                    binding.layoutMemberSkeleton, binding.rvFamilyMembers, memberSkeletonAnimator,
+                    memberSkeletonStartedAt, hasContent = true
+                )
             }
         }
     }

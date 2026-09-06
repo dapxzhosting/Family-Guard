@@ -116,7 +116,7 @@
                      pertama nyampe, supaya tidak ada jeda "kosong" yang
                      kelihatan kayak nge-render pas rvFamilyMembers masih
                      kosong. Di-crossfade ke rvFamilyMembers begitu data
-                     pertama datang -- lihat ChildDashboardActivity). -->
+                     pertama datang  lihat ChildDashboardActivity). -->
                 <LinearLayout
                     android:id="@+id/layoutMemberSkeleton"
                     android:layout_width="match_parent"

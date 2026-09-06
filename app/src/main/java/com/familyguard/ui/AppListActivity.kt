@@ -30,6 +30,10 @@ class AppListActivity : BaseActivity() {
     private var childHasPin: Boolean = false
     private var pinStatusListener: ValueEventListener? = null
 
+    private var listSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var listSkeletonStartedAt: Long = 0L
+    private var isFirstAppListLoad = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityListAppBinding.inflate(layoutInflater)
@@ -46,9 +50,14 @@ class AppListActivity : BaseActivity() {
         binding.btnAppListBack.setOnClickListener { onBackPressed() }
 
         if (deviceId == null) {
+            binding.layoutAppListSkeleton.visibility = View.GONE
             binding.tvAppListEmpty.visibility = View.VISIBLE
             binding.tvAppListEmpty.text = "Tidak ada HP anak yang dipilih"
         } else {
+            listSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutAppListSkeleton)
+            listSkeletonAnimator?.let { registerSkeletonAnimator(it) }
+            listSkeletonStartedAt = System.currentTimeMillis()
+
             observeAppList(deviceId!!)
             observePinStatus(deviceId!!)
         }
@@ -149,8 +158,18 @@ class AppListActivity : BaseActivity() {
                 }.sortedBy { it.appName.lowercase() }
 
                 fullAppList = appListData
-                binding.tvAppListEmpty.visibility = if (appListData.isEmpty()) View.VISIBLE else View.GONE
                 applyFilter(binding.etAppSearch.text?.toString().orEmpty())
+
+                if (isFirstAppListLoad) {
+                    isFirstAppListLoad = false
+                    if (appListData.isEmpty()) binding.tvAppListEmpty.visibility = View.VISIBLE
+                    com.familyguard.utils.AnimUtils.finishSkeleton(
+                        binding.layoutAppListSkeleton, binding.rvAllApps,
+                        listSkeletonAnimator, listSkeletonStartedAt, hasContent = true
+                    )
+                } else {
+                    binding.tvAppListEmpty.visibility = if (appListData.isEmpty()) View.VISIBLE else View.GONE
+                }
             }
             override fun onCancelled(error: DatabaseError) {}
         }
@@ -237,6 +256,7 @@ class AppListActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        listSkeletonAnimator?.cancel()
         val code = AppLockPrefs.getFamilyCode(this)
         if (code != null && deviceId != null) {
             val devicesRef = FirebaseDatabase.getInstance().reference

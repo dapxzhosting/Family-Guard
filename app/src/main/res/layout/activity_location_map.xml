@@ -82,14 +82,28 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvCoords"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Koordinat: —"
-                android:textColor="#212121"
-                android:textSize="13sp"
-                android:fontFamily="monospace" />
+                android:layout_height="wrap_content">
+
+                <!-- Skeleton kecil selagi nunggu update lokasi pertama dari
+                     HP anak (lihat LocationMapActivity). -->
+                <View
+                    android:id="@+id/skeletonCoords"
+                    android:layout_width="150dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/bg_skeleton_block" />
+
+                <TextView
+                    android:id="@+id/tvCoords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Koordinat: —"
+                    android:textColor="#212121"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace"
+                    android:visibility="gone" />
+            </FrameLayout>
 
             <Button
                 android:id="@+id/btnRecenter"

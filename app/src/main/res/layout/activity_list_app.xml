@@ -181,13 +181,36 @@
         android:textSize="14sp"
         android:visibility="gone" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvAllApps"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#FFFFFF"
-        android:clipToPadding="false"
-        android:paddingBottom="12dp" />
+        android:background="#FFFFFF">
+
+        <!-- Skeleton loading daftar aplikasi (tampil duluan sebelum data
+             aplikasi HP anak nyampe dari Firebase, lihat AppListActivity). -->
+        <LinearLayout
+            android:id="@+id/layoutAppListSkeleton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="4dp">
+
+            <include layout="@layout/item_skeleton_app_row" />
+            <include layout="@layout/item_skeleton_app_row" />
+            <include layout="@layout/item_skeleton_app_row" />
+            <include layout="@layout/item_skeleton_app_row" />
+            <include layout="@layout/item_skeleton_app_row" />
+            <include layout="@layout/item_skeleton_app_row" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAllApps"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="12dp"
+            android:visibility="gone" />
+    </FrameLayout>
 
 </LinearLayout>

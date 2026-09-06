@@ -19,6 +19,8 @@ class ScreenTimeReportActivity : BaseActivity() {
     private lateinit var binding: ActivityScreenTimeReportBinding
     private val generator = ScreenTimeReportGenerator()
     private val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private var reportSkeletonAnimator: android.animation.ObjectAnimator? = null
+    private var reportSkeletonStartedAt: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +34,15 @@ class ScreenTimeReportActivity : BaseActivity() {
         binding.btnReportBack.setOnClickListener { onBackPressed() }
 
         if (deviceId == null) {
+            binding.layoutReportSkeleton.visibility = View.GONE
+            binding.scrollReportContent.visibility = View.VISIBLE
             binding.tvReportEmpty.visibility = View.VISIBLE
             return
         }
+
+        reportSkeletonAnimator = com.familyguard.utils.AnimUtils.startSkeletonPulse(binding.layoutReportSkeleton)
+        reportSkeletonAnimator?.let { registerSkeletonAnimator(it) }
+        reportSkeletonStartedAt = System.currentTimeMillis()
 
         loadAppNamesThenReport(deviceId)
     }
@@ -116,6 +124,16 @@ class ScreenTimeReportActivity : BaseActivity() {
             binding.rvTopApps.layoutManager = LinearLayoutManager(this)
             binding.rvTopApps.adapter = UsageAppAdapter(report.topApps, nameLookup, iconLookup)
         }
+
+        com.familyguard.utils.AnimUtils.finishSkeleton(
+            binding.layoutReportSkeleton, binding.scrollReportContent,
+            reportSkeletonAnimator, reportSkeletonStartedAt, hasContent = true
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        reportSkeletonAnimator?.cancel()
     }
 
     companion object {

@@ -19,6 +19,35 @@ object AnimUtils {
         return animator
     }
 
+    // Skeleton loading kadang datang duluan dari cache lokal Firebase, jadi bisa
+    // selesai dalam hitungan milidetik -- keliatannya kayak nggak ada transisi/
+    // "langsung muncul". Pakai fungsi ini supaya skeleton MINIMAL kelihatan
+    // sekian lama, walau datanya sebenarnya sudah nyampe duluan. Kalau jaringan
+    // lag, skeleton otomatis tetap jalan sampai data beneran datang (tidak ada
+    // batas maksimal, cuma batas minimal).
+    const val MIN_SKELETON_DURATION_MS = 500L
+
+    fun finishSkeleton(
+        skeleton: View,
+        content: View,
+        skeletonAnimator: android.animation.ObjectAnimator?,
+        startedAtMs: Long,
+        hasContent: Boolean = true,
+        minDurationMs: Long = MIN_SKELETON_DURATION_MS
+    ) {
+        val elapsed = System.currentTimeMillis() - startedAtMs
+        val remaining = (minDurationMs - elapsed).coerceAtLeast(0)
+        skeleton.postDelayed({
+            if (hasContent) {
+                crossFadeToContent(skeleton, content, skeletonAnimator)
+            } else {
+                skeletonAnimator?.cancel()
+                skeleton.visibility = View.GONE
+                content.visibility = View.VISIBLE
+            }
+        }, remaining)
+    }
+
     fun crossFadeToContent(
         skeleton: View,
         content: View,
