@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/dash_bg"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1A237E"
+        android:background="@color/dash_primary"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="12dp"
@@ -26,7 +26,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="#FFFFFF" />
+            app:tint="@color/dash_white" />
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Kelola Aplikasi"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
             <TextView
@@ -46,14 +46,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="-"
-                android:textColor="#C5CAE9"
+                android:textColor="@color/dash_primary_soft"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="@color/dash_white"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -64,7 +64,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_search"
-            app:tint="#9E9E9E"
+            app:tint="@color/dash_text_muted"
             android:contentDescription="Cari" />
         <EditText
             android:id="@+id/etAppSearch"
@@ -76,14 +76,14 @@
             android:hint="Cari aplikasi..."
             android:inputType="text"
             android:maxLines="1"
-            android:textColor="#212121"
-            android:textColorHint="#9E9E9E"
+            android:textColor="@color/dash_text_primary"
+            android:textColorHint="@color/dash_text_muted"
             android:textSize="14sp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="@color/dash_white"
         android:orientation="vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -93,7 +93,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="Pilih semua aplikasi:"
-            android:textColor="#757575"
+            android:textColor="@color/dash_text_secondary"
             android:textSize="12sp" />
         <LinearLayout
             android:layout_width="match_parent"
@@ -109,8 +109,8 @@
                 android:text="Kunci Semua"
                 android:textAllCaps="false"
                 android:textSize="12sp"
-                app:strokeColor="#C62828"
-                android:textColor="#C62828" />
+                app:strokeColor="@color/dash_danger"
+                android:textColor="@color/dash_danger" />
             <Button
                 android:id="@+id/btnUnlockAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -122,8 +122,8 @@
                 android:text="Buka Semua"
                 android:textAllCaps="false"
                 android:textSize="12sp"
-                app:strokeColor="#1A237E"
-                android:textColor="#1A237E" />
+                app:strokeColor="@color/dash_primary"
+                android:textColor="@color/dash_primary" />
             <Button
                 android:id="@+id/btnBlockNotifAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -135,8 +135,8 @@
                 android:text="Blokir Notif"
                 android:textAllCaps="false"
                 android:textSize="12sp"
-                app:strokeColor="#EF6C00"
-                android:textColor="#EF6C00" />
+                app:strokeColor="@color/dash_warning"
+                android:textColor="@color/dash_warning" />
             <Button
                 android:id="@+id/btnAllowNotifAll"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -147,8 +147,8 @@
                 android:text="Izinkan Notif"
                 android:textAllCaps="false"
                 android:textSize="12sp"
-                app:strokeColor="#00695C"
-                android:textColor="#00695C" />
+                app:strokeColor="@color/dash_child_primary"
+                android:textColor="@color/dash_child_primary" />
         </LinearLayout>
     </LinearLayout>
     <TextView
@@ -158,14 +158,14 @@
         android:layout_marginTop="40dp"
         android:gravity="center"
         android:text="Daftar aplikasi HP anak belum tersedia"
-        android:textColor="#9E9E9E"
+        android:textColor="@color/dash_text_muted"
         android:textSize="14sp"
         android:visibility="gone" />
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#FFFFFF">
+        android:background="@color/dash_white">
         <LinearLayout
             android:id="@+id/layoutAppListSkeleton"
             android:layout_width="match_parent"

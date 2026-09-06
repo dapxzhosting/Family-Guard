@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nama"
-            android:textColor="#212121"
+            android:textColor="@color/dash_text_primary"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Role"
-            android:textColor="#757575"
+            android:textColor="@color/dash_text_secondary"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -64,7 +64,7 @@
         android:layout_marginStart="10dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_menu_delete"
-        app:tint="#C62828"
+        app:tint="@color/dash_danger"
         android:contentDescription="Keluarkan anggota"
         android:visibility="gone" />
 

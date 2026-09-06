@@ -16,7 +16,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:tint="#1A237E" />
+        android:tint="@color/dash_primary" />
 
     <LinearLayout
     android:layout_width="match_parent"
@@ -33,7 +33,7 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:drawableStart="@drawable/ic_wave"
-        android:drawableTint="#1A237E"
+        android:drawableTint="@color/dash_primary"
         android:drawablePadding="8dp"
         android:gravity="center_vertical" />
 

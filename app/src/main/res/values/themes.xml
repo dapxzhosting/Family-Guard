@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.FamilyGuard" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">#1A237E</item>
-        <item name="colorPrimaryVariant">#0D47A1</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#00695C</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="android:statusBarColor">#1A237E</item>
+        <item name="colorPrimary">@color/dash_primary</item>
+        <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
+        <item name="colorOnPrimary">@color/dash_white</item>
+        <item name="colorSecondary">@color/dash_child_primary</item>
+        <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="android:statusBarColor">@color/dash_primary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
@@ -14,37 +14,37 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="colorPrimary">#00695C</item>
-        <item name="colorPrimaryVariant">#004D40</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#00695C</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="android:statusBarColor">#00695C</item>
+        <item name="colorPrimary">@color/dash_child_primary</item>
+        <item name="colorPrimaryVariant">@color/dash_child_primary_dark</item>
+        <item name="colorOnPrimary">@color/dash_white</item>
+        <item name="colorSecondary">@color/dash_child_primary</item>
+        <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="android:statusBarColor">@color/dash_child_primary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
     <style name="Theme.FamilyGuard.Splash" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">false</item>
-        <item name="android:statusBarColor">#1A237E</item>
+        <item name="android:statusBarColor">@color/dash_primary</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowBackground">@drawable/bg_splash_gradient</item>
-        <item name="colorPrimary">#1A237E</item>
-        <item name="colorPrimaryVariant">#0D47A1</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@color/dash_primary</item>
+        <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
+        <item name="colorOnPrimary">@color/dash_white</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
     <style name="LockScreen.HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">#80CBC4</item>
-    </style>    
+        <item name="android:textColor">@color/dash_child_primary_soft</item>
+    </style>
     <style name="Theme.FamilyGuard.Plain" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">#1A237E</item>
-        <item name="colorPrimaryVariant">#0D47A1</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#00695C</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="android:statusBarColor">#1A237E</item>
+        <item name="colorPrimary">@color/dash_primary</item>
+        <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
+        <item name="colorOnPrimary">@color/dash_white</item>
+        <item name="colorSecondary">@color/dash_child_primary</item>
+        <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="android:statusBarColor">@color/dash_primary</item>
     </style>
 </resources>

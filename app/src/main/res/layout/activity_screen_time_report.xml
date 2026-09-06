@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/dash_bg"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1A237E"
+        android:background="@color/dash_primary"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="12dp"
@@ -26,7 +26,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="#FFFFFF" />
+            app:tint="@color/dash_white" />
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Laporan Screen Time"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
             <TextView
@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="-"
-                android:textColor="#C5CAE9"
+                android:textColor="@color/dash_primary_soft"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/dash_white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -96,7 +96,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/dash_white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -126,7 +126,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/dash_white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -138,7 +138,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total 7 Hari Terakhir"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                     <TextView
                         android:id="@+id/tvReportTotal"
@@ -146,7 +146,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="0 jam 0 menit"
-                        android:textColor="#1A237E"
+                        android:textColor="@color/dash_primary"
                         android:textSize="28sp"
                         android:textStyle="bold" />
                     <TextView
@@ -155,7 +155,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:text="Dibanding minggu lalu: -"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="13sp" />
                     <TextView
                         android:id="@+id/tvReportPeriod"
@@ -163,7 +163,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="-"
-                        android:textColor="#9E9E9E"
+                        android:textColor="@color/dash_text_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -172,13 +172,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:text="Aplikasi Paling Sering Dipakai"
-                android:textColor="#424242"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/dash_white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -198,7 +198,7 @@
                         android:gravity="center"
                         android:padding="24dp"
                         android:text="Belum ada data pemakaian minggu ini"
-                        android:textColor="#9E9E9E"
+                        android:textColor="@color/dash_text_muted"
                         android:textSize="13sp"
                         android:visibility="gone" />
                 </LinearLayout>

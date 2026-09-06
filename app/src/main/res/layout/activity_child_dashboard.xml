@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA">
+    android:background="@color/dash_bg">
     <LinearLayout
         android:id="@+id/rootContent"
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#00695C">
+                android:background="@color/dash_child_primary">
                 <ImageView
                     android:id="@+id/btnChildDashboardBack"
                     android:layout_width="40dp"
@@ -33,7 +33,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="#FFFFFF" />
+                    app:tint="@color/dash_white" />
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -44,11 +44,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="FamilyGuard"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/dash_white"
                         android:textSize="22sp"
                         android:textStyle="bold"
                         android:drawableStart="@drawable/ic_shield"
-                        android:drawableTint="#FFFFFF"
+                        android:drawableTint="@color/dash_white"
                         android:drawablePadding="8dp"
                         android:gravity="center_vertical" />
                     <TextView
@@ -57,7 +57,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Keluarga: ---"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/dash_white"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <TextView
@@ -66,14 +66,14 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Kode: ---"
-                        android:textColor="#B2DFDB"
+                        android:textColor="@color/dash_child_primary_soft"
                         android:fontFamily="sans-serif"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="HP Anak - Aktif"
-                        android:textColor="#81C784"
+                        android:textColor="@color/dash_success_soft"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -84,7 +84,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
             android:text="Anggota Keluarga"
-            android:textColor="#424242"
+            android:textColor="@color/dash_text_primary"
             android:textSize="13sp"
             android:textStyle="bold" />
         <androidx.cardview.widget.CardView
@@ -188,7 +188,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Status Keamanan"
-                    android:textColor="#212121"
+                    android:textColor="@color/dash_text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
                 <LinearLayout
@@ -197,7 +197,7 @@
                     android:layout_marginTop="12dp"
                     android:gravity="center_vertical">
                     <ImageView android:id="@+id/statusAdmin" android:layout_width="20dp" android:layout_height="20dp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Device Admin" android:textColor="#212121"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Device Admin" android:textColor="@color/dash_text_primary"/>
                     <Button android:id="@+id/btnActivateAdmin" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
                 <LinearLayout
@@ -206,7 +206,7 @@
                     android:layout_marginTop="8dp"
                     android:gravity="center_vertical">
                     <ImageView android:id="@+id/statusAccessibility" android:layout_width="20dp" android:layout_height="20dp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="App Lock Service" android:textColor="#212121"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="App Lock Service" android:textColor="@color/dash_text_primary"/>
                     <Button android:id="@+id/btnAccessibility" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
                 <LinearLayout
@@ -215,7 +215,7 @@
                     android:layout_marginTop="8dp"
                     android:gravity="center_vertical">
                     <ImageView android:id="@+id/statusOverlay" android:layout_width="20dp" android:layout_height="20dp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Tampil di Atas App" android:textColor="#212121"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Tampil di Atas App" android:textColor="@color/dash_text_primary"/>
                     <Button android:id="@+id/btnOverlay" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Izinkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
                 <LinearLayout
@@ -224,7 +224,7 @@
                     android:layout_marginTop="8dp"
                     android:gravity="center_vertical">
                     <ImageView android:id="@+id/statusNotif" android:layout_width="20dp" android:layout_height="20dp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Blokir Notifikasi" android:textColor="#212121"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Blokir Notifikasi" android:textColor="@color/dash_text_primary"/>
                     <Button android:id="@+id/btnNotifListener" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
                 <LinearLayout
@@ -233,7 +233,7 @@
                     android:layout_marginTop="8dp"
                     android:gravity="center_vertical">
                     <ImageView android:id="@+id/statusLocation" android:layout_width="20dp" android:layout_height="20dp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Izin Lokasi" android:textColor="#212121"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Izin Lokasi" android:textColor="@color/dash_text_primary"/>
                     <Button android:id="@+id/btnLocation" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Aktifkan" android:textSize="11sp" style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
                 </LinearLayout>
             </LinearLayout>
@@ -244,7 +244,7 @@
             android:gravity="center"
             android:layout_marginTop="16dp"
             android:text="HP ini dalam perlindungan FamilyGuard.\nJangan hapus aplikasi ini."
-            android:textColor="#78909C"
+            android:textColor="@color/dash_text_secondary"
             android:textSize="12sp" />
     </LinearLayout>
 </ScrollView>

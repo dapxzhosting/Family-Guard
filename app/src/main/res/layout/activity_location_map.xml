@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA">
+    android:background="@color/dash_bg">
     <org.osmdroid.views.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         android:layout_alignParentTop="true"
         app:cardCornerRadius="0dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="#1A237E">
+        app:cardBackgroundColor="@color/dash_primary">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#FFFFFF"
+                app:tint="@color/dash_white"
                 android:contentDescription="Kembali" />
             <LinearLayout
                 android:layout_width="0dp"
@@ -39,11 +39,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Lokasi HP Anak"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/dash_white"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:drawableStart="@drawable/ic_pin_location"
-                    android:drawableTint="#FFFFFF"
+                    android:drawableTint="@color/dash_white"
                     android:drawablePadding="6dp"
                     android:gravity="center_vertical" />
                 <TextView
@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Menunggu data lokasi..."
-                    android:textColor="#90CAF9"
+                    android:textColor="@color/dash_info_soft"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
@@ -82,7 +82,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Koordinat: —"
-                    android:textColor="#212121"
+                    android:textColor="@color/dash_text_primary"
                     android:textSize="13sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -92,22 +92,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="#1565C0"
+                android:backgroundTint="@color/dash_info"
                 android:text="Pusatkan ke Lokasi Anak"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:drawableStart="@drawable/ic_target"
-                android:drawableTint="#FFFFFF"
+                android:drawableTint="@color/dash_white"
                 android:drawablePadding="8dp" />
             <Button
                 android:id="@+id/btnOpenExternal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="#00695C"
+                android:backgroundTint="@color/dash_child_primary"
                 android:text="Buka di Aplikasi Peta Lain"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:drawableStart="@drawable/ic_map"
-                android:drawableTint="#FFFFFF"
+                android:drawableTint="@color/dash_white"
                 android:drawablePadding="8dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>

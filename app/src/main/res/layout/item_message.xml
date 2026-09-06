@@ -37,7 +37,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="Anak"
-                android:textColor="#1B1F3B"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="12:00"
-                android:textColor="#9E9E9E"
+                android:textColor="@color/dash_text_muted"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -59,7 +59,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Judul pesan"
-            android:textColor="#3348E8"
+            android:textColor="@color/dash_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
 
@@ -71,7 +71,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Isi pesan..."
-            android:textColor="#6B7191"
+            android:textColor="@color/dash_text_secondary"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -82,7 +82,7 @@
         android:layout_marginStart="6dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_close"
-        app:tint="#B0B4C8"
+        app:tint="@color/dash_text_muted"
         android:contentDescription="Hapus pesan" />
 
 </LinearLayout>

@@ -19,7 +19,7 @@
         android:textSize="24sp"
         android:textStyle="bold"
         android:drawableStart="@drawable/ic_shield"
-        android:drawableTint="#1A237E"
+        android:drawableTint="@color/dash_primary"
         android:drawablePadding="8dp"
         android:gravity="center_vertical" />
 

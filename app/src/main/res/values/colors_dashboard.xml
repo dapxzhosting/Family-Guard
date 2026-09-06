@@ -19,4 +19,14 @@
     <color name="dash_info_soft">#E9F2FE</color>
     <color name="dash_purple">#8B5CF6</color>
     <color name="dash_purple_soft">#F1EBFE</color>
+
+    <color name="dash_white">#FFFFFF</color>
+    <color name="dash_black">#000000</color>
+
+    <color name="dash_child_primary">#1FAA6E</color>
+    <color name="dash_child_primary_dark">#0F7A4C</color>
+    <color name="dash_child_primary_soft">#E4F8EF</color>
+
+    <color name="dash_primary_text_soft">#CCD4FF</color>
+    <color name="dash_primary_text_muted">#99AAFF</color>
 </resources>

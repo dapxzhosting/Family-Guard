@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/dash_bg"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1A237E"
+        android:background="@color/dash_primary"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="12dp"
@@ -26,7 +26,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="#FFFFFF" />
+            app:tint="@color/dash_white" />
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Pesan Masuk"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
             <TextView
@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Riwayat pesan dari keluarga"
-                android:textColor="#B2DFDB"
+                android:textColor="@color/dash_child_primary_soft"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
@@ -82,7 +82,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Belum ada pesan"
-            android:textColor="#9E9E9E"
+            android:textColor="@color/dash_text_muted"
             android:textSize="14sp" />
     </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView

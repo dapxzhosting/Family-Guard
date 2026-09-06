@@ -3,11 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FAFAFA">
+    android:background="@color/dash_bg">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#FFFFFF"
+        android:background="@color/dash_white"
         android:elevation="4dp"
         android:paddingHorizontal="16dp">
         <ImageButton
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="Kebijakan &amp; Ketentuan"
-            android:textColor="#1F2937"
+            android:textColor="@color/dash_text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
     </RelativeLayout>
@@ -41,7 +41,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Kebijakan Privasi &amp; Syarat Layanan"
-                android:textColor="#111827"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -49,14 +49,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Terakhir diperbarui: 28 Agustus 2026"
-                android:textColor="#6B7280"
+                android:textColor="@color/dash_text_muted"
                 android:textSize="13sp"
                 android:layout_marginBottom="24dp" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="1. Pendahuluan"
-                android:textColor="#1F2937"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Selamat datang di FamilyGuard. Aplikasi ini dirancang khusus untuk membantu orang tua dalam mendampingi dan melindungi aktivitas digital anak. Dengan menggunakan aplikasi ini, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini."
-                android:textColor="#374151"
+                android:textColor="@color/dash_text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="20dp" />
@@ -72,7 +72,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="2. Penggunaan Izin Khusus &amp; Sensitif"
-                android:textColor="#1F2937"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -80,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="FamilyGuard memerlukan beberapa izin khusus agar fungsi perlindungan berjalan optimal:\n\n• Layanan Aksesibilitas (Accessibility Service): Digunakan untuk mendeteksi aplikasi yang dibuka di perangkat anak dan melakukan pemblokiran sesuai aturan yang ditetapkan orang tua.\n• Lokasi (Location): Digunakan untuk menampilkan posisi real-time anak demi keselamatan keluarga.\n• MediaProjection / Screen Capture: Digunakan untuk fitur pemantauan tampilan layar atas izin pengguna.\n• Pengelola Perangkat (Device Admin): Digunakan untuk mencegah aplikasi dicopot (uninstall) tanpa seizin orang tua."
-                android:textColor="#374151"
+                android:textColor="@color/dash_text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="20dp" />
@@ -88,7 +88,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="3. Keamanan &amp; Kerahasiaan Data"
-                android:textColor="#1F2937"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -96,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Kami sangat menjaga privasi keluarga Anda. Data lokasi dan aktivitas dienkripsi dan hanya disinkronkan ke akun orang tua yang terhubung melalui kode keluarga unik. Data Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga untuk kepentingan iklan."
-                android:textColor="#374151"
+                android:textColor="@color/dash_text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="20dp" />
@@ -104,7 +104,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="4. Syarat &amp; Ketentuan Penggunaan"
-                android:textColor="#1F2937"
+                android:textColor="@color/dash_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -112,7 +112,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Aplikasi ini wajib diinstal atas sepengetahuan dan persetujuan wali/orang tua dan anak. Penggunaan aplikasi untuk memantau perangkat individu dewasa tanpa izin eksplisit adalah pelanggaran hukum dan syarat penggunaan."
-                android:textColor="#374151"
+                android:textColor="@color/dash_text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="24dp" />
@@ -123,7 +123,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#FFFFFF"
+        android:background="@color/dash_white"
         android:elevation="8dp"
         android:padding="16dp">
         <Button

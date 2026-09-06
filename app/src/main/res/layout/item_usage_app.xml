@@ -14,7 +14,7 @@
         android:layout_width="24dp"
         android:layout_height="wrap_content"
         android:text="1"
-        android:textColor="#9E9E9E"
+        android:textColor="@color/dash_text_muted"
         android:textSize="14sp"
         android:textStyle="bold" />
 
@@ -33,7 +33,7 @@
         android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:text="Nama Aplikasi"
-        android:textColor="#212121"
+        android:textColor="@color/dash_text_primary"
         android:textSize="14sp"
         android:textStyle="bold" />
 
@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 menit"
-        android:textColor="#1A237E"
+        android:textColor="@color/dash_primary"
         android:textSize="13sp"
         android:textStyle="bold" />
 

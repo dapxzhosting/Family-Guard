@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/dash_bg"
     android:fillViewport="true">
 <LinearLayout
     android:layout_width="match_parent"
@@ -12,7 +12,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1A237E"
+        android:background="@color/dash_primary"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="20dp"
@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FamilyGuard"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/dash_white"
                 android:textSize="24sp"
                 android:textStyle="bold" />
             <TextView
@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Menu Orang Tua"
-                android:textColor="#C5CAE9"
+                android:textColor="@color/dash_primary_soft"
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
@@ -58,7 +58,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/dash_white"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
@@ -88,14 +88,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Dashboard"
-                        android:textColor="#212121"
+                        android:textColor="@color/dash_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Pantau &amp; kontrol HP anak"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
                 <ImageView
@@ -112,7 +112,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/dash_white"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
@@ -144,7 +144,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Buat Keluarga"
-                        android:textColor="#212121"
+                        android:textColor="@color/dash_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
@@ -152,7 +152,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Belum ada keluarga"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
                 <ImageView
@@ -170,7 +170,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/dash_white"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
@@ -200,14 +200,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Pengaturan"
-                        android:textColor="#212121"
+                        android:textColor="@color/dash_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Info akun &amp; lainnya"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
                 <ImageView
@@ -222,7 +222,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="20dp"
-            android:background="#E0E0E0" />
+            android:background="@color/dash_divider" />
         <Button
             android:id="@+id/btnPrivacyPolicy"
             android:layout_width="match_parent"
@@ -230,8 +230,8 @@
             android:layout_marginBottom="14dp"
             android:text="Kebijakan Privasi &amp; Syarat"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#4B5563"
+            android:textColor="@color/dash_white"
+            android:backgroundTint="@color/dash_text_secondary"
             android:textSize="15sp"
             android:textStyle="bold"
             app:cornerRadius="8dp" />
@@ -242,7 +242,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFEBEE"
+            app:cardBackgroundColor="@color/dash_danger_soft"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             <LinearLayout
@@ -260,7 +260,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_menu_delete"
-                        app:tint="#C62828"
+                        app:tint="@color/dash_danger"
                         android:contentDescription="Hapus Keluarga" />
                 </FrameLayout>
                 <LinearLayout
@@ -273,14 +273,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hapus Keluarga"
-                        android:textColor="#C62828"
+                        android:textColor="@color/dash_danger"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hapus permanen, semua HP anak terputus"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -292,7 +292,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFEBEE"
+            app:cardBackgroundColor="@color/dash_danger_soft"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             <LinearLayout
@@ -310,7 +310,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_menu_reset"
-                        app:tint="#C62828"
+                        app:tint="@color/dash_danger"
                         android:contentDescription="Reset Role" />
                 </FrameLayout>
                 <LinearLayout
@@ -323,14 +323,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Reset Role"
-                        android:textColor="#C62828"
+                        android:textColor="@color/dash_danger"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Keluar dari role &amp; keluarga saat ini"
-                        android:textColor="#757575"
+                        android:textColor="@color/dash_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -342,7 +342,7 @@
             android:layout_marginTop="10dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#FFEBEE"
+            app:cardBackgroundColor="@color/dash_danger_soft"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             <LinearLayout
@@ -362,7 +362,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:text="Logout Akun"
-                    android:textColor="#C62828"
+                    android:textColor="@color/dash_danger"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>

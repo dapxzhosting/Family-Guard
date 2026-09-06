@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/app_name"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/dash_white"
         android:textSize="24sp"
         android:textStyle="bold"
         android:letterSpacing="0.04"
@@ -79,7 +79,7 @@
             android:layout_height="6dp"
             android:max="100"
             android:progress="0"
-            android:progressTint="#FFFFFF"
+            android:progressTint="@color/dash_white"
             android:progressBackgroundTint="#33FFFFFF" />
         <TextView
             android:id="@+id/progressPercentText"
@@ -109,14 +109,14 @@
             android:layout_height="16dp"
             android:src="@drawable/ic_network_off"
             android:contentDescription="Jaringan tidak tersedia"
-            app:tint="#FFB4B4" />
+            app:tint="@color/dash_danger_soft" />
         <TextView
             android:id="@+id/networkWarningText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:text="Jaringan tidak tersedia"
-            android:textColor="#FFB4B4"
+            android:textColor="@color/dash_danger_soft"
             android:textSize="12sp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,7 +4,7 @@
     android:id="@+id/rootScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#00695C"
+    android:background="@color/dash_child_primary"
     android:clipToPadding="false"
     android:fillViewport="true">
     <LinearLayout
@@ -18,14 +18,14 @@
             android:layout_height="72dp"
             android:src="@drawable/ic_lock"
             android:contentDescription="Terkunci"
-            app:tint="#FFFFFF" />
+            app:tint="@color/dash_white" />
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Aplikasi Dikunci"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/dash_white"
             android:textSize="24sp"
             android:textStyle="bold" />
         <TextView
@@ -35,7 +35,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="Masukkan PIN orang tua untuk membuka"
-            android:textColor="#B0BEC5"
+            android:textColor="@color/dash_text_muted"
             android:textSize="14sp" />
         <FrameLayout
             android:id="@+id/pinInputArea"
@@ -109,12 +109,12 @@
             android:background="@drawable/pin_box_background"
             android:gravity="top|start"
             android:hint="Tulis balasan..."
-            android:textColorHint="#78909C"
+            android:textColorHint="@color/dash_text_secondary"
             android:inputType="textMultiLine|textCapSentences"
             android:minLines="3"
             android:maxLines="5"
             android:padding="14dp"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/dash_white"
             android:textSize="15sp"
             android:visibility="gone" />
         <Button
@@ -122,12 +122,12 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#4CAF50"
+            android:backgroundTint="@color/dash_success"
             android:elevation="2dp"
             android:letterSpacing="0.02"
             android:text="Buka Aplikasi"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/dash_white"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="14dp" />
@@ -136,12 +136,12 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="10dp"
-            android:backgroundTint="#00695C"
+            android:backgroundTint="@color/dash_child_primary"
             android:elevation="2dp"
             android:letterSpacing="0.02"
             android:text="Kirim Balasan"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/dash_white"
             android:textSize="16sp"
             android:textStyle="bold"
             android:visibility="gone"
@@ -151,12 +151,12 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="10dp"
-            android:backgroundTint="#FF8F00"
+            android:backgroundTint="@color/dash_warning"
             android:elevation="2dp"
             android:letterSpacing="0.02"
             android:text="Minta Izin ke Orang Tua"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/dash_white"
             android:textSize="15sp"
             android:textStyle="bold"
             android:visibility="gone"
@@ -168,7 +168,7 @@
             android:layout_marginTop="12dp"
             android:gravity="center"
             android:text=""
-            android:textColor="#FFE082"
+            android:textColor="@color/dash_warning_soft"
             android:textSize="13sp"
             android:visibility="gone" />
         <Button
@@ -180,7 +180,7 @@
             android:backgroundTint="@android:color/transparent"
             android:text="Kembali ke Home"
             android:textAllCaps="false"
-            android:textColor="#90A4AE"
+            android:textColor="@color/dash_text_muted"
             style="@style/Widget.MaterialComponents.Button.TextButton" />
     </LinearLayout>
 </ScrollView>
