@@ -46,14 +46,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="-"
-                android:textColor="@color/dash_primary_soft"
+                android:textColor="@color/dash_primary_text_soft"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dash_white"
+        android:background="@color/dash_surface"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -83,7 +83,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dash_white"
+        android:background="@color/dash_surface"
         android:orientation="vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -165,7 +165,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/dash_white">
+        android:background="@color/dash_surface">
         <LinearLayout
             android:id="@+id/layoutAppListSkeleton"
             android:layout_width="match_parent"

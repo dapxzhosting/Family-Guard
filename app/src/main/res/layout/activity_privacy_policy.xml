@@ -7,7 +7,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/dash_white"
+        android:background="@color/dash_surface"
         android:elevation="4dp"
         android:paddingHorizontal="16dp">
         <ImageButton
@@ -123,7 +123,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/dash_white"
+        android:background="@color/dash_surface"
         android:elevation="8dp"
         android:padding="16dp">
         <Button

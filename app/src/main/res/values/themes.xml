@@ -47,7 +47,7 @@
     </style>
     <style name="LockScreen.HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@color/dash_child_primary_soft</item>
+        <item name="android:textColor">@color/dash_child_text_soft</item>
     </style>
     <style name="Theme.FamilyGuard.Plain" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/dash_primary</item>

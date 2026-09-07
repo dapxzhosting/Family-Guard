@@ -109,14 +109,14 @@
             android:layout_height="16dp"
             android:src="@drawable/ic_network_off"
             android:contentDescription="Jaringan tidak tersedia"
-            app:tint="@color/dash_danger_soft" />
+            app:tint="@color/dash_danger_text_soft" />
         <TextView
             android:id="@+id/networkWarningText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:text="Jaringan tidak tersedia"
-            android:textColor="@color/dash_danger_soft"
+            android:textColor="@color/dash_danger_text_soft"
             android:textSize="12sp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

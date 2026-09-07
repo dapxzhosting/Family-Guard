@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Menunggu data lokasi..."
-                    android:textColor="@color/dash_info_soft"
+                    android:textColor="@color/dash_info_text_soft"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>

@@ -66,14 +66,14 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Kode: ---"
-                        android:textColor="@color/dash_child_primary_soft"
+                        android:textColor="@color/dash_child_text_soft"
                         android:fontFamily="sans-serif"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="HP Anak - Aktif"
-                        android:textColor="@color/dash_success_soft"
+                        android:textColor="@color/dash_success_text_soft"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>

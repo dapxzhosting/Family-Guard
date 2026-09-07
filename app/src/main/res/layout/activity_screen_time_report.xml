@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="-"
-                android:textColor="@color/dash_primary_soft"
+                android:textColor="@color/dash_primary_text_soft"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/dash_white"
+                app:cardBackgroundColor="@color/dash_surface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -96,7 +96,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/dash_white"
+                app:cardBackgroundColor="@color/dash_surface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -126,7 +126,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/dash_white"
+                app:cardBackgroundColor="@color/dash_surface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout
@@ -178,7 +178,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/dash_white"
+                app:cardBackgroundColor="@color/dash_surface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp">
                 <LinearLayout

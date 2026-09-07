@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Menu Orang Tua"
-                android:textColor="@color/dash_primary_soft"
+                android:textColor="@color/dash_primary_text_soft"
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
@@ -58,7 +58,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="@color/dash_white"
+            app:cardBackgroundColor="@color/dash_surface"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
@@ -112,7 +112,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="@color/dash_white"
+            app:cardBackgroundColor="@color/dash_surface"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
@@ -170,7 +170,7 @@
             android:layout_marginBottom="14dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="@color/dash_white"
+            app:cardBackgroundColor="@color/dash_surface"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp">
             <LinearLayout
