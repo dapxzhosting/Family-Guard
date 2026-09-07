@@ -12,6 +12,7 @@ import com.familyguard.databinding.ActivityFamilyCodeBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import kotlin.random.Random
+import com.familyguard.R
 
 class FamilyCodeActivity : BaseActivity() {
 
@@ -39,6 +40,11 @@ class FamilyCodeActivity : BaseActivity() {
         if (role == AppLockPrefs.ROLE_PARENT) {
             binding.headerFamilyCode.background =
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_parent_hero)
+            window.statusBarColor =
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_primary_dark)
+        } else {
+            window.statusBarColor =
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary_dark)
         }
         if (role == AppLockPrefs.ROLE_PARENT) showParentUI() else showChildUI()
     }
