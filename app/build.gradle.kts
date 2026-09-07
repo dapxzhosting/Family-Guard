@@ -4,6 +4,13 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+val localProperties = java.util.Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(java.io.FileInputStream(localPropertiesFile))
+}
+fun localProp(key: String): String = localProperties.getProperty(key, "")
+
 android {
     namespace = "com.familyguard"
     compileSdk = 37
@@ -14,6 +21,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "TURN_HOST", "\"${localProp("turn.host")}\"")
+        buildConfigField("String", "TURN_USERNAME", "\"${localProp("turn.username")}\"")
+        buildConfigField("String", "TURN_CREDENTIAL", "\"${localProp("turn.credential")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,6 +50,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

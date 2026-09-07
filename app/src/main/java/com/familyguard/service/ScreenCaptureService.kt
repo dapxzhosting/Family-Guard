@@ -125,13 +125,7 @@ class ScreenCaptureService : Service() {
         val factory = peerConnectionFactory ?: return
         val videoTrack = this.videoTrack ?: return
 
-        val iceServers = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-
-        )
-        val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-        }
+        val rtcConfig = com.familyguard.sync.WebRtcIceConfig.buildRtcConfiguration()
 
         peerConnection = factory.createPeerConnection(rtcConfig, object : org.webrtc.PeerConnection.Observer {
             override fun onIceCandidate(candidate: IceCandidate) {

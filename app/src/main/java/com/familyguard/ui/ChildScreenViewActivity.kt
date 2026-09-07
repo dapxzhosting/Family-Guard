@@ -146,12 +146,7 @@ class ChildScreenViewActivity : BaseActivity() {
             .createPeerConnectionFactory()
         peerConnectionFactory = factory
 
-        val iceServers = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-        )
-        val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-        }
+        val rtcConfig = com.familyguard.sync.WebRtcIceConfig.buildRtcConfiguration()
 
         peerConnection = factory.createPeerConnection(rtcConfig, object : PeerConnection.Observer {
             override fun onIceCandidate(candidate: IceCandidate) {
@@ -166,13 +161,36 @@ class ChildScreenViewActivity : BaseActivity() {
                 if (track is VideoTrack) {
                     runOnUiThread {
                         track.addSink(binding.rendererScreen)
-                        binding.progressLoading.visibility = android.view.View.GONE
-                        binding.tvStatus.text = "Terhubung • video real-time"
+                        binding.tvStatus.text = "Menghubungkan video…"
                     }
                 }
             }
             override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
-            override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
+            override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
+                runOnUiThread {
+                    when (state) {
+                        PeerConnection.IceConnectionState.CONNECTED,
+                        PeerConnection.IceConnectionState.COMPLETED -> {
+                            binding.progressLoading.visibility = android.view.View.GONE
+                            binding.tvStatus.text = "Terhubung • video real-time"
+                        }
+                        PeerConnection.IceConnectionState.CHECKING -> {
+                            binding.tvStatus.text = "Mencari jalur koneksi…"
+                        }
+                        PeerConnection.IceConnectionState.FAILED -> {
+                            binding.progressLoading.visibility = android.view.View.VISIBLE
+                            binding.tvStatus.text = "Gagal terhubung • jaringan HP anak tidak bisa dijangkau"
+                        }
+                        PeerConnection.IceConnectionState.DISCONNECTED -> {
+                            binding.tvStatus.text = "Koneksi terputus • mencoba lagi…"
+                        }
+                        PeerConnection.IceConnectionState.CLOSED -> {
+                            binding.tvStatus.text = "Sesi ditutup"
+                        }
+                        else -> {}
+                    }
+                }
+            }
             override fun onIceConnectionReceivingChange(receiving: Boolean) {}
             override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
             override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>?) {}
