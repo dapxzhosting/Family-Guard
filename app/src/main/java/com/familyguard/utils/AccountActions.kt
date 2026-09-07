@@ -14,16 +14,40 @@ import com.google.firebase.auth.FirebaseAuth
 object AccountActions {
 
     fun resetRole(activity: Activity) {
-        AlertDialog.Builder(activity)
-            .setTitle("Reset Role?")
-            .setMessage(
-                "Perangkat ini akan keluar dari role & keluarga saat ini. " +
-                        "Kamu tetap login dengan akun Google yang sama, dan bisa " +
-                        "pilih role (Orang Tua/Anak) serta keluarga dari awal lagi."
-            )
-            .setPositiveButton("Reset") { _, _ ->
-                Toast.makeText(activity, "Mereset role...", Toast.LENGTH_SHORT).show()
-                FamilyLink.stopListeningForKick()
+        val role = AppLockPrefs.getRole(activity)
+        val isParentWithFamily = role == AppLockPrefs.ROLE_PARENT &&
+                !AppLockPrefs.getFamilyCode(activity).isNullOrBlank()
+
+        val message = if (isParentWithFamily) {
+            "Perangkat ini akan keluar dari role & keluarga saat ini. " +
+                    "Karena kamu Orang Tua, seluruh keluarga ini beserta semua " +
+                    "HP anak yang terhubung akan ikut terhapus permanen -- " +
+                    "mereka akan otomatis terputus. Kamu tetap login dengan akun " +
+                    "Google yang sama, dan bisa pilih role serta keluarga dari awal lagi."
+        } else {
+            "Perangkat ini akan keluar dari role & keluarga saat ini. " +
+                    "Kamu tetap login dengan akun Google yang sama, dan bisa " +
+                    "pilih role (Orang Tua/Anak) serta keluarga dari awal lagi."
+        }
+
+        showConfirmDialog(
+            activity = activity,
+            iconRes = com.familyguard.R.drawable.ic_menu_reset,
+            title = "Reset Role?",
+            message = message,
+            confirmText = "Reset"
+        ) {
+            Toast.makeText(activity, "Mereset role...", Toast.LENGTH_SHORT).show()
+            FamilyLink.stopListeningForKick()
+
+            if (isParentWithFamily) {
+                FamilyLink.deleteFamilyEntirely(activity) {
+                    FamilyLink.clearRemoteRoleAndFamily(activity) {
+                        AppLockPrefs.clearRoleAndFamily(activity)
+                        goToRoleSelection(activity)
+                    }
+                }
+            } else {
                 FamilyLink.removeDeviceFromCurrentFamily(activity) {
                     FamilyLink.clearRemoteRoleAndFamily(activity) {
                         AppLockPrefs.clearRoleAndFamily(activity)
@@ -31,8 +55,7 @@ object AccountActions {
                     }
                 }
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
     }
 
     fun leaveCurrentFamily(activity: Activity, onDone: () -> Unit) {
@@ -99,14 +122,15 @@ object AccountActions {
     }
 
     fun logout(activity: Activity) {
-        AlertDialog.Builder(activity)
-            .setTitle("Keluar Akun?")
-            .setMessage("Kamu akan keluar dari akun Google ini di perangkat ini.")
-            .setPositiveButton("Keluar") { _, _ ->
-                doLogout(activity)
-            }
-            .setNegativeButton("Batal", null)
-            .show()
+        showConfirmDialog(
+            activity = activity,
+            iconRes = com.familyguard.R.drawable.ic_logout,
+            title = "Keluar Akun?",
+            message = "Kamu akan keluar dari akun Google ini di perangkat ini.",
+            confirmText = "Keluar"
+        ) {
+            doLogout(activity)
+        }
     }
 
     fun deleteFamily(activity: Activity, onDone: (() -> Unit)? = null) {
@@ -114,7 +138,7 @@ object AccountActions {
             .setTitle("Hapus Keluarga?")
             .setMessage(
                 "Seluruh data keluarga ini akan dihapus permanen, termasuk semua " +
-                        "HP anak yang terhubung -- mereka akan otomatis terputus. " +
+                        "HP anak yang terhubung mereka akan otomatis terputus. " +
                         "Tindakan ini tidak bisa dibatalkan."
             )
             .setPositiveButton("Hapus") { _, _ ->
@@ -189,5 +213,91 @@ object AccountActions {
         AppLockPrefs.ROLE_CHILD -> "Anak"
         else -> "-"
     }
-}
 
+    private fun roleAccentColor(activity: Activity): Int {
+        val role = AppLockPrefs.getRole(activity)
+        val colorRes = if (role == AppLockPrefs.ROLE_CHILD) {
+            com.familyguard.R.color.dash_child_primary
+        } else {
+            com.familyguard.R.color.dash_primary
+        }
+        return androidx.core.content.ContextCompat.getColor(activity, colorRes)
+    }
+
+    private fun showConfirmDialog(
+        activity: Activity,
+        iconRes: Int,
+        title: String,
+        message: String,
+        confirmText: String,
+        onConfirm: () -> Unit
+    ) {
+        val dialog = android.app.Dialog(activity, com.familyguard.R.style.BottomSlideDialog)
+        dialog.setContentView(com.familyguard.R.layout.dialog_confirm_action)
+        dialog.window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog.window?.setGravity(android.view.Gravity.BOTTOM)
+
+        val root = dialog.findViewById<android.view.View>(com.familyguard.R.id.dialogRoot)
+        val dragArea = dialog.findViewById<android.view.View>(com.familyguard.R.id.dialogDragArea)
+        val iconCircle = dialog.findViewById<android.view.View>(com.familyguard.R.id.confirmIconCircle)
+        val icon = dialog.findViewById<android.widget.ImageView>(com.familyguard.R.id.ivConfirmIcon)
+        val tvTitle = dialog.findViewById<android.widget.TextView>(com.familyguard.R.id.tvConfirmTitle)
+        val tvMessage = dialog.findViewById<android.widget.TextView>(com.familyguard.R.id.tvConfirmMessage)
+        val btnCancel = dialog.findViewById<android.widget.Button>(com.familyguard.R.id.btnConfirmCancel)
+        val btnOk = dialog.findViewById<android.widget.Button>(com.familyguard.R.id.btnConfirmOk)
+
+        val roleColor = roleAccentColor(activity)
+
+        iconCircle.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+        icon.setImageResource(iconRes)
+        icon.imageTintList = android.content.res.ColorStateList.valueOf(roleColor)
+        tvTitle.text = title
+        tvMessage.text = message
+        btnOk.text = confirmText
+        btnOk.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnOk.setOnClickListener {
+            dialog.dismiss()
+            onConfirm()
+        }
+
+        val dismissThreshold = 180 * activity.resources.displayMetrics.density
+        var downY = 0f
+        dragArea.setOnTouchListener { _, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    downY = event.rawY
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    val delta = event.rawY - downY
+                    if (delta > 0) root.translationY = delta
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    if (root.translationY > dismissThreshold) {
+                        root.animate()
+                            .translationY(root.height.toFloat() + root.translationY)
+                            .setDuration(200)
+                            .withEndAction { dialog.dismiss() }
+                            .start()
+                    } else {
+                        root.animate()
+                            .translationY(0f)
+                            .setDuration(200)
+                            .setInterpolator(android.view.animation.DecelerateInterpolator())
+                            .start()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
+        dialog.show()
+    }
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dialogRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_top_rounded"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:id="@+id/dialogDragArea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="4dp">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="22dp"
+            android:background="@drawable/bg_dialog_handle" />
+
+        <FrameLayout
+            android:id="@+id/confirmIconCircle"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_member_avatar">
+
+            <ImageView
+                android:id="@+id/ivConfirmIcon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:contentDescription="Konfirmasi" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvConfirmTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Judul"
+            android:textColor="@color/dash_white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvConfirmMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="24dp"
+            android:text="Pesan konfirmasi"
+            android:textColor="@color/dash_text_secondary"
+            android:textSize="13.5sp"
+            android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnConfirmCancel"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Batal"
+            android:textAllCaps="false"
+            android:textColor="@color/dash_white"
+            android:backgroundTint="@color/dash_divider"
+            app:cornerRadius="10dp" />
+
+        <Button
+            android:id="@+id/btnConfirmOk"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Ya"
+            android:textAllCaps="false"
+            android:textColor="@color/dash_white"
+            android:backgroundTint="@color/dash_primary"
+            app:cornerRadius="10dp" />
+    </LinearLayout>
+
+</LinearLayout>

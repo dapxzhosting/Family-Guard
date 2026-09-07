@@ -12,6 +12,7 @@ import com.familyguard.databinding.ActivityFamilyCodeBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import kotlin.random.Random
+import com.familyguard.R
 
 class FamilyCodeActivity : BaseActivity() {
 
