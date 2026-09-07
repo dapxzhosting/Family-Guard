@@ -8,7 +8,7 @@
         <item name="colorOnSecondary">@color/dash_white</item>
         <item name="colorSurface">@color/dash_surface</item>
         <item name="colorOnSurface">@color/dash_text_primary</item>
-        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:colorBackground">@color/dash_bg</item>
         <item name="android:windowBackground">@color/dash_bg</item>
         <item name="android:textColorPrimary">@color/dash_text_primary</item>
         <item name="android:textColorSecondary">@color/dash_text_secondary</item>
@@ -27,7 +27,7 @@
         <item name="colorOnSecondary">@color/dash_white</item>
         <item name="colorSurface">@color/dash_surface</item>
         <item name="colorOnSurface">@color/dash_text_primary</item>
-        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:colorBackground">@color/dash_bg</item>
         <item name="android:windowBackground">@color/dash_bg</item>
         <item name="android:textColorPrimary">@color/dash_text_primary</item>
         <item name="android:textColorSecondary">@color/dash_text_secondary</item>
@@ -59,7 +59,7 @@
         <item name="colorOnSecondary">@color/dash_white</item>
         <item name="colorSurface">@color/dash_surface</item>
         <item name="colorOnSurface">@color/dash_text_primary</item>
-        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:colorBackground">@color/dash_bg</item>
         <item name="android:windowBackground">@color/dash_bg</item>
         <item name="android:textColorPrimary">@color/dash_text_primary</item>
         <item name="android:textColorSecondary">@color/dash_text_secondary</item>
@@ -79,7 +79,7 @@
         <item name="colorOnSecondary">@color/dash_white</item>
         <item name="colorSurface">@color/dash_surface</item>
         <item name="colorOnSurface">@color/dash_text_primary</item>
-        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:colorBackground">@color/dash_bg</item>
         <item name="android:windowBackground">@color/dash_bg</item>
         <item name="android:textColorPrimary">@color/dash_text_primary</item>
         <item name="android:textColorSecondary">@color/dash_text_secondary</item>
