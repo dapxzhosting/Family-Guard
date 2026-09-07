@@ -12,7 +12,6 @@ import com.familyguard.databinding.ActivityFamilyCodeBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import kotlin.random.Random
-import com.familyguard.R
 
 class FamilyCodeActivity : BaseActivity() {
 
@@ -41,10 +40,10 @@ class FamilyCodeActivity : BaseActivity() {
             binding.headerFamilyCode.background =
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_parent_hero)
             window.statusBarColor =
-                androidx.core.content.ContextCompat.getColor(this, R.color.dash_primary_dark)
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_primary)
         } else {
             window.statusBarColor =
-                androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary_dark)
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
         }
         if (role == AppLockPrefs.ROLE_PARENT) showParentUI() else showChildUI()
     }
@@ -82,8 +81,8 @@ class FamilyCodeActivity : BaseActivity() {
         binding.cardParent.visibility = View.GONE
         binding.cardChild.visibility = View.VISIBLE
 
+        binding.btnBackToDashboardChild.visibility = View.VISIBLE
         if (intent.getBooleanExtra(EXTRA_IS_CHANGE_FAMILY, false)) {
-            binding.btnBackToDashboardChild.visibility = View.VISIBLE
             binding.btnBackToDashboardChild.setOnClickListener {
                 startActivity(
                     Intent(this, ChildMenuActivity::class.java).apply {
@@ -91,6 +90,10 @@ class FamilyCodeActivity : BaseActivity() {
                     }
                 )
                 finish()
+            }
+        } else {
+            binding.btnBackToDashboardChild.setOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
             }
         }
 
