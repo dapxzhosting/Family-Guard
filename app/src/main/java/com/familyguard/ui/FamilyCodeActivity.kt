@@ -36,6 +36,10 @@ class FamilyCodeActivity : BaseActivity() {
         setContentView(binding.root)
 
         val role = AppLockPrefs.getRole(this)
+        if (role == AppLockPrefs.ROLE_PARENT) {
+            binding.headerFamilyCode.background =
+                androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_parent_hero)
+        }
         if (role == AppLockPrefs.ROLE_PARENT) showParentUI() else showChildUI()
     }
 

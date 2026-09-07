@@ -3,184 +3,315 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dash_bg">
+    android:background="@color/dash_bg"
+    android:fillViewport="true">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="24dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Hubungkan Keluarga"
-            android:textColor="@color/dash_primary"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:drawableStart="@drawable/ic_link"
-            android:drawableTint="@color/dash_primary"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="32dp"
-            android:gravity="center"
-            android:text="Satu kode untuk menghubungkan HP orang tua dan HP anak"
-            android:textColor="@color/dash_text_secondary"
-            android:textSize="14sp" />
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardParent"
+        android:paddingBottom="28dp">
+
+        <LinearLayout
+            android:id="@+id/headerFamilyCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/dash_surface">
+            android:orientation="vertical"
+            android:background="@drawable/bg_child_hero"
+            android:paddingBottom="30dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="4dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp">
+
+                <ImageView
+                    android:id="@+id/btnBackToDashboardChild"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:rotation="180"
+                    android:contentDescription="Kembali ke Menu"
+                    android:visibility="gone"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/dash_white" />
+
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Kode Keluarga Anda"
-                    android:textColor="@color/dash_text_primary"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="FamilyGuard"
+                    android:textColor="@color/dash_white"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_phone"
-                    android:drawableTint="@color/dash_text_primary"
-                    android:drawablePadding="6dp"
+                    android:drawableStart="@drawable/ic_shield"
+                    android:drawableTint="@color/dash_white"
+                    android:drawablePadding="8dp"
                     android:gravity="center_vertical" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="18dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_link"
+                    app:tint="@color/dash_white"
+                    android:contentDescription="Hubungkan Keluarga" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="20dp"
-                    android:text="Bagikan kode ini ke HP anak"
-                    android:textColor="@color/dash_text_secondary"
-                    android:textSize="13sp" />
-                <TextView
-                    android:id="@+id/tvFamilyCode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
-                    android:background="@color/dash_primary_soft"
-                    android:gravity="center"
-                    android:padding="20dp"
-                    android:text="ABC-123"
-                    android:textColor="@color/dash_primary"
-                    android:textSize="36sp"
+                    android:layout_marginStart="8dp"
+                    android:text="Hubungkan Keluarga"
+                    android:textColor="@color/dash_white"
+                    android:textSize="21sp"
                     android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="24dp"
+                android:text="Satu kode untuk menghubungkan HP orang tua dan HP anak"
+                android:textColor="@color/dash_child_text_soft"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="20dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardParent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/dash_surface">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <Button
-                        android:id="@+id/btnCopyCode"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:text="Salin"
-                        app:icon="@drawable/ic_copy"
-                        app:iconTint="@color/dash_primary" />
-                    <Button
-                        android:id="@+id/btnShareCode"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
+                        android:text="Kode Keluarga Anda"
+                        android:textColor="@color/dash_text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:drawableStart="@drawable/ic_phone"
+                        android:drawableTint="@color/dash_text_primary"
+                        android:drawablePadding="6dp"
+                        android:gravity="center_vertical" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Bagikan"
-                        app:icon="@drawable/ic_share"
-                        app:iconTint="@color/dash_primary" />
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="20dp"
+                        android:text="Bagikan kode ini ke HP anak"
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvFamilyCode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        android:background="@drawable/bg_dialog_input"
+                        android:gravity="center"
+                        android:padding="20dp"
+                        android:text="ABC-123"
+                        android:textColor="@color/dash_primary"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnCopyCode"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:text="Salin"
+                            app:icon="@drawable/ic_copy"
+                            app:iconTint="@color/dash_primary" />
+
+                        <Button
+                            android:id="@+id/btnShareCode"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Bagikan"
+                            app:icon="@drawable/ic_share"
+                            app:iconTint="@color/dash_primary" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnParentDone"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="16dp"
+                        android:backgroundTint="@color/dash_primary"
+                        android:text="Lanjutkan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/dash_white"
+                        app:cornerRadius="12dp" />
                 </LinearLayout>
-                <Button
-                    android:id="@+id/btnParentDone"
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardChild"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/dash_surface">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:backgroundTint="@color/dash_primary"
-                    android:padding="14dp"
-                    android:text="Lanjutkan →"
-                    android:textColor="@color/dash_white" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardChild"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/dash_surface">
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_key"
+                                app:tint="@color/dash_child_primary"
+                                android:contentDescription="Kode Keluarga" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Masukkan Kode Keluarga"
+                                android:textColor="@color/dash_text_primary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Minta kode dari HP orang tua"
+                                android:textColor="@color/dash_text_secondary"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="20dp"
+                        app:boxStrokeColor="@color/dash_child_primary"
+                        app:hintTextColor="@color/dash_child_primary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etFamilyCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:hint="ABC-123"
+                            android:inputType="textCapCharacters"
+                            android:maxLength="7"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="28sp"
+                            android:letterSpacing="0.08" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/btnConnect"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:backgroundTint="@color/dash_child_primary"
+                        android:text="Hubungkan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/dash_white"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp">
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_child_footer_note"
+                android:padding="14dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_shield"
+                    app:tint="@color/dash_child_primary"
+                    android:contentDescription="Info" />
+
                 <TextView
-                    android:id="@+id/btnBackToDashboardChild"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:visibility="gone"
-                    android:text="← Kembali ke Menu"
-                    android:textColor="@color/dash_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:background="?attr/selectableItemBackground"
-                    android:padding="4dp"
-                    android:clickable="true"
-                    android:focusable="true" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Masukkan Kode Keluarga"
-                    android:textColor="@color/dash_text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_key"
-                    android:drawableTint="@color/dash_text_primary"
-                    android:drawablePadding="6dp"
-                    android:gravity="center_vertical" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="20dp"
-                    android:text="Minta kode dari HP orang tua"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Kode ini bersifat rahasia. Jangan bagikan ke orang selain keluargamu sendiri."
                     android:textColor="@color/dash_text_secondary"
-                    android:textSize="13sp" />
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etFamilyCode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:hint="ABC-123"
-                        android:inputType="textCapCharacters"
-                        android:maxLength="7"
-                        android:textSize="28sp" />
-                </com.google.android.material.textfield.TextInputLayout>
-                <Button
-                    android:id="@+id/btnConnect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/dash_primary"
-                    android:padding="14dp"
-                    android:text="Hubungkan →"
-                    android:textColor="@color/dash_white" />
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
