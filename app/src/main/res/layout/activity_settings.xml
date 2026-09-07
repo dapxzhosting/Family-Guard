@@ -80,6 +80,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_wave"
+                            app:tint="@color/dash_primary"
                             android:contentDescription="Nama" />
                     </FrameLayout>
                     <LinearLayout
@@ -132,6 +133,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_mail"
+                            app:tint="@color/dash_primary"
                             android:contentDescription="Email" />
                     </FrameLayout>
                     <LinearLayout

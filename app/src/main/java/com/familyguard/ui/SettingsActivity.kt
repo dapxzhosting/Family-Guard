@@ -11,6 +11,7 @@ import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.auth.FirebaseAuth
+import com.familyguard.R
 
 class SettingsActivity : BaseActivity() {
 

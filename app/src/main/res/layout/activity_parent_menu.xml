@@ -23,6 +23,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_shield"
+            app:tint="@color/dash_white"
             android:contentDescription="FamilyGuard" />
         <LinearLayout
             android:layout_width="wrap_content"

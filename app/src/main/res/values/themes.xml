@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.FamilyGuard" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FamilyGuard" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/dash_primary</item>
         <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
         <item name="colorOnPrimary">@color/dash_white</item>
         <item name="colorSecondary">@color/dash_child_primary</item>
         <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="colorSurface">@color/dash_surface</item>
+        <item name="colorOnSurface">@color/dash_text_primary</item>
+        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:windowBackground">@color/dash_bg</item>
+        <item name="android:textColorPrimary">@color/dash_text_primary</item>
+        <item name="android:textColorSecondary">@color/dash_text_secondary</item>
         <item name="android:statusBarColor">@color/dash_primary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
-    <style name="Theme.FamilyGuard.LockScreen" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FamilyGuard.LockScreen" parent="Theme.MaterialComponents.NoActionBar">
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -19,11 +25,17 @@
         <item name="colorOnPrimary">@color/dash_white</item>
         <item name="colorSecondary">@color/dash_child_primary</item>
         <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="colorSurface">@color/dash_surface</item>
+        <item name="colorOnSurface">@color/dash_text_primary</item>
+        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:windowBackground">@color/dash_bg</item>
+        <item name="android:textColorPrimary">@color/dash_text_primary</item>
+        <item name="android:textColorSecondary">@color/dash_text_secondary</item>
         <item name="android:statusBarColor">@color/dash_child_primary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
-    <style name="Theme.FamilyGuard.Splash" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FamilyGuard.Splash" parent="Theme.MaterialComponents.NoActionBar">
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:statusBarColor">@color/dash_primary</item>
@@ -32,15 +44,25 @@
         <item name="colorPrimary">@color/dash_primary</item>
         <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
         <item name="colorOnPrimary">@color/dash_white</item>
+        <item name="colorSurface">@color/dash_surface</item>
+        <item name="colorOnSurface">@color/dash_text_primary</item>
+        <item name="android:textColorPrimary">@color/dash_text_primary</item>
+        <item name="android:textColorSecondary">@color/dash_text_secondary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
     </style>
-    <style name="Theme.FamilyGuard.Child" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FamilyGuard.Child" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/dash_child_primary</item>
         <item name="colorPrimaryVariant">@color/dash_child_primary_dark</item>
         <item name="colorOnPrimary">@color/dash_white</item>
         <item name="colorSecondary">@color/dash_child_primary</item>
         <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="colorSurface">@color/dash_surface</item>
+        <item name="colorOnSurface">@color/dash_text_primary</item>
+        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:windowBackground">@color/dash_bg</item>
+        <item name="android:textColorPrimary">@color/dash_text_primary</item>
+        <item name="android:textColorSecondary">@color/dash_text_secondary</item>
         <item name="android:statusBarColor">@color/dash_child_primary</item>
         <item name="android:fontFamily">@font/skynight_family</item>
         <item name="fontFamily">@font/skynight_family</item>
@@ -49,12 +71,18 @@
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/dash_child_text_soft</item>
     </style>
-    <style name="Theme.FamilyGuard.Plain" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FamilyGuard.Plain" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/dash_primary</item>
         <item name="colorPrimaryVariant">@color/dash_primary_dark</item>
         <item name="colorOnPrimary">@color/dash_white</item>
         <item name="colorSecondary">@color/dash_child_primary</item>
         <item name="colorOnSecondary">@color/dash_white</item>
+        <item name="colorSurface">@color/dash_surface</item>
+        <item name="colorOnSurface">@color/dash_text_primary</item>
+        <item name="colorBackground">@color/dash_bg</item>
+        <item name="android:windowBackground">@color/dash_bg</item>
+        <item name="android:textColorPrimary">@color/dash_text_primary</item>
+        <item name="android:textColorSecondary">@color/dash_text_secondary</item>
         <item name="android:statusBarColor">@color/dash_primary</item>
     </style>
 </resources>
