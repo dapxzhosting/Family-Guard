@@ -104,6 +104,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_menu_dashboard"
+                            app:tint="@color/dash_white"
                             android:contentDescription="Dashboard" />
                     </FrameLayout>
                     <LinearLayout
@@ -134,6 +135,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardFamilyStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
@@ -151,6 +153,7 @@
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar_child">
                         <ImageView
+                            android:id="@+id/ivFamilyStatusIcon"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
@@ -207,6 +210,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_menu_settings"
+                            app:tint="@color/dash_white"
                             android:contentDescription="Pengaturan" />
                     </FrameLayout>
                     <LinearLayout
@@ -261,6 +265,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_menu_family"
+                            app:tint="@color/dash_white"
                             android:contentDescription="Ganti Keluarga" />
                     </FrameLayout>
                     <LinearLayout

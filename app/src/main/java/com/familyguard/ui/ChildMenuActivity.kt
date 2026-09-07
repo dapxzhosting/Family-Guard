@@ -114,11 +114,23 @@ class ChildMenuActivity : BaseActivity() {
             binding.tvMenuFamilyStatus.text = "Keluarga: ${name?.takeIf { it.isNotBlank() } ?: code}"
             binding.tvMenuChangeFamilyTitle.text = "Ganti Keluarga"
             binding.tvMenuChangeFamilySubtitle.text = "Gabung ke keluarga lain"
+
+            binding.ivFamilyStatusIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_child_primary)
+            binding.cardFamilyStatus.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary_soft)
+            )
         } else {
             binding.tvMenuFamilyTitle.text = "Belum Terhubung"
             binding.tvMenuFamilyStatus.text = "Masukkan kode dari orang tua untuk gabung"
             binding.tvMenuChangeFamilyTitle.text = "Gabung Keluarga"
             binding.tvMenuChangeFamilySubtitle.text = "Masukkan kode keluarga"
+
+            binding.ivFamilyStatusIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_text_secondary)
+            binding.cardFamilyStatus.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_surface)
+            )
         }
     }
 }

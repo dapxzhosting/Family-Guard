@@ -110,14 +110,14 @@ class ParentMenuActivity : BaseActivity() {
             binding.tvMenuFamilyStatus.text = "Keluarga: ${name?.takeIf { it.isNotBlank() } ?: code}"
             binding.ivMenuFamilyIcon.setImageResource(R.drawable.ic_check_circle)
             binding.ivMenuFamilyIcon.imageTintList =
-                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_success)
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_info)
             binding.ivMenuFamilyChevron.visibility = View.GONE
             binding.btnMenuCreateFamily.isClickable = false
             binding.btnMenuCreateFamily.isFocusable = false
 
             binding.btnMenuCreateFamily.cardElevation = 0f
             binding.btnMenuCreateFamily.setCardBackgroundColor(
-                androidx.core.content.ContextCompat.getColor(this, R.color.dash_success_soft)
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_info_soft)
             )
             binding.btnMenuCreateFamily.foreground = null
             binding.btnMenuCreateFamily.setOnTouchListener(null)
