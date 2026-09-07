@@ -77,6 +77,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_menu_dashboard"
+                        app:tint="@color/dash_text_primary"
                         android:contentDescription="Dashboard" />
                 </FrameLayout>
                 <LinearLayout
@@ -103,6 +104,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/dash_text_secondary"
                     android:contentDescription="Buka" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -132,6 +134,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_menu_family"
+                        app:tint="@color/dash_text_primary"
                         android:contentDescription="Buat Keluarga" />
                 </FrameLayout>
                 <LinearLayout
@@ -161,6 +164,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/dash_text_secondary"
                     android:contentDescription="Buka" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -189,6 +193,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_menu_settings"
+                        app:tint="@color/dash_text_primary"
                         android:contentDescription="Pengaturan" />
                 </FrameLayout>
                 <LinearLayout
@@ -215,6 +220,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/dash_text_secondary"
                     android:contentDescription="Buka" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -356,6 +362,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_menu_logout"
+                    app:tint="@color/dash_danger"
                     android:contentDescription="Logout" />
                 <TextView
                     android:layout_width="0dp"

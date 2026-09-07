@@ -75,11 +75,15 @@ class ParentMenuActivity : BaseActivity() {
         binding.tvMenuFamilyTitle.text = "Buat Keluarga"
         binding.tvMenuFamilyStatus.text = "Belum ada keluarga"
         binding.ivMenuFamilyIcon.setImageResource(R.drawable.ic_menu_family)
+        binding.ivMenuFamilyIcon.imageTintList =
+            androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_text_primary)
         binding.ivMenuFamilyChevron.visibility = View.VISIBLE
         binding.btnMenuCreateFamily.isClickable = true
         binding.btnMenuCreateFamily.isFocusable = true
         binding.btnMenuCreateFamily.cardElevation = resources.displayMetrics.density * 3
-        binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.WHITE)
+        binding.btnMenuCreateFamily.setCardBackgroundColor(
+            androidx.core.content.ContextCompat.getColor(this, R.color.dash_surface)
+        )
         val outValue = android.util.TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
         binding.btnMenuCreateFamily.foreground = androidx.core.content.ContextCompat.getDrawable(this, outValue.resourceId)
@@ -105,23 +109,31 @@ class ParentMenuActivity : BaseActivity() {
             binding.tvMenuFamilyTitle.text = "Sudah Terhubung"
             binding.tvMenuFamilyStatus.text = "Keluarga: ${name?.takeIf { it.isNotBlank() } ?: code}"
             binding.ivMenuFamilyIcon.setImageResource(R.drawable.ic_check_circle)
+            binding.ivMenuFamilyIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_success)
             binding.ivMenuFamilyChevron.visibility = View.GONE
             binding.btnMenuCreateFamily.isClickable = false
             binding.btnMenuCreateFamily.isFocusable = false
 
             binding.btnMenuCreateFamily.cardElevation = 0f
-            binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.parseColor("#EDEFF7"))
+            binding.btnMenuCreateFamily.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_success_soft)
+            )
             binding.btnMenuCreateFamily.foreground = null
             binding.btnMenuCreateFamily.setOnTouchListener(null)
         } else {
             binding.tvMenuFamilyTitle.text = "Buat Keluarga"
             binding.tvMenuFamilyStatus.text = "Belum ada keluarga"
             binding.ivMenuFamilyIcon.setImageResource(R.drawable.ic_menu_family)
+            binding.ivMenuFamilyIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_text_primary)
             binding.ivMenuFamilyChevron.visibility = View.VISIBLE
             binding.btnMenuCreateFamily.isClickable = true
             binding.btnMenuCreateFamily.isFocusable = true
             binding.btnMenuCreateFamily.cardElevation = resources.displayMetrics.density * 3
-            binding.btnMenuCreateFamily.setCardBackgroundColor(android.graphics.Color.WHITE)
+            binding.btnMenuCreateFamily.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.dash_surface)
+            )
             val outValue = android.util.TypedValue()
             theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
             binding.btnMenuCreateFamily.foreground = androidx.core.content.ContextCompat.getDrawable(this, outValue.resourceId)
