@@ -72,6 +72,7 @@
                     android:background="?attr/selectableItemBackground"
                     android:padding="18dp">
                     <FrameLayout
+                        android:id="@+id/circleSettingsName"
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
@@ -80,7 +81,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_wave"
-                            app:tint="@color/dash_primary"
+                            app:tint="@color/dash_white"
                             android:contentDescription="Nama" />
                     </FrameLayout>
                     <LinearLayout
@@ -125,6 +126,7 @@
                     android:orientation="horizontal"
                     android:padding="18dp">
                     <FrameLayout
+                        android:id="@+id/circleSettingsEmail"
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:background="@drawable/bg_member_avatar">
@@ -133,7 +135,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_mail"
-                            app:tint="@color/dash_primary"
+                            app:tint="@color/dash_white"
                             android:contentDescription="Email" />
                     </FrameLayout>
                     <LinearLayout
@@ -191,6 +193,7 @@
                     android:background="?attr/selectableItemBackground"
                     android:padding="18dp">
                     <ImageView
+                        android:id="@+id/ivSettingsPrivacyIcon"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_shield"

@@ -25,6 +25,18 @@ class SettingsActivity : BaseActivity() {
         if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_CHILD) {
             binding.settingsHeader.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary))
             window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
+
+            val roleColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
+            binding.circleSettingsName.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.circleSettingsEmail.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.ivSettingsPrivacyIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_child_primary)
+        } else {
+            val roleColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_primary)
+            binding.circleSettingsName.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.circleSettingsEmail.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.ivSettingsPrivacyIcon.imageTintList =
+                androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_primary)
         }
 
         refreshName()
@@ -102,4 +114,3 @@ class SettingsActivity : BaseActivity() {
         overridePendingTransition(com.familyguard.R.anim.stay_undim, com.familyguard.R.anim.slide_down_out)
     }
 }
-
