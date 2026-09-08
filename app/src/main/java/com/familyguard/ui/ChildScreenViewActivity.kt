@@ -41,6 +41,10 @@ class ChildScreenViewActivity : BaseActivity() {
     private var touchDownY = 0f
     private var touchDownTime = 0L
 
+    private var overlayVisible = true
+    private val overlayHideHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val overlayHideRunnable = Runnable { setOverlayVisible(false) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChildScreenViewBinding.inflate(layoutInflater)
@@ -62,6 +66,7 @@ class ChildScreenViewActivity : BaseActivity() {
         binding.tvStatus.text = "Meminta izin ke HP anak…"
 
         setupControlModeSwitch()
+        setupOverlayToggle()
 
         binding.btnRemoteBack.setOnClickListener {
             sendControlCommand(org.json.JSONObject().apply { put("type", "remote_back") })
@@ -85,30 +90,33 @@ class ChildScreenViewActivity : BaseActivity() {
         setupRemoteTouchHandling()
     }
 
-    private fun checkConnectionPathType() {
-        peerConnection?.getStats { report ->
-            var pathLabel: String? = null
-            for (stat in report.statsMap.values) {
-                if (stat.type == "candidate-pair" && stat.members["state"] == "succeeded" &&
-                    (stat.members["nominated"] == true || stat.members["nominated"] == "true")
-                ) {
-                    val localId = stat.members["localCandidateId"] as? String
-                    val local = localId?.let { report.statsMap[it] }
-                    val candidateType = local?.members?.get("candidateType") as? String
-                    pathLabel = when (candidateType) {
-                        "relay" -> "jalur: relay"
-                        "srflx", "host", "prflx" -> "jalur: langsung"
-                        else -> null
-                    }
-                }
-            }
-            if (pathLabel != null) {
-                runOnUiThread {
-                    val base = binding.tvStatus.text.toString().substringBefore(" • jalur")
-                    binding.tvStatus.text = "$base • $pathLabel"
-                }
-            }
+    /**
+     * Toolbar + status bar overlay itu nutupin status bar asli HP anak, bikin susah dikontrol.
+     * Jadi defaultnya disembunyikan otomatis abis beberapa detik supaya area itu kelihatan,
+     * dan bisa dimunculkan lagi kapan saja lewat tombol mata kecil di pojok kanan atas.
+     */
+    private fun setupOverlayToggle() {
+        binding.btnToggleOverlay.setOnClickListener {
+            setOverlayVisible(!overlayVisible)
         }
+        scheduleAutoHideOverlay()
+    }
+
+    private fun scheduleAutoHideOverlay() {
+        overlayHideHandler.removeCallbacks(overlayHideRunnable)
+        overlayHideHandler.postDelayed(overlayHideRunnable, 3000)
+    }
+
+    private fun setOverlayVisible(visible: Boolean) {
+        overlayVisible = visible
+        binding.topBar.visibility = if (visible) android.view.View.VISIBLE else android.view.View.GONE
+        binding.controlBar.visibility =
+            if (visible && controlModeOn) android.view.View.VISIBLE else android.view.View.GONE
+        binding.btnToggleOverlay.setImageResource(
+            if (visible) com.familyguard.R.drawable.ic_eye else com.familyguard.R.drawable.ic_eye_off
+        )
+        overlayHideHandler.removeCallbacks(overlayHideRunnable)
+        if (visible) scheduleAutoHideOverlay()
     }
 
     private fun setupControlModeSwitch() {
@@ -214,7 +222,6 @@ class ChildScreenViewActivity : BaseActivity() {
                         PeerConnection.IceConnectionState.COMPLETED -> {
                             binding.progressLoading.visibility = android.view.View.GONE
                             binding.tvStatus.text = "Terhubung • video real-time"
-                            checkConnectionPathType()
                         }
                         PeerConnection.IceConnectionState.CHECKING -> {
                             binding.tvStatus.text = "Mencari jalur koneksi…"

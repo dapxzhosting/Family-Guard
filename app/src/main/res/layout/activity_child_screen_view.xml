@@ -26,6 +26,7 @@
 
     <!-- Top bar: overlay transparan di atas video, tidak memakan ruang video -->
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
@@ -163,5 +164,20 @@
             app:tint="@color/dash_white" />
 
     </LinearLayout>
+
+    <!-- Tombol kecil untuk sembunyikan/tampilkan overlay, biar status bar & area atas HP anak
+         tidak ketutup permanen dan lebih gampang dikontrol -->
+    <ImageButton
+        android:id="@+id/btnToggleOverlay"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_control_button"
+        android:contentDescription="Sembunyikan/tampilkan menu"
+        android:padding="7dp"
+        android:src="@drawable/ic_eye_off"
+        app:tint="@color/dash_white" />
 
 </FrameLayout>
