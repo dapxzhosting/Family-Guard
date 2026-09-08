@@ -17,7 +17,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dash_text_primary"
+        android:background="@color/dash_surface"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="12dp">
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Menyambungkan…"
-            android:textColor="@color/dash_text_muted"
+            android:textColor="@color/dash_text_secondary"
             android:textSize="13sp" />
 
         <TextView
