@@ -101,7 +101,7 @@
         <item name="android:windowEnterAnimation">@anim/dialog_pop_in</item>
         <item name="android:windowExitAnimation">@anim/dialog_pop_out</item>
     </style>
-    <style name="PopCenterDialog" parent="Theme.AppCompat.Dialog">
+    <style name="PopCenterDialog" parent="Theme.MaterialComponents.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
