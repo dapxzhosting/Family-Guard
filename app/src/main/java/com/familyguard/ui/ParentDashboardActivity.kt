@@ -52,17 +52,16 @@ class ParentDashboardActivity : BaseActivity() {
         val hasPin = childDevices.firstOrNull { it.deviceId == targetDeviceId }?.hasPin ?: false
         if (hasPin) return true
 
-        AlertDialog.Builder(this)
-            .setTitle("PIN Belum Diset")
-            .setMessage(
-                "HP anak ini belum punya PIN. Kunci layar/aplikasi butuh PIN " +
-                        "supaya anak bisa membuka kuncinya sendiri. Kalau dikunci " +
-                        "sekarang tanpa PIN, anak tidak akan tahu kode apa yang harus " +
-                        "dimasukkan. Atur PIN dulu sebelum mengunci."
-            )
-            .setPositiveButton("Atur PIN Sekarang") { _, _ -> showSetPinDialog() }
-            .setNegativeButton("Batal", null)
-            .show()
+        showCenterActionDialog(
+            iconRes = R.drawable.ic_key,
+            accentColor = R.color.dash_danger,
+            title = "PIN Belum Diset",
+            message = "HP anak ini belum punya PIN. Kunci layar/aplikasi butuh PIN " +
+                    "supaya anak bisa membuka kuncinya sendiri. Kalau dikunci " +
+                    "sekarang tanpa PIN, anak tidak akan tahu kode apa yang harus " +
+                    "dimasukkan. Atur PIN dulu sebelum mengunci.",
+            confirmText = "Atur PIN Sekarang"
+        ) { showSetPinDialog() }
         return false
     }
 
@@ -70,16 +69,17 @@ class ParentDashboardActivity : BaseActivity() {
         val device = childDevices.firstOrNull { it.deviceId == targetDeviceId }
         if (device?.deviceAdminActive == true) return true
 
-        AlertDialog.Builder(this)
-            .setTitle("Device Admin Belum Aktif")
-            .setMessage(
-                "HP anak ini belum mengaktifkan izin Device Admin, jadi " +
-                        "Kunci Layar tidak akan berfungsi penuh. Minta anak buka " +
-                        "Dashboard-nya dan aktifkan semua status keamanan dulu " +
-                        "(termasuk Device Admin) sebelum kamu mengunci layarnya."
-            )
-            .setPositiveButton("Mengerti", null)
-            .show()
+        showCenterActionDialog(
+            iconRes = R.drawable.ic_lock,
+            accentColor = R.color.dash_danger,
+            title = "Device Admin Belum Aktif",
+            message = "HP anak ini belum mengaktifkan izin Device Admin, jadi " +
+                    "Kunci Layar tidak akan berfungsi penuh. Minta anak buka " +
+                    "Dashboard-nya dan aktifkan semua status keamanan dulu " +
+                    "(termasuk Device Admin) sebelum kamu mengunci layarnya.",
+            confirmText = "Mengerti",
+            showCancel = false
+        ) {}
         return false
     }
 
@@ -341,7 +341,13 @@ class ParentDashboardActivity : BaseActivity() {
             val target = requireSelectedChildId() ?: return@setOnClickListener
             if (!requireDeviceAdminActive(target)) return@setOnClickListener
             if (!requirePinSet(target)) return@setOnClickListener
-            confirmAction("Kunci layar HP anak sekarang?") {
+            showCenterActionDialog(
+                iconRes = R.drawable.ic_lock,
+                accentColor = R.color.dash_danger,
+                title = "Kunci Layar?",
+                message = "HP anak akan langsung terkunci saat ini juga.",
+                confirmText = "Kunci Sekarang"
+            ) {
                 FamilyLink.sendLockScreen(this, target)
                 toast("Perintah kunci layar dikirim")
             }
@@ -349,7 +355,13 @@ class ParentDashboardActivity : BaseActivity() {
 
         binding.btnUnlockScreen.setOnClickListener {
             val target = requireSelectedChildId() ?: return@setOnClickListener
-            confirmAction("Buka kunci layar HP anak?") {
+            showCenterActionDialog(
+                iconRes = R.drawable.ic_unlock,
+                accentColor = R.color.dash_success,
+                title = "Buka Kunci Layar?",
+                message = "HP anak akan langsung terbuka kuncinya saat ini juga.",
+                confirmText = "Buka Sekarang"
+            ) {
                 FamilyLink.sendUnlockScreen(this, target)
                 toast("Perintah buka kunci dikirim")
             }
@@ -386,55 +398,51 @@ class ParentDashboardActivity : BaseActivity() {
     }
 
     private fun showSendMessageDialog() {
-        val input = android.widget.EditText(this).apply {
-            hint = "Ketik pesan..."
-            setPadding(48, 32, 48, 16)
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Kirim Pesan ke HP Anak")
-            .setView(input)
-            .setPositiveButton("Kirim") { _, _ ->
-                val msg = input.text.toString().trim()
-                val target = requireSelectedChildId()
-                if (msg.isNotBlank() && target != null) {
-                    FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg, target)
-                    toast("Pesan dikirim")
-                }
+        showCenterActionDialog(
+            iconRes = R.drawable.ic_message,
+            accentColor = R.color.dash_info,
+            title = "Kirim Pesan ke HP Anak",
+            message = null,
+            inputHint = "Ketik pesan...",
+            confirmText = "Kirim"
+        ) { text ->
+            val msg = text?.trim().orEmpty()
+            val target = requireSelectedChildId()
+            if (msg.isNotBlank() && target != null) {
+                FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg, target)
+                toast("Pesan dikirim")
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
     }
 
     private fun showSetPinDialog() {
         val currentPin = childDevices.firstOrNull { it.deviceId == selectedChildId }?.currentPin
 
-        val input = android.widget.EditText(this).apply {
-            hint = "Masukkan 4 digit PIN baru"
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-            filters = arrayOf(android.text.InputFilter.LengthFilter(4))
-            setPadding(48, 32, 48, 16)
-        }
         val message = if (currentPin != null) {
             "PIN saat ini: $currentPin\n\nPIN baru akan menggantikan PIN ini dan digunakan anak untuk membuka aplikasi yang dikunci."
         } else {
             "PIN ini akan digunakan anak untuk membuka aplikasi yang dikunci."
         }
-        AlertDialog.Builder(this)
-            .setTitle("Atur PIN HP Anak")
-            .setMessage(message)
-            .setView(input)
-            .setPositiveButton("Simpan") { _, _ ->
-                val pin = input.text.toString().trim()
-                val target = requireSelectedChildId()
-                if (pin.length == 4 && target != null) {
-                    FamilyLink.sendSetPin(this, pin, target)
-                    toast("Perintah atur PIN dikirim")
-                } else if (pin.length != 4) {
-                    toast("PIN harus 4 digit!")
-                }
+
+        showCenterActionDialog(
+            iconRes = R.drawable.ic_key,
+            accentColor = R.color.dash_purple,
+            title = "Atur PIN HP Anak",
+            message = message,
+            inputHint = "4 digit PIN baru",
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER,
+            maxLength = 4,
+            confirmText = "Simpan"
+        ) { text ->
+            val pin = text?.trim().orEmpty()
+            val target = requireSelectedChildId()
+            if (pin.length == 4 && target != null) {
+                FamilyLink.sendSetPin(this, pin, target)
+                toast("Perintah atur PIN dikirim")
+            } else if (pin.length != 4) {
+                toast("PIN harus 4 digit!")
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
     }
 
     private fun observeConnectedDevices() {
@@ -659,12 +667,65 @@ class ParentDashboardActivity : BaseActivity() {
         }
     }
 
-    private fun confirmAction(message: String, onConfirm: () -> Unit) {
-        AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("Ya") { _, _ -> onConfirm() }
-            .setNegativeButton("Batal", null)
-            .show()
+    private fun showCenterActionDialog(
+        iconRes: Int,
+        accentColor: Int,
+        title: String,
+        message: String?,
+        inputHint: String? = null,
+        inputType: Int? = null,
+        maxLength: Int? = null,
+        confirmText: String,
+        showCancel: Boolean = true,
+        onConfirm: (String?) -> Unit
+    ) {
+        val dialog = android.app.Dialog(this, R.style.PopCenterDialog)
+        dialog.setContentView(R.layout.dialog_action_center)
+
+        val iconCircle = dialog.findViewById<android.view.View>(R.id.actionIconCircle)
+        val icon = dialog.findViewById<android.widget.ImageView>(R.id.ivActionIcon)
+        val tvTitle = dialog.findViewById<android.widget.TextView>(R.id.tvActionTitle)
+        val tvMessage = dialog.findViewById<android.widget.TextView>(R.id.tvActionMessage)
+        val tilInput = dialog.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilActionInput)
+        val etInput = dialog.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etActionInput)
+        val btnCancel = dialog.findViewById<android.widget.Button>(R.id.btnActionCancel)
+        val btnConfirm = dialog.findViewById<android.widget.Button>(R.id.btnActionConfirm)
+
+        val color = androidx.core.content.ContextCompat.getColor(this, accentColor)
+        iconCircle.backgroundTintList = android.content.res.ColorStateList.valueOf(color)
+        icon.setImageResource(iconRes)
+        icon.imageTintList = android.content.res.ColorStateList.valueOf(color)
+        tvTitle.text = title
+
+        if (message != null) {
+            tvMessage.visibility = android.view.View.VISIBLE
+            tvMessage.text = message
+        }
+
+        if (inputHint != null) {
+            tilInput.visibility = android.view.View.VISIBLE
+            tilInput.hint = inputHint
+            inputType?.let { etInput.inputType = it }
+            maxLength?.let { etInput.filters = arrayOf(android.text.InputFilter.LengthFilter(it)) }
+        }
+
+        btnConfirm.text = confirmText
+        btnConfirm.backgroundTintList = android.content.res.ColorStateList.valueOf(color)
+
+        if (!showCancel) {
+            btnCancel.visibility = android.view.View.GONE
+            val params = btnConfirm.layoutParams as android.widget.LinearLayout.LayoutParams
+            params.marginStart = 0
+            btnConfirm.layoutParams = params
+        }
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnConfirm.setOnClickListener {
+            dialog.dismiss()
+            onConfirm(if (inputHint != null) etInput.text?.toString() else null)
+        }
+
+        dialog.show()
     }
 
     private fun toast(msg: String) =
