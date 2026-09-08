@@ -84,19 +84,18 @@ object AccountActions {
 
     fun changeFamily(activity: Activity) {
         val role = AppLockPrefs.getRole(activity)
-        AlertDialog.Builder(activity)
-            .setTitle("Ganti Keluarga?")
-            .setMessage(
-                "Kamu akan diminta memasukkan kode keluarga baru. " +
-                        "Keanggotaan di keluarga saat ini baru akan dilepas " +
-                        "setelah kode baru berhasil dimasukkan. Role kamu " +
-                        "(${roleLabel(role)}) tidak berubah."
-            )
-            .setPositiveButton("Lanjut") { _, _ ->
-                goToFamilyEntry(activity, role)
-            }
-            .setNegativeButton("Batal", null)
-            .show()
+        showConfirmDialog(
+            activity = activity,
+            iconRes = com.familyguard.R.drawable.ic_menu_family,
+            title = "Ganti Keluarga?",
+            message = "Kamu akan diminta memasukkan kode keluarga baru. " +
+                    "Keanggotaan di keluarga saat ini baru akan dilepas " +
+                    "setelah kode baru berhasil dimasukkan. Role kamu " +
+                    "(${roleLabel(role)}) tidak berubah.",
+            confirmText = "Lanjut"
+        ) {
+            goToFamilyEntry(activity, role)
+        }
     }
 
     fun leaveFamily(activity: Activity, onDone: () -> Unit) {
@@ -138,7 +137,7 @@ object AccountActions {
             .setTitle("Hapus Keluarga?")
             .setMessage(
                 "Seluruh data keluarga ini akan dihapus permanen, termasuk semua " +
-                        "HP anak yang terhubung mereka akan otomatis terputus. " +
+                        "HP anak yang terhubung -- mereka akan otomatis terputus. " +
                         "Tindakan ini tidak bisa dibatalkan."
             )
             .setPositiveButton("Hapus") { _, _ ->
@@ -301,3 +300,4 @@ object AccountActions {
         dialog.show()
     }
 }
+
