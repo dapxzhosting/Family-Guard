@@ -66,6 +66,21 @@ class ChildScreenViewActivity : BaseActivity() {
         binding.btnRemoteBack.setOnClickListener {
             sendControlCommand(org.json.JSONObject().apply { put("type", "remote_back") })
         }
+        binding.btnRemoteHome.setOnClickListener {
+            sendControlCommand(org.json.JSONObject().apply { put("type", "remote_home") })
+        }
+        binding.btnRemoteRecents.setOnClickListener {
+            sendControlCommand(org.json.JSONObject().apply { put("type", "remote_recents") })
+        }
+        binding.btnRemoteVolumeUp.setOnClickListener {
+            sendControlCommand(org.json.JSONObject().apply { put("type", "remote_volume_up") })
+        }
+        binding.btnRemoteVolumeDown.setOnClickListener {
+            sendControlCommand(org.json.JSONObject().apply { put("type", "remote_volume_down") })
+        }
+        binding.btnRemotePower.setOnClickListener {
+            sendControlCommand(org.json.JSONObject().apply { put("type", "remote_power") })
+        }
 
         setupRemoteTouchHandling()
     }
@@ -251,6 +266,11 @@ class ChildScreenViewActivity : BaseActivity() {
                     json.getDouble("x2").toFloat(), json.getDouble("y2").toFloat(), json.optLong("duration", 150L), targetDeviceId
                 )
                 "remote_back" -> FamilyLink.sendRemoteBack(this, targetDeviceId)
+                "remote_home" -> FamilyLink.sendRemoteHome(this, targetDeviceId)
+                "remote_recents" -> FamilyLink.sendRemoteRecents(this, targetDeviceId)
+                "remote_volume_up" -> FamilyLink.sendRemoteVolumeUp(this, targetDeviceId)
+                "remote_volume_down" -> FamilyLink.sendRemoteVolumeDown(this, targetDeviceId)
+                "remote_power" -> FamilyLink.sendRemotePower(this, targetDeviceId)
             }
         }
     }

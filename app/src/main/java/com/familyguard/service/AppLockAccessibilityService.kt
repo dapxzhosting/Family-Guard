@@ -126,6 +126,12 @@ class AppLockAccessibilityService : AccessibilityService() {
             "remote_back" -> {
                 performGlobalAction(GLOBAL_ACTION_BACK)
             }
+            "remote_home" -> {
+                performGlobalAction(GLOBAL_ACTION_HOME)
+            }
+            "remote_recents" -> {
+                performGlobalAction(GLOBAL_ACTION_RECENTS)
+            }
         }
     }
 
@@ -153,6 +159,12 @@ class AppLockAccessibilityService : AccessibilityService() {
             }
             "remote_back" -> {
                 performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+            "remote_home" -> {
+                performGlobalAction(GLOBAL_ACTION_HOME)
+            }
+            "remote_recents" -> {
+                performGlobalAction(GLOBAL_ACTION_RECENTS)
             }
         }
     }

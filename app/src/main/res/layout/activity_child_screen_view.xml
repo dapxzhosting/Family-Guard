@@ -1,55 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dash_black"
-    android:orientation="vertical">
+    android:fitsSystemWindows="false">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/dash_primary"
-        app:title="Layar HP Anak"
-        app:titleTextColor="@color/dash_white" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/dash_surface"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="12dp">
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Menyambungkan…"
-            android:textColor="@color/dash_text_secondary"
-            android:textSize="13sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="Mode Kontrol"
-            android:textColor="@color/dash_white"
-            android:textSize="14sp" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switchControlMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
+    <!-- Video mirror: benar-benar full screen, edge-to-edge -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent">
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/rendererScreen"
@@ -64,27 +24,135 @@
 
     </FrameLayout>
 
+    <!-- Top bar: overlay transparan di atas video, tidak memakan ruang video -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:orientation="vertical"
+        android:background="#B3000000">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/transparent"
+            app:title="Layar HP Anak"
+            app:titleTextColor="@color/dash_white" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Menyambungkan…"
+                android:textColor="@color/dash_text_secondary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Mode Kontrol"
+                android:textColor="@color/dash_white"
+                android:textSize="13sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchControlMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Control bar: overlay transparan di bawah video, muncul saat Mode Kontrol aktif -->
     <LinearLayout
         android:id="@+id/controlBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dash_primary"
+        android:layout_gravity="bottom"
+        android:background="#B3000000"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="18dp"
         android:visibility="gone">
 
-        <Button
+        <ImageButton
+            android:id="@+id/btnRemotePower"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Power"
+            android:padding="10dp"
+            android:src="@drawable/ic_power"
+            app:tint="@color/dash_white" />
+
+        <ImageButton
+            android:id="@+id/btnRemoteVolumeDown"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Volume Turun"
+            android:padding="10dp"
+            android:src="@drawable/ic_volume_down"
+            app:tint="@color/dash_white" />
+
+        <ImageButton
+            android:id="@+id/btnRemoteVolumeUp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Volume Naik"
+            android:padding="10dp"
+            android:src="@drawable/ic_volume_up"
+            app:tint="@color/dash_white" />
+
+        <ImageButton
             android:id="@+id/btnRemoteBack"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/dash_text_primary"
-            android:text="⟵ Kembali"
-            android:textAllCaps="false"
-            android:textColor="@color/dash_white" />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Kembali"
+            android:padding="10dp"
+            android:src="@drawable/ic_nav_back"
+            app:tint="@color/dash_white" />
+
+        <ImageButton
+            android:id="@+id/btnRemoteHome"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Home"
+            android:padding="10dp"
+            android:src="@drawable/ic_nav_home"
+            app:tint="@color/dash_white" />
+
+        <ImageButton
+            android:id="@+id/btnRemoteRecents"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_control_button"
+            android:contentDescription="Aplikasi Terkini"
+            android:padding="10dp"
+            android:src="@drawable/ic_nav_recents"
+            app:tint="@color/dash_white" />
 
     </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>

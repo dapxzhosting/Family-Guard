@@ -798,6 +798,21 @@ object FamilyLink {
     fun sendRemoteBack(context: Context, targetDeviceId: String) =
         sendCommand(context, "remote_back", emptyMap(), targetDeviceId)
 
+    fun sendRemoteHome(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_home", emptyMap(), targetDeviceId)
+
+    fun sendRemoteRecents(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_recents", emptyMap(), targetDeviceId)
+
+    fun sendRemoteVolumeUp(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_volume_up", emptyMap(), targetDeviceId)
+
+    fun sendRemoteVolumeDown(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_volume_down", emptyMap(), targetDeviceId)
+
+    fun sendRemotePower(context: Context, targetDeviceId: String) =
+        sendCommand(context, "remote_power", emptyMap(), targetDeviceId)
+
     private fun sendCommand(context: Context, type: String, payload: Map<String, Any>, targetDeviceId: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
         val deviceId = AppLockPrefs.getDeviceId(context)
@@ -953,10 +968,23 @@ object FamilyLink {
                             context.stopService(android.content.Intent(context, com.familyguard.service.ScreenCaptureService::class.java))
                         }
 
-                        "remote_tap", "remote_swipe", "remote_back" -> {
+                        "remote_tap", "remote_swipe", "remote_back", "remote_home", "remote_recents" -> {
 
                             com.familyguard.service.AppLockAccessibilityService.instance
                                 ?.executeRemoteInput(type, payload)
+                        }
+
+                        "remote_volume_up", "remote_volume_down" -> {
+                            val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                            val direction = if (type == "remote_volume_up")
+                                android.media.AudioManager.ADJUST_RAISE
+                            else
+                                android.media.AudioManager.ADJUST_LOWER
+                            am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
+                        }
+
+                        "remote_power" -> {
+                            com.familyguard.admin.LockManager(context).lockScreen()
                         }
                     }
 

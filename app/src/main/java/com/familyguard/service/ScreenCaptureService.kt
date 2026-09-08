@@ -172,8 +172,23 @@ class ScreenCaptureService : Service() {
                     val bytes = ByteArray(buffer.data.remaining())
                     buffer.data.get(bytes)
                     val json = org.json.JSONObject(String(bytes, Charsets.UTF_8))
-                    com.familyguard.service.AppLockAccessibilityService.instance
-                        ?.executeRemoteInputJson(json)
+                    when (json.optString("type")) {
+                        "remote_volume_up", "remote_volume_down" -> {
+                            val am = getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+                            val direction = if (json.optString("type") == "remote_volume_up")
+                                android.media.AudioManager.ADJUST_RAISE
+                            else
+                                android.media.AudioManager.ADJUST_LOWER
+                            am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
+                        }
+                        "remote_power" -> {
+                            com.familyguard.admin.LockManager(this@ScreenCaptureService).lockScreen()
+                        }
+                        else -> {
+                            com.familyguard.service.AppLockAccessibilityService.instance
+                                ?.executeRemoteInputJson(json)
+                        }
+                    }
                 } catch (e: Exception) {
 
                 }
