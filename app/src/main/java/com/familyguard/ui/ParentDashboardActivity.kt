@@ -56,7 +56,7 @@ class ParentDashboardActivity : BaseActivity() {
             .setTitle("PIN Belum Diset")
             .setMessage(
                 "HP anak ini belum punya PIN. Kunci layar/aplikasi butuh PIN " +
-                        "supaya anak bisa membuka kuncinya sendiri -- kalau dikunci " +
+                        "supaya anak bisa membuka kuncinya sendiri. Kalau dikunci " +
                         "sekarang tanpa PIN, anak tidak akan tahu kode apa yang harus " +
                         "dimasukkan. Atur PIN dulu sebelum mengunci."
             )

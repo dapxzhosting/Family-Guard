@@ -196,7 +196,7 @@ class AppListActivity : BaseActivity() {
             .setTitle("PIN Belum Diset")
             .setMessage(
                 "HP anak ini belum punya PIN. Kunci aplikasi butuh PIN supaya " +
-                        "anak bisa membuka kuncinya sendiri -- atur PIN dulu sebelum " +
+                        "anak bisa membuka kuncinya sendiri. Atur PIN dulu sebelum " +
                         "mengunci aplikasi."
             )
             .setPositiveButton("Atur PIN Sekarang") { _, _ -> showSetPinDialog() }

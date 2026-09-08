@@ -21,7 +21,7 @@ object AccountActions {
         val message = if (isParentWithFamily) {
             "Perangkat ini akan keluar dari role & keluarga saat ini. " +
                     "Karena kamu Orang Tua, seluruh keluarga ini beserta semua " +
-                    "HP anak yang terhubung akan ikut terhapus permanen -- " +
+                    "HP anak yang terhubung akan ikut terhapus permanen, " +
                     "mereka akan otomatis terputus. Kamu tetap login dengan akun " +
                     "Google yang sama, dan bisa pilih role serta keluarga dari awal lagi."
         } else {
@@ -133,39 +133,38 @@ object AccountActions {
     }
 
     fun deleteFamily(activity: Activity, onDone: (() -> Unit)? = null) {
-        AlertDialog.Builder(activity)
-            .setTitle("Hapus Keluarga?")
-            .setMessage(
-                "Seluruh data keluarga ini akan dihapus permanen, termasuk semua " +
-                        "HP anak yang terhubung -- mereka akan otomatis terputus. " +
-                        "Tindakan ini tidak bisa dibatalkan."
-            )
-            .setPositiveButton("Hapus") { _, _ ->
-                Toast.makeText(activity, "Menghapus keluarga...", Toast.LENGTH_SHORT).show()
-                FamilyLink.deleteFamilyEntirely(activity) {
-                    val uid = FirebaseAuth.getInstance().currentUser?.uid
-                    if (uid != null) {
-                        com.google.firebase.database.FirebaseDatabase.getInstance().reference
-                            .child("users").child(uid).child("familyCode").removeValue()
-                            .addOnCompleteListener {
-                                AppLockPrefs.saveFamilyCode(activity, "")
-                                AppLockPrefs.saveFamilyName(activity, "")
-                                AppLockPrefs.setDeviceLocked(activity, false)
-                                AppLockPrefs.clearFamilySecurityState(activity)
-                                Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
-                                onDone?.invoke()
-                            }
-                    } else {
-                        AppLockPrefs.saveFamilyCode(activity, "")
-                        AppLockPrefs.saveFamilyName(activity, "")
-                        AppLockPrefs.clearFamilySecurityState(activity)
-                        Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
-                        onDone?.invoke()
-                    }
+        showConfirmDialog(
+            activity = activity,
+            iconRes = com.familyguard.R.drawable.ic_menu_delete,
+            title = "Hapus Keluarga?",
+            message = "Seluruh data keluarga ini akan dihapus permanen, termasuk semua " +
+                    "HP anak yang terhubung. Mereka akan otomatis terputus. " +
+                    "Tindakan ini tidak bisa dibatalkan.",
+            confirmText = "Hapus"
+        ) {
+            Toast.makeText(activity, "Menghapus keluarga...", Toast.LENGTH_SHORT).show()
+            FamilyLink.deleteFamilyEntirely(activity) {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) {
+                    com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                        .child("users").child(uid).child("familyCode").removeValue()
+                        .addOnCompleteListener {
+                            AppLockPrefs.saveFamilyCode(activity, "")
+                            AppLockPrefs.saveFamilyName(activity, "")
+                            AppLockPrefs.setDeviceLocked(activity, false)
+                            AppLockPrefs.clearFamilySecurityState(activity)
+                            Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
+                            onDone?.invoke()
+                        }
+                } else {
+                    AppLockPrefs.saveFamilyCode(activity, "")
+                    AppLockPrefs.saveFamilyName(activity, "")
+                    AppLockPrefs.clearFamilySecurityState(activity)
+                    Toast.makeText(activity, "Keluarga berhasil dihapus", Toast.LENGTH_SHORT).show()
+                    onDone?.invoke()
                 }
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
     }
 
     private fun doLogout(activity: Activity) {

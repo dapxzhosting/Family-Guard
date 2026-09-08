@@ -8,11 +8,11 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.familyguard.R
 import com.familyguard.databinding.ActivityFamilyCodeBinding
 import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AppLockPrefs
 import kotlin.random.Random
-import com.familyguard.R
 
 class FamilyCodeActivity : BaseActivity() {
 
