@@ -209,12 +209,12 @@ class ScreenCaptureService : Service() {
         val params = s.parameters
         if (params.encodings.isEmpty()) return
         for (enc in params.encodings) {
-            enc.maxBitrateBps = 700_000
-            enc.minBitrateBps = 150_000
+            enc.maxBitrateBps = 1_600_000
+            enc.minBitrateBps = 300_000
             enc.maxFramerate = TARGET_FPS
         }
 
-        params.degradationPreference = org.webrtc.RtpParameters.DegradationPreference.MAINTAIN_FRAMERATE
+        params.degradationPreference = org.webrtc.RtpParameters.DegradationPreference.MAINTAIN_RESOLUTION
         s.parameters = params
     }
 
@@ -319,4 +319,3 @@ object RemoteControlState {
     @Volatile var realScreenWidth: Int = 1080
     @Volatile var realScreenHeight: Int = 2400
 }
-

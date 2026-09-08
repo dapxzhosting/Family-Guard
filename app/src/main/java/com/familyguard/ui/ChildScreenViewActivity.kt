@@ -85,6 +85,32 @@ class ChildScreenViewActivity : BaseActivity() {
         setupRemoteTouchHandling()
     }
 
+    private fun checkConnectionPathType() {
+        peerConnection?.getStats { report ->
+            var pathLabel: String? = null
+            for (stat in report.statsMap.values) {
+                if (stat.type == "candidate-pair" && stat.members["state"] == "succeeded" &&
+                    (stat.members["nominated"] == true || stat.members["nominated"] == "true")
+                ) {
+                    val localId = stat.members["localCandidateId"] as? String
+                    val local = localId?.let { report.statsMap[it] }
+                    val candidateType = local?.members?.get("candidateType") as? String
+                    pathLabel = when (candidateType) {
+                        "relay" -> "jalur: relay"
+                        "srflx", "host", "prflx" -> "jalur: langsung"
+                        else -> null
+                    }
+                }
+            }
+            if (pathLabel != null) {
+                runOnUiThread {
+                    val base = binding.tvStatus.text.toString().substringBefore(" • jalur")
+                    binding.tvStatus.text = "$base • $pathLabel"
+                }
+            }
+        }
+    }
+
     private fun setupControlModeSwitch() {
         binding.switchControlMode.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -188,6 +214,7 @@ class ChildScreenViewActivity : BaseActivity() {
                         PeerConnection.IceConnectionState.COMPLETED -> {
                             binding.progressLoading.visibility = android.view.View.GONE
                             binding.tvStatus.text = "Terhubung • video real-time"
+                            checkConnectionPathType()
                         }
                         PeerConnection.IceConnectionState.CHECKING -> {
                             binding.tvStatus.text = "Mencari jalur koneksi…"
@@ -347,4 +374,3 @@ private open class SimpleSdpObserver : SdpObserver {
     override fun onCreateFailure(p0: String?) {}
     override fun onSetFailure(p0: String?) {}
 }
-
