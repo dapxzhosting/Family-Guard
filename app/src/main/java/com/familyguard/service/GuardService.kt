@@ -55,6 +55,7 @@ class GuardService : Service() {
                 FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
                     showGlobalMessage(title, message, fromDeviceId)
                 }
+                FamilyLink.startLiveControlListening(this)
             },
             onGone = {
 
@@ -113,6 +114,7 @@ class GuardService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this, force = true)
+        FamilyLink.stopLiveControlListening(this)
         com.familyguard.sync.FamilyLink.stopFamilyExistenceGuard()
         com.familyguard.receiver.ScreenStateReceiver.unregister(this, screenStateReceiver)
         screenStateReceiver = null
@@ -177,4 +179,3 @@ class GuardService : Service() {
         }
     }
 }
-

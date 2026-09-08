@@ -785,33 +785,107 @@ object FamilyLink {
     fun sendStopScreenShare(context: Context, targetDeviceId: String) =
         sendCommand(context, "stop_screen_share", emptyMap(), targetDeviceId)
 
+    // --- Jalur cepat khusus kontrol (tap/swipe/back/home/recents/volume/power) ---
+    // Terpisah dari node "commands" umum supaya tidak ikut antre di listener besar,
+    // dan tidak perlu tulis "done" + hapus terpisah (hemat 1 round-trip per perintah).
+    private fun liveControlsRef(code: String, deviceId: String) =
+        deviceRef(code, deviceId).child("liveControls")
+
+    private fun sendLiveControlCommand(context: Context, type: String, payload: Map<String, Any>, targetDeviceId: String) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val deviceId = AppLockPrefs.getDeviceId(context)
+        liveControlsRef(code, targetDeviceId).push().setValue(
+            mapOf(
+                "type" to type,
+                "payload" to payload,
+                "from" to deviceId,
+                "timestamp" to System.currentTimeMillis()
+            )
+        )
+    }
+
+    private var liveControlListener: com.google.firebase.database.ChildEventListener? = null
+    private var liveControlListenerCode: String? = null
+
+    fun startLiveControlListening(context: Context) {
+        val code = AppLockPrefs.getFamilyCode(context) ?: return
+        val deviceId = AppLockPrefs.getDeviceId(context)
+
+        stopLiveControlListening(context)
+
+        val ref = liveControlsRef(code, deviceId)
+        val listener = object : com.google.firebase.database.ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val type = snapshot.child("type").getValue(String::class.java) ?: return
+                val payload = snapshot.child("payload")
+                executeControlCommand(context, type, payload)
+                snapshot.ref.removeValue()
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        ref.addChildEventListener(listener)
+        liveControlListener = listener
+        liveControlListenerCode = code
+    }
+
+    fun stopLiveControlListening(context: Context) {
+        val code = liveControlListenerCode ?: return
+        val deviceId = AppLockPrefs.getDeviceId(context)
+        liveControlListener?.let { liveControlsRef(code, deviceId).removeEventListener(it) }
+        liveControlListener = null
+        liveControlListenerCode = null
+    }
+
+    private fun executeControlCommand(context: Context, type: String, payload: DataSnapshot) {
+        when (type) {
+            "remote_tap", "remote_swipe", "remote_back", "remote_home", "remote_recents" -> {
+                com.familyguard.service.AppLockAccessibilityService.instance
+                    ?.executeRemoteInput(type, payload)
+            }
+            "remote_volume_up", "remote_volume_down" -> {
+                val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                val direction = if (type == "remote_volume_up")
+                    android.media.AudioManager.ADJUST_RAISE
+                else
+                    android.media.AudioManager.ADJUST_LOWER
+                am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
+            }
+            "remote_power" -> {
+                com.familyguard.admin.LockManager(context).lockScreen()
+            }
+        }
+    }
+
     fun sendRemoteTap(context: Context, xNorm: Float, yNorm: Float, targetDeviceId: String) =
-        sendCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm), targetDeviceId)
+        sendLiveControlCommand(context, "remote_tap", mapOf("x" to xNorm, "y" to yNorm), targetDeviceId)
 
     fun sendRemoteSwipe(context: Context, x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long, targetDeviceId: String) =
-        sendCommand(
+        sendLiveControlCommand(
             context, "remote_swipe",
             mapOf("x1" to x1, "y1" to y1, "x2" to x2, "y2" to y2, "duration" to durationMs),
             targetDeviceId
         )
 
     fun sendRemoteBack(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_back", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_back", emptyMap(), targetDeviceId)
 
     fun sendRemoteHome(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_home", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_home", emptyMap(), targetDeviceId)
 
     fun sendRemoteRecents(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_recents", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_recents", emptyMap(), targetDeviceId)
 
     fun sendRemoteVolumeUp(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_volume_up", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_volume_up", emptyMap(), targetDeviceId)
 
     fun sendRemoteVolumeDown(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_volume_down", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_volume_down", emptyMap(), targetDeviceId)
 
     fun sendRemotePower(context: Context, targetDeviceId: String) =
-        sendCommand(context, "remote_power", emptyMap(), targetDeviceId)
+        sendLiveControlCommand(context, "remote_power", emptyMap(), targetDeviceId)
 
     private fun sendCommand(context: Context, type: String, payload: Map<String, Any>, targetDeviceId: String) {
         val code = AppLockPrefs.getFamilyCode(context) ?: return
@@ -1257,4 +1331,3 @@ data class FamilyDevice(
     val notifListenerActive: Boolean = false,
     val locationActive: Boolean = false
 )
-
