@@ -19,9 +19,6 @@ import org.webrtc.RtpReceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
-import android.view.Gravity
-import android.widget.FrameLayout
-
 
 class ChildScreenViewActivity : BaseActivity() {
 
@@ -39,6 +36,23 @@ class ChildScreenViewActivity : BaseActivity() {
 
     private var remoteWidth = 1080
     private var remoteHeight = 2400
+
+    // VideoSink perantara: baca ukuran ASLI tiap frame (termasuk pas HP anak rotate landscape
+    // main game) sebelum diteruskan ke renderer. Tanpa ini, remoteWidth/remoteHeight kepakai
+    // nilai portrait lama terus, makanya kemarin titik tap di mode kontrol jadi meleset waktu
+    // layar anak lagi miring.
+    private val remoteFrameSink = object : org.webrtc.VideoSink {
+        override fun onFrame(frame: org.webrtc.VideoFrame) {
+            val w = frame.rotatedWidth
+            val h = frame.rotatedHeight
+            if (w > 0 && h > 0 && (w != remoteWidth || h != remoteHeight)) {
+                remoteWidth = w
+                remoteHeight = h
+                runOnUiThread { updatePhoneFrameOrientation(w, h) }
+            }
+            binding.rendererScreen.onFrame(frame)
+        }
+    }
 
     private var touchDownX = 0f
     private var touchDownY = 0f
@@ -93,6 +107,11 @@ class ChildScreenViewActivity : BaseActivity() {
         setupRemoteTouchHandling()
     }
 
+    /**
+     * Toolbar + status bar overlay itu nutupin status bar asli HP anak, bikin susah dikontrol.
+     * Jadi defaultnya disembunyikan otomatis abis beberapa detik supaya area itu kelihatan,
+     * dan bisa dimunculkan lagi kapan saja lewat tombol mata kecil di pojok kanan atas.
+     */
     private fun setupOverlayToggle() {
         binding.btnToggleOverlay.setOnClickListener {
             setOverlayVisible(!overlayVisible)
@@ -193,67 +212,36 @@ class ChildScreenViewActivity : BaseActivity() {
 
     private fun setupRenderer() {
         eglBase = EglBase.create()
-        binding.rendererScreen.init(eglBase!!.eglBaseContext, object : RendererCommon.RendererEvents {
-            override fun onFirstFrameRendered() {}
-            override fun onFrameResolutionChanged(vw: Int, vh: Int, rot: Int) {
-                runOnUiThread {
-                    handleRotationChange(vw, vh, rot)
-                }
-            }
-        })
+        binding.rendererScreen.init(eglBase!!.eglBaseContext, null)
         binding.rendererScreen.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
         binding.rendererScreen.setMirror(false)
     }
 
-    private fun handleRotationChange(vw: Int, vh: Int, rot: Int) {
-        // Rotasi 90 atau 270 berarti lebar & tinggi aslinya tertukar pas ditampilin
-        val effectiveW = if (rot == 90 || rot == 270) vh else vw
-        val effectiveH = if (rot == 90 || rot == 270) vw else vh
-
-        remoteWidth = effectiveW
-        remoteHeight = effectiveH
-
-        val ratio = effectiveW.toFloat() / effectiveH.toFloat()
-        
-        // Penentuan landscape harus berdasarkan dimensi akhir setelah rotasi
-        val isLandscape = effectiveW > effectiveH
-
+    /**
+     * Sesuaikan bingkai "emulator" (phoneFrame) supaya rasionya sama persis dengan layar HP anak
+     * saat ini, dan pindahkan kamera/home-indicator ke sisi yang benar kalau posisinya landscape
+     * (mis. lagi main game rotate). Perubahan dianimasikan halus lewat AspectRatioFrameLayout.
+     */
+    private fun updatePhoneFrameOrientation(width: Int, height: Int) {
+        val ratio = width.toFloat() / height.toFloat()
         binding.phoneFrame.setAspectRatio(ratio)
-        updateFrameDecorations(isLandscape, rot)
-    }
 
-    private fun updateFrameDecorations(isLandscape: Boolean, rot: Int) {
-        // Pindahkan titik kamera & home indicator biar pas sesuai rotasi bingkai
-        val cameraParams = binding.phoneCameraDot.layoutParams as FrameLayout.LayoutParams
-        val homeParams = binding.phoneHomeIndicator.layoutParams as FrameLayout.LayoutParams
-        
-        val density = resources.displayMetrics.density
-        fun Int.dp(): Int = (this * density).toInt()
+        val isLandscape = width > height
+        val cameraParams = binding.phoneCameraDot.layoutParams as android.widget.FrameLayout.LayoutParams
+        val indicatorParams = binding.phoneHomeIndicator.layoutParams as android.widget.FrameLayout.LayoutParams
 
         if (isLandscape) {
-            // Kamera pindah ke kiri (rot 90) atau kanan (rot 270)
-            cameraParams.gravity = if (rot == 90) Gravity.CENTER_VERTICAL or Gravity.START 
-                                  else Gravity.CENTER_VERTICAL or Gravity.END
-            cameraParams.setMargins(if (rot == 90) 4.dp() else 0, 0, if (rot == 270) 4.dp() else 0, 0)
-            
-            // Home indicator tetap di bawah tapi lebih panjang
-            homeParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            homeParams.width = 100.dp()
-            homeParams.height = 4.dp()
-            homeParams.bottomMargin = 6.dp()
+            cameraParams.gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
+            indicatorParams.gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
         } else {
-            // Portrait
-            cameraParams.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            cameraParams.setMargins(0, 4.dp(), 0, 0)
-            
-            homeParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            homeParams.width = 64.dp()
-            homeParams.height = 4.dp()
-            homeParams.bottomMargin = 6.dp()
+            cameraParams.gravity = android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL
+            indicatorParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
         }
-        
+
+        binding.phoneCameraDot.animate().rotation(if (isLandscape) 90f else 0f).setDuration(320L).start()
+        binding.phoneHomeIndicator.animate().rotation(if (isLandscape) 90f else 0f).setDuration(320L).start()
         binding.phoneCameraDot.layoutParams = cameraParams
-        binding.phoneHomeIndicator.layoutParams = homeParams
+        binding.phoneHomeIndicator.layoutParams = indicatorParams
     }
 
     private var controlChannel: org.webrtc.DataChannel? = null
@@ -279,11 +267,11 @@ class ChildScreenViewActivity : BaseActivity() {
                     candidate = candidate.sdp
                 )
             }
-                override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {
+            override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {
                 val track = receiver?.track()
                 if (track is VideoTrack) {
                     runOnUiThread {
-                        track.addSink(binding.rendererScreen)
+                        track.addSink(remoteFrameSink)
                         binding.tvStatus.text = "Menghubungkan video…"
                     }
                 }
