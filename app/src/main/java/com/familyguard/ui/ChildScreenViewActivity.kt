@@ -227,7 +227,7 @@ class ChildScreenViewActivity : BaseActivity() {
                 val track = receiver?.track()
                 if (track is VideoTrack) {
                     runOnUiThread {
-                        track.addSink(binding.rendererScreen)
+                        track.addSink(remoteFrameSink)
                         binding.tvStatus.text = "Menghubungkan video…"
                     }
                 }

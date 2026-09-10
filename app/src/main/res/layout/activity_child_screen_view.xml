@@ -6,21 +6,59 @@
     android:background="@color/dash_black"
     android:fitsSystemWindows="false">
 
-    <!-- Video mirror: benar-benar full screen, edge-to-edge -->
+    <!-- Panggung: video HP anak dibungkus bingkai ala emulator, biar keliatan kayak HP beneran
+         dan ikut "miring" (landscape) pas anak main game rotate. -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#0D0D0D">
 
-        <org.webrtc.SurfaceViewRenderer
-            android:id="@+id/rendererScreen"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <ProgressBar
-            android:id="@+id/progressLoading"
+        <com.familyguard.ui.widget.AspectRatioFrameLayout
+            android:id="@+id/phoneFrame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:background="@drawable/bg_phone_frame"
+            android:padding="14dp">
+
+            <FrameLayout
+                android:id="@+id/phoneScreenArea"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/dash_black">
+
+                <org.webrtc.SurfaceViewRenderer
+                    android:id="@+id/rendererScreen"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <ProgressBar
+                    android:id="@+id/progressLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+            </FrameLayout>
+
+            <!-- Kamera depan kecil, posisinya digeser di kode kalau lagi landscape -->
+            <View
+                android:id="@+id/phoneCameraDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_phone_camera_dot" />
+
+            <!-- Garis home indicator, juga ikut digeser/diputar kalau landscape -->
+            <View
+                android:id="@+id/phoneHomeIndicator"
+                android:layout_width="64dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_phone_home_indicator" />
+
+        </com.familyguard.ui.widget.AspectRatioFrameLayout>
 
     </FrameLayout>
 
