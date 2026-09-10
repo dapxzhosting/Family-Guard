@@ -20,6 +20,7 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
 
+
 class ChildScreenViewActivity : BaseActivity() {
 
     companion object {
@@ -218,11 +219,11 @@ class ChildScreenViewActivity : BaseActivity() {
                     candidate = candidate.sdp
                 )
             }
-            override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {
+                override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {
                 val track = receiver?.track()
                 if (track is VideoTrack) {
                     runOnUiThread {
-                        track.addSink(remoteFrameSink)
+                        track.addSink(binding.rendererScreen)
                         binding.tvStatus.text = "Menghubungkan video…"
                     }
                 }
