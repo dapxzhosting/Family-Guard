@@ -106,14 +106,13 @@ class AppLockAccessibilityService : AccessibilityService() {
     fun executeRemoteInput(type: String, payload: com.google.firebase.database.DataSnapshot) {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) return
 
-        val w = com.familyguard.service.RemoteControlState.realScreenWidth.toFloat()
-        val h = com.familyguard.service.RemoteControlState.realScreenHeight.toFloat()
+        val target = activeTouchTarget()
 
         when (type) {
             "remote_tap" -> {
                 val xNorm = payload.child("x").getValue(Double::class.java)?.toFloat() ?: return
                 val yNorm = payload.child("y").getValue(Double::class.java)?.toFloat() ?: return
-                dispatchTap(xNorm * w, yNorm * h)
+                dispatchTap(target.left + xNorm * target.width, target.top + yNorm * target.height)
             }
             "remote_swipe" -> {
                 val x1 = payload.child("x1").getValue(Double::class.java)?.toFloat() ?: return
@@ -121,7 +120,11 @@ class AppLockAccessibilityService : AccessibilityService() {
                 val x2 = payload.child("x2").getValue(Double::class.java)?.toFloat() ?: return
                 val y2 = payload.child("y2").getValue(Double::class.java)?.toFloat() ?: return
                 val duration = payload.child("duration").getValue(Long::class.java) ?: 150L
-                dispatchSwipe(x1 * w, y1 * h, x2 * w, y2 * h, duration.coerceIn(50L, 2000L))
+                dispatchSwipe(
+                    target.left + x1 * target.width, target.top + y1 * target.height,
+                    target.left + x2 * target.width, target.top + y2 * target.height,
+                    duration.coerceIn(50L, 2000L)
+                )
             }
             "remote_back" -> {
                 performGlobalAction(GLOBAL_ACTION_BACK)
@@ -138,15 +141,14 @@ class AppLockAccessibilityService : AccessibilityService() {
     fun executeRemoteInputJson(json: org.json.JSONObject) {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) return
 
-        val w = com.familyguard.service.RemoteControlState.realScreenWidth.toFloat()
-        val h = com.familyguard.service.RemoteControlState.realScreenHeight.toFloat()
+        val target = activeTouchTarget()
 
         when (json.optString("type")) {
             "remote_tap" -> {
                 val xNorm = json.optDouble("x", -1.0).toFloat()
                 val yNorm = json.optDouble("y", -1.0).toFloat()
                 if (xNorm < 0 || yNorm < 0) return
-                dispatchTap(xNorm * w, yNorm * h)
+                dispatchTap(target.left + xNorm * target.width, target.top + yNorm * target.height)
             }
             "remote_swipe" -> {
                 val x1 = json.optDouble("x1", -1.0).toFloat()
@@ -155,7 +157,11 @@ class AppLockAccessibilityService : AccessibilityService() {
                 val y2 = json.optDouble("y2", -1.0).toFloat()
                 if (x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0) return
                 val duration = json.optLong("duration", 150L)
-                dispatchSwipe(x1 * w, y1 * h, x2 * w, y2 * h, duration.coerceIn(50L, 2000L))
+                dispatchSwipe(
+                    target.left + x1 * target.width, target.top + y1 * target.height,
+                    target.left + x2 * target.width, target.top + y2 * target.height,
+                    duration.coerceIn(50L, 2000L)
+                )
             }
             "remote_back" -> {
                 performGlobalAction(GLOBAL_ACTION_BACK)
@@ -167,6 +173,43 @@ class AppLockAccessibilityService : AccessibilityService() {
                 performGlobalAction(GLOBAL_ACTION_RECENTS)
             }
         }
+    }
+
+    private class TouchTarget(val left: Float, val top: Float, val width: Float, val height: Float)
+
+    /**
+     * Cari batas window aplikasi yang BENERAN aktif/fokus sekarang di layar HP anak, bukan
+     * asumsi seluruh layar. Ini penting buat app/game yang orientasinya dipaksa landscape:
+     * sistem sering nge-render window app itu "letterbox" (dikompres/di-rotate ke area lebih
+     * kecil di dalam layar), jadi ukuran & posisi window asli BISA BEDA dari ukuran layar penuh.
+     * Kalau ini gagal ketemu (mis. game-nya gak expose window info yang jelas), baru fallback
+     * ke ukuran layar penuh seperti sebelumnya.
+     */
+    private fun activeTouchTarget(): TouchTarget {
+        try {
+            val windowList = windows
+            if (windowList != null) {
+                for (w in windowList) {
+                    if (w.type == AccessibilityWindowInfo.TYPE_APPLICATION && w.isFocused) {
+                        val rect = android.graphics.Rect()
+                        w.getBoundsInScreen(rect)
+                        if (rect.width() > 0 && rect.height() > 0) {
+                            return TouchTarget(
+                                rect.left.toFloat(), rect.top.toFloat(),
+                                rect.width().toFloat(), rect.height().toFloat()
+                            )
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // fallback di bawah
+        }
+        return TouchTarget(
+            0f, 0f,
+            RemoteControlState.realScreenWidth.toFloat(),
+            RemoteControlState.realScreenHeight.toFloat()
+        )
     }
 
     private fun dispatchTap(x: Float, y: Float) {
@@ -185,6 +228,7 @@ class AppLockAccessibilityService : AccessibilityService() {
         val gesture = android.accessibilityservice.GestureDescription.Builder().addStroke(stroke).build()
         dispatchGesture(gesture, null, null)
     }
+
 
     override fun onServiceConnected() {
         super.onServiceConnected()
