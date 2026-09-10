@@ -104,17 +104,29 @@ class ChildScreenViewActivity : BaseActivity() {
 
     private fun scheduleAutoHideOverlay() {
         overlayHideHandler.removeCallbacks(overlayHideRunnable)
+        // Kalau mode kontrol lagi aktif, tombol-tombol jangan di-auto-hide.
+        if (controlModeOn) return
         overlayHideHandler.postDelayed(overlayHideRunnable, 3000)
     }
 
     private fun setOverlayVisible(visible: Boolean) {
         overlayVisible = visible
-        binding.topBar.visibility = if (visible) android.view.View.VISIBLE else android.view.View.GONE
-        binding.controlBar.visibility =
-            if (visible && controlModeOn) android.view.View.VISIBLE else android.view.View.GONE
-        binding.btnToggleOverlay.setImageResource(
+
+        if (visible) {
+            com.familyguard.utils.AnimUtils.slideFadeIn(binding.topBar, fromTop = true)
+            if (controlModeOn) {
+                com.familyguard.utils.AnimUtils.slideFadeIn(binding.controlBar, fromTop = false)
+            }
+        } else {
+            com.familyguard.utils.AnimUtils.slideFadeOut(binding.topBar, fromTop = true)
+            com.familyguard.utils.AnimUtils.slideFadeOut(binding.controlBar, fromTop = false)
+        }
+
+        com.familyguard.utils.AnimUtils.crossFadeImageResource(
+            binding.btnToggleOverlay,
             if (visible) com.familyguard.R.drawable.ic_eye else com.familyguard.R.drawable.ic_eye_off
         )
+
         overlayHideHandler.removeCallbacks(overlayHideRunnable)
         if (visible) scheduleAutoHideOverlay()
     }
@@ -125,8 +137,10 @@ class ChildScreenViewActivity : BaseActivity() {
                 checkAccessibilityBeforeEnablingControl()
             } else {
                 controlModeOn = false
-                binding.controlBar.visibility = android.view.View.GONE
+                com.familyguard.utils.AnimUtils.slideFadeOut(binding.controlBar, fromTop = false)
                 Toast.makeText(this, "Mode Kontrol nonaktif — hanya melihat", Toast.LENGTH_SHORT).show()
+                // Mode kontrol mati lagi -> nyalakan lagi timer auto-hide seperti biasa.
+                if (overlayVisible) scheduleAutoHideOverlay()
             }
         }
     }
@@ -171,8 +185,12 @@ class ChildScreenViewActivity : BaseActivity() {
     private fun enableControlMode() {
         controlModeOn = true
         binding.switchControlMode.isChecked = true
-        binding.controlBar.visibility = android.view.View.VISIBLE
+        if (overlayVisible) {
+            com.familyguard.utils.AnimUtils.slideFadeIn(binding.controlBar, fromTop = false)
+        }
         Toast.makeText(this, "Mode Kontrol AKTIF — sentuhan akan diteruskan ke HP anak", Toast.LENGTH_SHORT).show()
+        // Mode kontrol aktif -> batalkan auto-hide biar tombol tetap kelihatan.
+        overlayHideHandler.removeCallbacks(overlayHideRunnable)
     }
 
     private fun setupRenderer() {

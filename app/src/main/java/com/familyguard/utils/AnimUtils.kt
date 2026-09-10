@@ -153,6 +153,76 @@ object AnimUtils {
             .start()
     }
 
+    /**
+     * Ganti drawable ImageView/ImageButton dengan cross-fade halus (misal ikon mata <-> mata-off),
+     * dibarengi sedikit scale biar kerasa "pop"-nya.
+     */
+    fun crossFadeImageResource(
+        imageView: android.widget.ImageView,
+        @androidx.annotation.DrawableRes resId: Int,
+        durationMs: Long = 150L
+    ) {
+        imageView.animate().cancel()
+        imageView.animate()
+            .alpha(0f)
+            .scaleX(0.7f)
+            .scaleY(0.7f)
+            .setDuration(durationMs)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                imageView.setImageResource(resId)
+                imageView.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(durationMs)
+                    .setInterpolator(OvershootInterpolator(1.5f))
+                    .start()
+            }
+            .start()
+    }
+
+    /**
+     * Munculkan overlay bar (top/bottom) dengan fade + slide halus dari tepi layar.
+     * fromTop = true untuk bar yang nempel di atas (slide dari atas ke bawah),
+     * fromTop = false untuk bar yang nempel di bawah (slide dari bawah ke atas).
+     */
+    fun slideFadeIn(view: View, fromTop: Boolean, durationMs: Long = 220L) {
+        view.animate().cancel()
+        val startTranslation = if (fromTop) -view.height.coerceAtLeast(40).toFloat() else view.height.coerceAtLeast(40).toFloat()
+        if (view.visibility != View.VISIBLE) {
+            view.translationY = startTranslation
+            view.alpha = 0f
+        }
+        view.visibility = View.VISIBLE
+        view.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(durationMs)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+    }
+
+    /**
+     * Sembunyikan overlay bar (top/bottom) dengan fade + slide halus ke tepi layar,
+     * baru di-GONE-kan setelah animasinya kelar.
+     */
+    fun slideFadeOut(view: View, fromTop: Boolean, durationMs: Long = 200L) {
+        if (view.visibility != View.VISIBLE) return
+        view.animate().cancel()
+        val endTranslation = if (fromTop) -view.height.coerceAtLeast(40).toFloat() else view.height.coerceAtLeast(40).toFloat()
+        view.animate()
+            .alpha(0f)
+            .translationY(endTranslation)
+            .setDuration(durationMs)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                view.visibility = View.GONE
+                view.translationY = 0f
+            }
+            .start()
+    }
+
     fun applySlideInItemAnimator(recyclerView: RecyclerView) {
         recyclerView.itemAnimator = object : androidx.recyclerview.widget.DefaultItemAnimator() {
             override fun animateAdd(holder: RecyclerView.ViewHolder): Boolean {
