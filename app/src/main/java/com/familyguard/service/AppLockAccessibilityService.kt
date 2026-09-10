@@ -202,6 +202,42 @@ class AppLockAccessibilityService : AccessibilityService() {
         if (com.familyguard.utils.AppLockPrefs.isGuardEnabled(this)) {
             com.familyguard.service.GuardService.start(this)
         }
+
+        registerDisplayRotationListener()
+    }
+
+    /**
+     * Dimensi layar buat konversi koordinat tap (RemoteControlState.realScreenWidth/Height)
+     * sebelumnya cuma diambil sekali pas ScreenCaptureService mulai (biasanya masih portrait).
+     * Kalau anak buka game yang maksa landscape, dimensi layar aslinya berubah tapi nilai lama
+     * gak ikut ke-update — makanya tap dari mode kontrol jadi meleset khusus pas main game.
+     * Listener ini bikin nilainya selalu ke-refresh tiap kali orientasi/ukuran layar berubah.
+     */
+    private var displayListenerRegistered = false
+
+    private fun registerDisplayRotationListener() {
+        if (displayListenerRegistered) return
+        val displayManager = getSystemService(android.hardware.display.DisplayManager::class.java) ?: return
+        displayManager.registerDisplayListener(object : android.hardware.display.DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) {}
+            override fun onDisplayRemoved(displayId: Int) {}
+            override fun onDisplayChanged(displayId: Int) {
+                refreshRealScreenSize()
+            }
+        }, mainHandler)
+        displayListenerRegistered = true
+        refreshRealScreenSize()
+    }
+
+    private fun refreshRealScreenSize() {
+        val metrics = android.util.DisplayMetrics()
+        @Suppress("DEPRECATION")
+        val display = (getSystemService(android.content.Context.WINDOW_SERVICE) as? android.view.WindowManager)?.defaultDisplay
+        display?.getRealMetrics(metrics) ?: return
+        if (metrics.widthPixels > 0 && metrics.heightPixels > 0) {
+            RemoteControlState.realScreenWidth = metrics.widthPixels
+            RemoteControlState.realScreenHeight = metrics.heightPixels
+        }
     }
 
     override fun onDestroy() {
