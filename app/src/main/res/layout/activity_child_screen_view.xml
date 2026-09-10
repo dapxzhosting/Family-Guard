@@ -27,7 +27,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/dash_black">
 
-                <org.webrtc.SurfaceViewRenderer
+                <org.webrtc.TextureViewRenderer
                     android:id="@+id/rendererScreen"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
