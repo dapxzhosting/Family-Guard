@@ -19,6 +19,8 @@ import org.webrtc.RtpReceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
+import android.view.Gravity
+import android.widget.FrameLayout
 
 
 class ChildScreenViewActivity : BaseActivity() {
@@ -191,9 +193,67 @@ class ChildScreenViewActivity : BaseActivity() {
 
     private fun setupRenderer() {
         eglBase = EglBase.create()
-        binding.rendererScreen.init(eglBase!!.eglBaseContext, null)
+        binding.rendererScreen.init(eglBase!!.eglBaseContext, object : RendererCommon.RendererEvents {
+            override fun onFirstFrameRendered() {}
+            override fun onFrameResolutionChanged(vw: Int, vh: Int, rot: Int) {
+                runOnUiThread {
+                    handleRotationChange(vw, vh, rot)
+                }
+            }
+        })
         binding.rendererScreen.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
         binding.rendererScreen.setMirror(false)
+    }
+
+    private fun handleRotationChange(vw: Int, vh: Int, rot: Int) {
+        // Rotasi 90 atau 270 berarti lebar & tinggi aslinya tertukar pas ditampilin
+        val effectiveW = if (rot == 90 || rot == 270) vh else vw
+        val effectiveH = if (rot == 90 || rot == 270) vw else vh
+
+        remoteWidth = effectiveW
+        remoteHeight = effectiveH
+
+        val ratio = effectiveW.toFloat() / effectiveH.toFloat()
+        
+        // Penentuan landscape harus berdasarkan dimensi akhir setelah rotasi
+        val isLandscape = effectiveW > effectiveH
+
+        binding.phoneFrame.setAspectRatio(ratio)
+        updateFrameDecorations(isLandscape, rot)
+    }
+
+    private fun updateFrameDecorations(isLandscape: Boolean, rot: Int) {
+        // Pindahkan titik kamera & home indicator biar pas sesuai rotasi bingkai
+        val cameraParams = binding.phoneCameraDot.layoutParams as FrameLayout.LayoutParams
+        val homeParams = binding.phoneHomeIndicator.layoutParams as FrameLayout.LayoutParams
+        
+        val density = resources.displayMetrics.density
+        fun Int.dp(): Int = (this * density).toInt()
+
+        if (isLandscape) {
+            // Kamera pindah ke kiri (rot 90) atau kanan (rot 270)
+            cameraParams.gravity = if (rot == 90) Gravity.CENTER_VERTICAL or Gravity.START 
+                                  else Gravity.CENTER_VERTICAL or Gravity.END
+            cameraParams.setMargins(if (rot == 90) 4.dp() else 0, 0, if (rot == 270) 4.dp() else 0, 0)
+            
+            // Home indicator tetap di bawah tapi lebih panjang
+            homeParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            homeParams.width = 100.dp()
+            homeParams.height = 4.dp()
+            homeParams.bottomMargin = 6.dp()
+        } else {
+            // Portrait
+            cameraParams.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            cameraParams.setMargins(0, 4.dp(), 0, 0)
+            
+            homeParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            homeParams.width = 64.dp()
+            homeParams.height = 4.dp()
+            homeParams.bottomMargin = 6.dp()
+        }
+        
+        binding.phoneCameraDot.layoutParams = cameraParams
+        binding.phoneHomeIndicator.layoutParams = homeParams
     }
 
     private var controlChannel: org.webrtc.DataChannel? = null
