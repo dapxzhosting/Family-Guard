@@ -90,11 +90,6 @@ class ChildScreenViewActivity : BaseActivity() {
         setupRemoteTouchHandling()
     }
 
-    /**
-     * Toolbar + status bar overlay itu nutupin status bar asli HP anak, bikin susah dikontrol.
-     * Jadi defaultnya disembunyikan otomatis abis beberapa detik supaya area itu kelihatan,
-     * dan bisa dimunculkan lagi kapan saja lewat tombol mata kecil di pojok kanan atas.
-     */
     private fun setupOverlayToggle() {
         binding.btnToggleOverlay.setOnClickListener {
             setOverlayVisible(!overlayVisible)
