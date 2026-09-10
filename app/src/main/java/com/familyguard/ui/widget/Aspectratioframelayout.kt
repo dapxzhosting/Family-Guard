@@ -47,11 +47,27 @@ class AspectRatioFrameLayout @JvmOverloads constructor(
         }
     }
 
+    // Dipakai pas mode rotasi manual aktif: box ini akan diukur dengan lebar/tinggi parent
+    // ketuker, supaya begitu View-nya diputar 90° secara visual, hasilnya pas muat di layar
+    // (gak kepotong di kiri-kanan).
+    var rotated90: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            requestLayout()
+        }
+
     fun currentAspectRatio(): Float = aspectRatio
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
-        val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+        var parentWidth = MeasureSpec.getSize(widthMeasureSpec)
+        var parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+
+        if (rotated90) {
+            val tmp = parentWidth
+            parentWidth = parentHeight
+            parentHeight = tmp
+        }
 
         if (parentWidth <= 0 || parentHeight <= 0 || aspectRatio <= 0f) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)

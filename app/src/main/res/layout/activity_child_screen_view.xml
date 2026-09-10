@@ -218,4 +218,19 @@
         android:src="@drawable/ic_eye_off"
         app:tint="@color/dash_white" />
 
+    <!-- Tombol putar tampilan: pencet ini kalau layar HP anak lagi landscape (misal lagi main
+         game), biar preview-nya ikut miring dan lebih gampang dituju/di-tap -->
+    <ImageButton
+        android:id="@+id/btnRotatePreview"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_control_button"
+        android:contentDescription="Putar tampilan preview"
+        android:padding="7dp"
+        android:src="@drawable/ic_rotate_screen"
+        app:tint="@color/dash_white" />
+
 </FrameLayout>
