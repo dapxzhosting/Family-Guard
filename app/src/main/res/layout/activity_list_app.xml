@@ -98,57 +98,99 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:orientation="horizontal">
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLockAll"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                android:backgroundTint="@color/dash_danger_soft"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:text="Kunci Semua"
                 android:textAllCaps="false"
+                android:textColor="@color/dash_danger"
                 android:textSize="12sp"
-                app:strokeColor="@color/dash_danger"
-                android:textColor="@color/dash_danger" />
-            <Button
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_lock"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/dash_danger" />
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnUnlockAll"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                android:backgroundTint="@color/dash_primary_soft"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:text="Buka Semua"
                 android:textAllCaps="false"
+                android:textColor="@color/dash_info"
                 android:textSize="12sp"
-                app:strokeColor="@color/dash_primary"
-                android:textColor="@color/dash_primary" />
-            <Button
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_unlock"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/dash_info" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnBlockNotifAll"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                android:backgroundTint="@color/dash_warning_soft"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:text="Blokir Notif"
                 android:textAllCaps="false"
+                android:textColor="@color/dash_warning"
                 android:textSize="12sp"
-                app:strokeColor="@color/dash_warning"
-                android:textColor="@color/dash_warning" />
-            <Button
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_notif_off"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/dash_warning" />
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAllowNotifAll"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                android:backgroundTint="@color/dash_child_primary_soft"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:text="Izinkan Notif"
                 android:textAllCaps="false"
+                android:textColor="@color/dash_child_primary"
                 android:textSize="12sp"
-                app:strokeColor="@color/dash_child_primary"
-                android:textColor="@color/dash_child_primary" />
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_notif_on"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/dash_child_primary" />
         </LinearLayout>
     </LinearLayout>
     <TextView

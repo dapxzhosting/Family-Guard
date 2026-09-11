@@ -138,6 +138,10 @@ class AppListActivity : BaseActivity() {
             .setMessage(message)
             .setPositiveButton("Ya, Lanjutkan") { _, _ -> onConfirm() }
             .setNegativeButton("Batal", null)
+            .create()
+            .apply {
+                window?.setWindowAnimations(R.style.PopCenterDialogAnimation)
+            }
             .show()
     }
 
