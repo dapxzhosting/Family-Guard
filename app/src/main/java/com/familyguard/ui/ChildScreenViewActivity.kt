@@ -105,29 +105,6 @@ class ChildScreenViewActivity : BaseActivity() {
         }
 
         setupRemoteTouchHandling()
-        setupRotatePreviewButton()
-    }
-
-    private var previewRotationDegrees = 0
-
-    /**
-     * Tombol putar manual: dipencet sendiri sama orang tua pas lihat preview HP anak lagi
-     * landscape (misal main game). Muter phoneFrame (bingkai + video + bezel) sekaligus, jadi
-     * preview-nya ikut miring dan lebih gampang di-tap dengan akurat. Perhitungan tap gak perlu
-     * diubah manual karena Android otomatis nge-translate koordinat sentuh balik ke posisi asli
-     * (sebelum rotasi) buat view yang nerima event-nya (rendererScreen).
-     */
-    private fun setupRotatePreviewButton() {
-        binding.btnRotatePreview.setOnClickListener {
-            previewRotationDegrees = (previewRotationDegrees + 90) % 360
-            val isSideways = previewRotationDegrees == 90 || previewRotationDegrees == 270
-            binding.phoneFrame.rotated90 = isSideways
-            binding.phoneFrame.animate()
-                .rotation(previewRotationDegrees.toFloat())
-                .setDuration(320L)
-                .setInterpolator(android.view.animation.DecelerateInterpolator())
-                .start()
-        }
     }
 
     /**
