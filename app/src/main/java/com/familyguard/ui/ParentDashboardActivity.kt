@@ -593,6 +593,13 @@ class ParentDashboardActivity : BaseActivity() {
         if (pkg == com.familyguard.utils.AppFilter.STATUS_HOME_SCREEN) {
             binding.tvCurrentAppName.text = "Layar Utama"
             binding.ivCurrentAppIcon.setImageResource(R.drawable.ic_home)
+            binding.ivCurrentAppIcon.setBackgroundResource(R.drawable.bg_icon_circle_info)
+            val padPxHome = (8 * resources.displayMetrics.density).toInt()
+            binding.ivCurrentAppIcon.setPadding(padPxHome, padPxHome, padPxHome, padPxHome)
+            binding.ivCurrentAppIcon.imageTintList =
+                android.content.res.ColorStateList.valueOf(
+                    androidx.core.content.ContextCompat.getColor(this, R.color.dash_info)
+                )
             binding.tvCurrentAppSince.text =
                 if (since > 0) "sejak ${sdf.format(Date(since))}" else ""
             return
@@ -600,6 +607,13 @@ class ParentDashboardActivity : BaseActivity() {
         if (pkg == com.familyguard.utils.AppFilter.STATUS_LOCK_SCREEN) {
             binding.tvCurrentAppName.text = "Layar Terkunci"
             binding.ivCurrentAppIcon.setImageResource(R.drawable.ic_lock)
+            binding.ivCurrentAppIcon.setBackgroundResource(R.drawable.bg_icon_circle_danger)
+            val padPxLock = (8 * resources.displayMetrics.density).toInt()
+            binding.ivCurrentAppIcon.setPadding(padPxLock, padPxLock, padPxLock, padPxLock)
+            binding.ivCurrentAppIcon.imageTintList =
+                android.content.res.ColorStateList.valueOf(
+                    androidx.core.content.ContextCompat.getColor(this, R.color.dash_danger)
+                )
             binding.tvCurrentAppSince.text =
                 if (since > 0) "sejak ${sdf.format(Date(since))}" else ""
             return
@@ -607,6 +621,9 @@ class ParentDashboardActivity : BaseActivity() {
 
         val info = appListData.firstOrNull { it.packageName == pkg }
         binding.tvCurrentAppName.text = info?.appName ?: pkg
+        binding.ivCurrentAppIcon.setBackgroundResource(R.drawable.bg_app_icon_placeholder)
+        binding.ivCurrentAppIcon.imageTintList = null
+        binding.ivCurrentAppIcon.setPadding(0, 0, 0, 0)
 
         if (since > 0) {
             binding.tvCurrentAppSince.text = "sejak ${sdf.format(Date(since))}"
