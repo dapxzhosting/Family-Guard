@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.familyguard.R
 
 class AppListActivity : BaseActivity() {
 
@@ -101,48 +102,71 @@ class AppListActivity : BaseActivity() {
     private fun setupBulkActionButtons() {
         binding.btnLockAll.setOnClickListener {
             if (!requirePinSet()) return@setOnClickListener
-            confirmBulkAction("Kunci SEMUA aplikasi di HP anak?") {
+            confirmBulkAction(R.drawable.ic_lock, R.color.dash_danger, "Kunci SEMUA aplikasi di HP anak?") {
                 val packages = fullAppList.map { it.packageName }
                 FamilyLink.sendLockAppsBulk(this, packages, true, deviceId!!)
                 toast("Perintah kunci semua aplikasi dikirim")
             }
         }
         binding.btnUnlockAll.setOnClickListener {
-            confirmBulkAction("Buka kunci SEMUA aplikasi di HP anak?") {
+            confirmBulkAction(R.drawable.ic_unlock, R.color.dash_info, "Buka kunci SEMUA aplikasi di HP anak?") {
                 val packages = fullAppList.map { it.packageName }
                 FamilyLink.sendLockAppsBulk(this, packages, false, deviceId!!)
                 toast("Perintah buka semua aplikasi dikirim")
             }
         }
         binding.btnBlockNotifAll.setOnClickListener {
-            confirmBulkAction("Blokir notifikasi SEMUA aplikasi di HP anak?") {
+            confirmBulkAction(R.drawable.ic_notif_off, R.color.dash_warning, "Blokir notifikasi SEMUA aplikasi di HP anak?") {
                 fullAppList.forEach { FamilyLink.sendBlockNotif(this, it.packageName, true, deviceId!!) }
                 toast("Perintah blokir semua notifikasi dikirim")
             }
         }
         binding.btnAllowNotifAll.setOnClickListener {
-            confirmBulkAction("Izinkan notifikasi SEMUA aplikasi di HP anak?") {
+            confirmBulkAction(R.drawable.ic_notif_on, R.color.dash_child_primary, "Izinkan notifikasi SEMUA aplikasi di HP anak?") {
                 fullAppList.forEach { FamilyLink.sendBlockNotif(this, it.packageName, false, deviceId!!) }
                 toast("Perintah izinkan semua notifikasi dikirim")
             }
         }
     }
 
-    private fun confirmBulkAction(message: String, onConfirm: () -> Unit) {
+    private fun confirmBulkAction(
+        iconRes: Int,
+        accentColor: Int,
+        message: String,
+        onConfirm: () -> Unit
+    ) {
         if (deviceId == null || fullAppList.isEmpty()) {
             toast("Belum ada daftar aplikasi untuk diproses")
             return
         }
-        AlertDialog.Builder(this)
-            .setTitle("Konfirmasi")
-            .setMessage(message)
-            .setPositiveButton("Ya, Lanjutkan") { _, _ -> onConfirm() }
-            .setNegativeButton("Batal", null)
-            .create()
-            .apply {
-                window?.setWindowAnimations(R.style.PopCenterDialogAnimation)
-            }
-            .show()
+        val dialog = android.app.Dialog(this, R.style.PopCenterDialog)
+        dialog.setContentView(R.layout.dialog_action_center)
+
+        val iconCircle = dialog.findViewById<android.view.View>(R.id.actionIconCircle)
+        val icon = dialog.findViewById<android.widget.ImageView>(R.id.ivActionIcon)
+        val tvTitle = dialog.findViewById<android.widget.TextView>(R.id.tvActionTitle)
+        val tvMessage = dialog.findViewById<android.widget.TextView>(R.id.tvActionMessage)
+        val btnCancel = dialog.findViewById<android.widget.Button>(R.id.btnActionCancel)
+        val btnConfirm = dialog.findViewById<android.widget.Button>(R.id.btnActionConfirm)
+
+        val color = androidx.core.content.ContextCompat.getColor(this, accentColor)
+        iconCircle.backgroundTintList = android.content.res.ColorStateList.valueOf(color)
+        icon.setImageResource(iconRes)
+        icon.imageTintList = android.content.res.ColorStateList.valueOf(color)
+
+        tvTitle.text = "Konfirmasi"
+        tvMessage.visibility = android.view.View.VISIBLE
+        tvMessage.text = message
+
+        btnConfirm.text = "Ya, Lanjutkan"
+        btnConfirm.backgroundTintList = android.content.res.ColorStateList.valueOf(color)
+        btnConfirm.setOnClickListener {
+            onConfirm()
+            dialog.dismiss()
+        }
+        btnCancel.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
     }
 
     private fun observeAppList(id: String) {
