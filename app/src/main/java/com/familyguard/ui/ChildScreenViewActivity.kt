@@ -186,7 +186,7 @@ class ChildScreenViewActivity : BaseActivity() {
                         .setMessage(
                             "HP anak belum mengaktifkan Accessibility Service, jadi " +
                                     "sentuhan dari sini TIDAK akan sampai ke HP anak. Minta " +
-                                    "anak buka Dashboard di HP-nya dan aktifkan Accessibility " +
+                                    "anak buka Dashboard di HP nya dan aktifkan Accessibility " +
                                     "dulu, baru coba lagi."
                         )
                         .setPositiveButton("Mengerti", null)
@@ -283,7 +283,7 @@ class ChildScreenViewActivity : BaseActivity() {
                         PeerConnection.IceConnectionState.CONNECTED,
                         PeerConnection.IceConnectionState.COMPLETED -> {
                             binding.progressLoading.visibility = android.view.View.GONE
-                            binding.tvStatus.text = "Terhubung • video real-time"
+                            binding.tvStatus.text = "Terhubung • video real time"
                         }
                         PeerConnection.IceConnectionState.CHECKING -> {
                             binding.tvStatus.text = "Mencari jalur koneksi…"
@@ -316,7 +316,7 @@ class ChildScreenViewActivity : BaseActivity() {
                         override fun onStateChange() {
                             runOnUiThread {
                                 if (channel.state() == org.webrtc.DataChannel.State.OPEN) {
-                                    binding.tvStatus.text = "Terhubung • video real-time • kontrol cepat aktif"
+                                    binding.tvStatus.text = "Terhubung • video real time • kontrol cepat aktif"
                                 }
                             }
                         }

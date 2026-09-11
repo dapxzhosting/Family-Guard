@@ -75,7 +75,7 @@ class ParentDashboardActivity : BaseActivity() {
             title = "Device Admin Belum Aktif",
             message = "HP anak ini belum mengaktifkan izin Device Admin, jadi " +
                     "Kunci Layar tidak akan berfungsi penuh. Minta anak buka " +
-                    "Dashboard-nya dan aktifkan semua status keamanan dulu " +
+                    "Dashboard nya dan aktifkan semua status keamanan dulu " +
                     "(termasuk Device Admin) sebelum kamu mengunci layarnya.",
             confirmText = "Mengerti",
             showCancel = false
@@ -512,7 +512,7 @@ class ParentDashboardActivity : BaseActivity() {
         } else {
             binding.cardPermissionWarning.visibility = android.view.View.VISIBLE
             binding.tvPermissionWarningDetail.text =
-                "Belum aktif: ${missing.joinToString(", ")}. Minta anak buka Dashboard-nya dan izinkan semua status keamanan."
+                "Belum aktif: ${missing.joinToString(", ")}. Minta anak buka Dashboard nya dan izinkan semua status keamanan."
         }
     }
 

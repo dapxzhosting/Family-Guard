@@ -302,7 +302,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:layout_marginBottom="8dp"
-                    android:text="Ketuk nama anak untuk kontrol HP-nya"
+                    android:text="Ketuk nama anak untuk kontrol HP nya"
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="12sp" />
                 <com.google.android.material.card.MaterialCardView
@@ -425,7 +425,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:text="Minta anak masukkan kode keluarga di HP-nya supaya muncul di sini"
+                    android:text="Minta anak masukkan kode keluarga di HP nya supaya muncul di sini"
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -451,7 +451,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="Ketuk nama anak di atas untuk mulai kontrol HP-nya"
+                    android:text="Ketuk nama anak di atas untuk mulai kontrol HP nya"
                     android:textColor="@color/dash_text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -796,7 +796,7 @@
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:text="Pantau layar HP anak secara real-time"
+                                    android:text="Pantau layar HP anak secara real time"
                                     android:textColor="@color/dash_text_secondary"
                                     android:textSize="12sp" />
                             </LinearLayout>

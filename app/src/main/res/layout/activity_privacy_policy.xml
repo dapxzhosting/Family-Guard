@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FamilyGuard memerlukan beberapa izin khusus agar fungsi perlindungan berjalan optimal:\n\n• Layanan Aksesibilitas (Accessibility Service): Digunakan untuk mendeteksi aplikasi yang dibuka di perangkat anak dan melakukan pemblokiran sesuai aturan yang ditetapkan orang tua.\n• Lokasi (Location): Digunakan untuk menampilkan posisi real-time anak demi keselamatan keluarga.\n• MediaProjection / Screen Capture: Digunakan untuk fitur pemantauan tampilan layar atas izin pengguna.\n• Pengelola Perangkat (Device Admin): Digunakan untuk mencegah aplikasi dicopot (uninstall) tanpa seizin orang tua."
+                android:text="FamilyGuard memerlukan beberapa izin khusus agar fungsi perlindungan berjalan optimal:\n\n• Layanan Aksesibilitas (Accessibility Service): Digunakan untuk mendeteksi aplikasi yang dibuka di perangkat anak dan melakukan pemblokiran sesuai aturan yang ditetapkan orang tua.\n• Lokasi (Location): Digunakan untuk menampilkan posisi real time anak demi keselamatan keluarga.\n• MediaProjection / Screen Capture: Digunakan untuk fitur pemantauan tampilan layar atas izin pengguna.\n• Pengelola Perangkat (Device Admin): Digunakan untuk mencegah aplikasi dicopot (uninstall) tanpa seizin orang tua."
                 android:textColor="@color/dash_text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"

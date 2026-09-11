@@ -63,7 +63,7 @@ class FamilyCodeActivity : BaseActivity() {
         }
 
         binding.btnShareCode.setOnClickListener {
-            val shareText = "Pakai kode ini untuk menghubungkan HP-mu ke FamilyGuard: $generatedCode"
+            val shareText = "Pakai kode ini untuk menghubungkan HP mu ke FamilyGuard: $generatedCode"
             startActivity(Intent.createChooser(
                 Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
