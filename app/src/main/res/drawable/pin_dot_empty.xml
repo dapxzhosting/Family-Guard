@@ -4,7 +4,7 @@
     <solid android:color="@android:color/transparent" />
     <stroke
         android:width="2dp"
-        android:color="@color/dash_child_primary_soft" />
+        android:color="#80FFFFFF" />
     <size
         android:width="18dp"
         android:height="18dp" />
