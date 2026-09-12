@@ -14,150 +14,156 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_header_gradient"
-                android:orientation="vertical"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="28dp"
-                android:paddingBottom="24dp">
+                android:layout_height="wrap_content">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        android:id="@+id/btnParentDashboardBack"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_marginEnd="4dp"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_chevron_right"
-                        android:rotation="180"
-                        android:contentDescription="Kembali"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        app:tint="@color/dash_white" />
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:src="@drawable/ic_shield"
-                        app:tint="@color/dash_white"
-                        android:contentDescription="FamilyGuard" />
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="10dp"
-                        android:text="FamilyGuard"
-                        android:textColor="@color/dash_white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="12dp">
-                        <ImageView
-                            android:id="@+id/btnOpenInbox"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:padding="7dp"
-                            android:src="@drawable/ic_message"
-                            app:tint="@color/dash_white"
-                            android:contentDescription="Pesan Masuk"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:background="?attr/selectableItemBackgroundBorderless" />
-                        <TextView
-                            android:id="@+id/tvInboxBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="top|end"
-                            android:layout_marginTop="2dp"
-                            android:background="@drawable/bg_icon_circle_warning"
-                            android:gravity="center"
-                            android:minWidth="16dp"
-                            android:minHeight="16dp"
-                            android:paddingStart="3dp"
-                            android:paddingEnd="3dp"
-                            android:text="1"
-                            android:textColor="@color/dash_white"
-                            android:textSize="9sp"
-                            android:textStyle="bold"
-                            android:visibility="gone" />
-                    </FrameLayout>
+                    android:background="@drawable/bg_header_gradient"
+                    android:orientation="vertical"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="28dp"
+                    android:paddingBottom="24dp">
                     <LinearLayout
-                        android:id="@+id/chipHeaderStatus"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:background="@drawable/bg_family_code_chip"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp">
-                        <View
-                            android:id="@+id/dotHeaderStatus"
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@drawable/dot_offline" />
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:id="@+id/btnParentDashboardBack"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="4dp"
+                            android:padding="6dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:rotation="180"
+                            android:contentDescription="Kembali"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            app:tint="@color/dash_white" />
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_shield"
+                            app:tint="@color/dash_white"
+                            android:contentDescription="FamilyGuard" />
                         <TextView
-                            android:id="@+id/tvHeaderStatus"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="FamilyGuard"
+                            android:textColor="@color/dash_white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <LinearLayout
+                            android:id="@+id/chipHeaderStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="Memuat"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:background="@drawable/bg_family_code_chip"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <View
+                                android:id="@+id/dotHeaderStatus"
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/dot_offline" />
+                            <TextView
+                                android:id="@+id/tvHeaderStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="Memuat"
+                                android:textColor="@color/dash_white"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvFamilyName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text=""
+                        android:visibility="gone"
+                        android:textColor="@color/dash_primary_text_soft"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="KODE KELUARGA"
+                        android:textColor="@color/dash_primary_text_muted"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.15"
+                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_family_code_chip"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+                        <TextView
+                            android:id="@+id/tvFamilyCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="---"
                             android:textColor="@color/dash_white"
-                            android:textSize="11sp"
+                            android:textSize="17sp"
+                            android:fontFamily="sans-serif"
+                            android:letterSpacing="0.08"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
-                <TextView
-                    android:id="@+id/tvFamilyName"
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text=""
-                    android:visibility="gone"
-                    android:textColor="@color/dash_primary_text_soft"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:text="KODE KELUARGA"
-                    android:textColor="@color/dash_primary_text_muted"
-                    android:textSize="10sp"
-                    android:letterSpacing="0.15"
-                    android:textStyle="bold" />
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_family_code_chip"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp">
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="14dp">
+                    <ImageView
+                        android:id="@+id/btnOpenInbox"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_family_code_chip"
+                        android:src="@drawable/ic_message"
+                        app:tint="@color/dash_white"
+                        android:contentDescription="Pesan Masuk"
+                        android:clickable="true"
+                        android:focusable="true" />
                     <TextView
-                        android:id="@+id/tvFamilyCode"
+                        android:id="@+id/tvInboxBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="---"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="-2dp"
+                        android:layout_marginEnd="-2dp"
+                        android:background="@drawable/bg_icon_circle_warning"
+                        android:gravity="center"
+                        android:minWidth="16dp"
+                        android:minHeight="16dp"
+                        android:paddingStart="3dp"
+                        android:paddingEnd="3dp"
+                        android:text="1"
                         android:textColor="@color/dash_white"
-                        android:textSize="17sp"
-                        android:fontFamily="sans-serif"
-                        android:letterSpacing="0.08"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </FrameLayout>
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardChildLeftNotice"
                 android:layout_width="match_parent"
