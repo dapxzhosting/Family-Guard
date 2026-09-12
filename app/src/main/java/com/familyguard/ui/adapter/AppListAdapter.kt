@@ -41,7 +41,6 @@ class AppListAdapter(
 
             binding.ivAppIcon.setImageDrawable(icon)
             binding.tvAppName.text = app.appName
-            binding.tvPackageName.text = app.packageName
 
             binding.switchLock.setOnCheckedChangeListener(null)
             binding.switchNotif.setOnCheckedChangeListener(null)
@@ -69,4 +68,3 @@ class AppListAdapter(
                     old.iconBase64 == new.iconBase64
     }
 }
-

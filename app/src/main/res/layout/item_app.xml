@@ -30,13 +30,6 @@
                 android:textColor="@color/dash_text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-            <TextView
-                android:id="@+id/tvPackageName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:textColor="@color/dash_text_muted"
-                android:textSize="11sp" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
