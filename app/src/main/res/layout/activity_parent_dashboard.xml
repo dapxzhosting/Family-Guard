@@ -59,7 +59,7 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp">
+                        android:layout_marginEnd="12dp">
                         <ImageView
                             android:id="@+id/btnOpenInbox"
                             android:layout_width="36dp"

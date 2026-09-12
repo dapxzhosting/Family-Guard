@@ -666,11 +666,9 @@ class ParentDashboardActivity : BaseActivity() {
         }
 
         children.forEach { device ->
-            val childName = device.userName?.takeIf { it.isNotBlank() }
-                ?: "HP Anak (${device.deviceId.take(6)})"
             val status = if (device.online) "Online" else "Offline"
             val lastSeen = if (!device.online) " · terakhir ${sdf.format(Date(device.lastSeen))}" else ""
-            sb.appendLine("$childName · $status$lastSeen")
+            sb.appendLine("$status$lastSeen")
         }
         binding.tvDeviceStatus.text = sb.toString().trim()
         setControlsEnabled(true)
