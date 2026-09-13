@@ -266,8 +266,16 @@ class ParentDashboardActivity : BaseActivity() {
 
     private fun setupMap() {
         binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
-        binding.mapView.setMultiTouchControls(true)
+        binding.mapView.setMultiTouchControls(false)
         binding.mapView.controller.setZoom(15.0)
+
+        // Nonaktifkan gesture geser/zoom di preview map ini biar gak "nyolong" gesture
+        // scroll dari ScrollView pas parent lagi discroll. Buat lihat & interaksi peta
+        // penuh, tetap lewat tombol "Lihat Peta Full Layar" (btnOpenMap) di bawahnya.
+        binding.mapView.zoomController.setVisibility(
+            org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER
+        )
+        binding.mapView.setOnTouchListener { _, _ -> true }
 
         binding.btnOpenMap.setOnClickListener {
             startActivity(android.content.Intent(this, LocationMapActivity::class.java))
