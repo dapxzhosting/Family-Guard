@@ -1,123 +1,349 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/dash_bg">
-    <RelativeLayout
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/dash_surface"
-        android:elevation="4dp"
-        android:paddingHorizontal="16dp">
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_header_gradient"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp">
         <ImageButton
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_chevron_right"
             android:rotation="180"
+            app:tint="@color/dash_white"
             android:contentDescription="Kembali" />
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Kebijakan &amp; Ketentuan"
-            android:textColor="@color/dash_text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kebijakan &amp; Ketentuan"
+                android:textColor="@color/dash_white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Terakhir diperbarui: 28 Agustus 2026"
+                android:textColor="@color/dash_primary_text_soft"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="20dp">
+        android:clipToPadding="false"
+        android:padding="16dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Kebijakan Privasi &amp; Syarat Layanan"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Terakhir diperbarui: 28 Agustus 2026"
-                android:textColor="@color/dash_text_muted"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="Dengan menggunakan FamilyGuard, Anda menyetujui hal-hal berikut ini."
+                android:textColor="@color/dash_text_secondary"
                 android:textSize="13sp"
-                android:layout_marginBottom="24dp" />
-            <TextView
+                android:lineSpacingExtra="2dp" />
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. Pendahuluan"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="@drawable/bg_icon_circle_info"
+                            android:gravity="center"
+                            android:text="1"
+                            android:textColor="@color/dash_info"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Pendahuluan"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Selamat datang di FamilyGuard. Aplikasi ini dirancang khusus untuk membantu orang tua dalam mendampingi dan melindungi aktivitas digital anak. Dengan menggunakan aplikasi ini, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Selamat datang di FamilyGuard. Aplikasi ini dirancang khusus untuk membantu orang tua dalam mendampingi dan melindungi aktivitas digital anak. Dengan menggunakan aplikasi ini, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="@drawable/bg_icon_circle_warning"
+                            android:gravity="center"
+                            android:text="2"
+                            android:textColor="@color/dash_warning"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Penggunaan Izin Khusus &amp; Sensitif"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:text="FamilyGuard memerlukan beberapa izin khusus agar fungsi perlindungan berjalan optimal:"
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginTop="2dp"
+                            android:src="@drawable/ic_notif_on"
+                            app:tint="@color/dash_warning" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="Layanan Aksesibilitas (Accessibility Service): Digunakan untuk mendeteksi aplikasi yang dibuka di perangkat anak dan melakukan pemblokiran sesuai aturan yang ditetapkan orang tua."
+                            android:textColor="@color/dash_text_secondary"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginTop="2dp"
+                            android:src="@drawable/ic_pin_location"
+                            app:tint="@color/dash_warning" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="Lokasi (Location): Digunakan untuk menampilkan posisi real time anak demi keselamatan keluarga."
+                            android:textColor="@color/dash_text_secondary"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginTop="2dp"
+                            android:src="@drawable/ic_eye_off"
+                            app:tint="@color/dash_warning" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="MediaProjection / Screen Capture: Digunakan untuk fitur pemantauan tampilan layar atas izin pengguna."
+                            android:textColor="@color/dash_text_secondary"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginTop="2dp"
+                            android:src="@drawable/ic_shield"
+                            app:tint="@color/dash_warning" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="Pengelola Perangkat (Device Admin): Digunakan untuk mencegah aplikasi dicopot (uninstall) tanpa seizin orang tua."
+                            android:textColor="@color/dash_text_secondary"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2. Penggunaan Izin Khusus &amp; Sensitif"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="@drawable/bg_member_avatar_child"
+                            android:gravity="center"
+                            android:text="3"
+                            android:textColor="@color/dash_child_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Keamanan &amp; Kerahasiaan Data"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Kami sangat menjaga privasi keluarga Anda. Data lokasi dan aktivitas dienkripsi dan hanya disinkronkan ke akun orang tua yang terhubung melalui kode keluarga unik. Data Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga untuk kepentingan iklan."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FamilyGuard memerlukan beberapa izin khusus agar fungsi perlindungan berjalan optimal:\n\n• Layanan Aksesibilitas (Accessibility Service): Digunakan untuk mendeteksi aplikasi yang dibuka di perangkat anak dan melakukan pemblokiran sesuai aturan yang ditetapkan orang tua.\n• Lokasi (Location): Digunakan untuk menampilkan posisi real time anak demi keselamatan keluarga.\n• MediaProjection / Screen Capture: Digunakan untuk fitur pemantauan tampilan layar atas izin pengguna.\n• Pengelola Perangkat (Device Admin): Digunakan untuk mencegah aplikasi dicopot (uninstall) tanpa seizin orang tua."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="3. Keamanan &amp; Kerahasiaan Data"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Kami sangat menjaga privasi keluarga Anda. Data lokasi dan aktivitas dienkripsi dan hanya disinkronkan ke akun orang tua yang terhubung melalui kode keluarga unik. Data Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga untuk kepentingan iklan."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="4. Syarat &amp; Ketentuan Penggunaan"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Aplikasi ini wajib diinstal atas sepengetahuan dan persetujuan wali/orang tua dan anak. Penggunaan aplikasi untuk memantau perangkat individu dewasa tanpa izin eksplisit adalah pelanggaran hukum dan syarat penggunaan."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="8dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="@drawable/bg_icon_circle_danger"
+                            android:gravity="center"
+                            android:text="4"
+                            android:textColor="@color/dash_danger"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Syarat &amp; Ketentuan Penggunaan"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Aplikasi ini wajib diinstal atas sepengetahuan dan persetujuan wali/orang tua dan anak. Penggunaan aplikasi untuk memantau perangkat individu dewasa tanpa izin eksplisit adalah pelanggaran hukum dan syarat penggunaan."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </ScrollView>
+
     <LinearLayout
         android:id="@+id/bottomActionContainer"
         android:layout_width="match_parent"
@@ -129,10 +355,13 @@
         <Button
             android:id="@+id/btnAccept"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="52dp"
+            android:backgroundTint="@color/dash_primary"
             android:text="Saya Mengerti &amp; Setuju"
             android:textAllCaps="false"
+            android:textColor="@color/dash_white"
             android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 </LinearLayout>

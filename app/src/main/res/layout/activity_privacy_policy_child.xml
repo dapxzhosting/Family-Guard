@@ -1,152 +1,321 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/dash_bg">
-    <RelativeLayout
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/dash_surface"
-        android:elevation="4dp"
-        android:paddingHorizontal="16dp">
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_child_hero"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp">
         <ImageButton
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_chevron_right"
             android:rotation="180"
+            app:tint="@color/dash_white"
             android:contentDescription="Kembali" />
-        <TextView
-            android:fontFamily="sans-serif"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Kebijakan &amp; Ketentuan"
-            android:textColor="@color/dash_text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:orientation="vertical">
+            <TextView
+                android:fontFamily="sans-serif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kebijakan Privasi buat Kamu"
+                android:textColor="@color/dash_white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:fontFamily="sans-serif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Terakhir diperbarui: 28 Agustus 2026"
+                android:textColor="@color/dash_white"
+                android:alpha="0.85"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="20dp">
+        android:clipToPadding="false"
+        android:padding="16dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <TextView
-                android:fontFamily="sans-serif"
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Kebijakan Privasi buat Kamu"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_shield"
+                                app:tint="@color/dash_white" />
+                        </FrameLayout>
+                        <TextView
+                            android:fontFamily="sans-serif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Apa itu FamilyGuard?"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:fontFamily="sans-serif"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="FamilyGuard adalah aplikasi yang dipasang orang tua atau wali kamu di HP ini. Tujuannya bukan untuk menghukum atau mengintip diam diam, tapi untuk membantu menjaga kamu tetap aman saat menggunakan HP dan internet."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Terakhir diperbarui: 28 Agustus 2026"
-                android:textColor="@color/dash_text_muted"
-                android:textSize="13sp"
-                android:layout_marginBottom="24dp" />
-            <TextView
-                android:fontFamily="sans-serif"
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_eye_off"
+                                app:tint="@color/dash_white" />
+                        </FrameLayout>
+                        <TextView
+                            android:fontFamily="sans-serif"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="Apa yang Bisa Dilihat Orang Tua?"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:fontFamily="sans-serif"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Supaya kamu tidak kaget, ini hal hal yang bisa dilihat orang tua kamu lewat aplikasi ini:\n\n• Lokasi kamu, supaya mereka tahu kamu aman.\n• Aplikasi apa saja yang kamu buka di HP ini.\n• Berapa lama kamu memakai tiap aplikasi (screen time).\n• Tampilan layar HP kamu, HANYA kalau fitur ini diaktifkan oleh orang tua.\n\nSemua ini hanya bisa dilihat oleh orang tua/wali yang terhubung ke akun keluarga kamu, bukan orang lain."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. Apa itu FamilyGuard?"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_info"
+                                app:tint="@color/dash_white" />
+                        </FrameLayout>
+                        <TextView
+                            android:fontFamily="sans-serif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Kenapa Ini Penting?"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:fontFamily="sans-serif"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Internet itu luas dan kadang ada hal hal yang belum cocok untuk usia kamu. FamilyGuard membantu orang tua mendampingi kamu, bukan untuk membatasi kamu tanpa alasan. Kalau ada aturan yang menurut kamu kurang pas, bicarakan langsung dengan orang tua kamu ya."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FamilyGuard adalah aplikasi yang dipasang orang tua atau wali kamu di HP ini. Tujuannya bukan untuk menghukum atau mengintip diam diam, tapi untuk membantu menjaga kamu tetap aman saat menggunakan HP dan internet."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:fontFamily="sans-serif"
+                android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_lock"
+                                app:tint="@color/dash_white" />
+                        </FrameLayout>
+                        <TextView
+                            android:fontFamily="sans-serif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Data Kamu Aman"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:fontFamily="sans-serif"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Data kamu (lokasi, aktivitas aplikasi, dll) dienkripsi dan hanya tersambung ke akun keluarga kamu lewat kode keluarga. Data ini tidak dijual, tidak dibagikan ke orang asing, dan tidak dipakai untuk iklan."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2. Apa yang Bisa Dilihat Orang Tua?"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Supaya kamu tidak kaget, ini hal hal yang bisa dilihat orang tua kamu lewat aplikasi ini:\n\n• Lokasi kamu, supaya mereka tahu kamu aman.\n• Aplikasi apa saja yang kamu buka di HP ini.\n• Berapa lama kamu memakai tiap aplikasi (screen time).\n• Tampilan layar HP kamu, HANYA kalau fitur ini diaktifkan oleh orang tua.\n\nSemua ini hanya bisa dilihat oleh orang tua/wali yang terhubung ke akun keluarga kamu, bukan orang lain."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="3. Kenapa Ini Penting?"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Internet itu luas dan kadang ada hal hal yang belum cocok untuk usia kamu. FamilyGuard membantu orang tua mendampingi kamu, bukan untuk membatasi kamu tanpa alasan. Kalau ada aturan yang menurut kamu kurang pas, bicarakan langsung dengan orang tua kamu ya."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="4. Data Kamu Aman"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Data kamu (lokasi, aktivitas aplikasi, dll) dienkripsi dan hanya tersambung ke akun keluarga kamu lewat kode keluarga. Data ini tidak dijual, tidak dibagikan ke orang asing, dan tidak dipakai untuk iklan."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="20dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="5. Hak Kamu"
-                android:textColor="@color/dash_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:fontFamily="sans-serif"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Kamu berhak tahu aplikasi ini terpasang di HP kamu (dan sekarang kamu sudah tahu). Kalau kamu punya pertanyaan atau merasa tidak nyaman dengan pengaturan yang ada, kamu boleh dan sebaiknya membicarakannya langsung dengan orang tua atau wali kamu."
-                android:textColor="@color/dash_text_secondary"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="8dp"
+                app:cardBackgroundColor="@color/dash_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_member_avatar_child">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_role_child"
+                                app:tint="@color/dash_white" />
+                        </FrameLayout>
+                        <TextView
+                            android:fontFamily="sans-serif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Hak Kamu"
+                            android:textColor="@color/dash_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:fontFamily="sans-serif"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Kamu berhak tahu aplikasi ini terpasang di HP kamu (dan sekarang kamu sudah tahu). Kalau kamu punya pertanyaan atau merasa tidak nyaman dengan pengaturan yang ada, kamu boleh dan sebaiknya membicarakannya langsung dengan orang tua atau wali kamu."
+                        android:textColor="@color/dash_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </ScrollView>
+
     <LinearLayout
         android:id="@+id/bottomActionContainer"
         android:layout_width="match_parent"
@@ -159,11 +328,13 @@
             android:fontFamily="sans-serif"
             android:id="@+id/btnAccept"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="52dp"
             android:text="Aku Mengerti"
             android:textAllCaps="false"
+            android:textColor="@color/dash_white"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/dash_child_primary" />
+            android:backgroundTint="@color/dash_child_primary"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 </LinearLayout>
