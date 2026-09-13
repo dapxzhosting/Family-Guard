@@ -32,6 +32,7 @@
                     android:layout_height="52dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_family"
+                    app:tint="@color/dash_white"
                     android:contentDescription="FamilyGuard" />
             </FrameLayout>
 
