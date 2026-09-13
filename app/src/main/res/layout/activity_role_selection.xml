@@ -196,7 +196,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
-                android:text="Pilihan ini tidak bisa diubah nanti tanpa reset aplikasi"
+                android:text="Pilihan ini masih bisa diubah nanti lewat menu &quot;Reset Role&quot;"
                 android:textColor="@color/dash_warning_text_soft"
                 android:textSize="12sp"
                 android:lineSpacingExtra="2dp" />
