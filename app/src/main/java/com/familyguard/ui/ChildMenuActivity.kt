@@ -67,13 +67,6 @@ class ChildMenuActivity : BaseActivity() {
             }
         }
 
-        binding.btnPrivacyPolicy.setOnClickListener {
-            val intent = Intent(this, PrivacyPolicyActivity::class.java).apply {
-                putExtra(PrivacyPolicyActivity.EXTRA_IS_FROM_SETTINGS, true)
-            }
-            startActivity(intent)
-        }
-
         binding.btnMenuResetRole.setOnClickListener {
             AccountActions.resetRole(this)
         }
@@ -134,4 +127,3 @@ class ChildMenuActivity : BaseActivity() {
         }
     }
 }
-

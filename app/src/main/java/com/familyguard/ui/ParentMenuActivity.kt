@@ -40,14 +40,6 @@ class ParentMenuActivity : BaseActivity() {
             overridePendingTransition(R.anim.slide_up_in, R.anim.stay_dim)
         }
 
-        binding.btnPrivacyPolicy.setOnClickListener {
-            val intent = Intent(this, PrivacyPolicyActivity::class.java).apply {
-
-                putExtra(PrivacyPolicyActivity.EXTRA_IS_FROM_SETTINGS, true)
-            }
-            startActivity(intent)
-        }
-
         binding.btnMenuDeleteFamily.setOnClickListener {
             if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {
                 Toast.makeText(this, "Belum ada keluarga untuk dihapus", Toast.LENGTH_SHORT).show()
@@ -141,4 +133,3 @@ class ParentMenuActivity : BaseActivity() {
         }
     }
 }
-

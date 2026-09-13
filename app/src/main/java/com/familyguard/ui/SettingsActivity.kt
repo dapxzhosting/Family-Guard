@@ -28,14 +28,22 @@ class SettingsActivity : BaseActivity() {
             val roleColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_child_primary)
             binding.circleSettingsName.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
             binding.circleSettingsEmail.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.circleSettingsRole.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
             binding.ivSettingsPrivacyIcon.imageTintList =
                 androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_child_primary)
         } else {
             val roleColor = androidx.core.content.ContextCompat.getColor(this, R.color.dash_primary)
             binding.circleSettingsName.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
             binding.circleSettingsEmail.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
+            binding.circleSettingsRole.backgroundTintList = android.content.res.ColorStateList.valueOf(roleColor)
             binding.ivSettingsPrivacyIcon.imageTintList =
                 androidx.core.content.ContextCompat.getColorStateList(this, R.color.dash_primary)
+        }
+
+        binding.tvSettingsRole.text = if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_CHILD) {
+            "Anak"
+        } else {
+            "Orang Tua"
         }
 
         refreshName()
@@ -177,4 +185,3 @@ class SettingsActivity : BaseActivity() {
         overridePendingTransition(com.familyguard.R.anim.stay_undim, com.familyguard.R.anim.slide_down_out)
     }
 }
-

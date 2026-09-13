@@ -359,18 +359,6 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="20dp"
                 android:background="@color/dash_divider" />
-            <Button
-                android:id="@+id/btnPrivacyPolicy"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="14dp"
-                android:text="Kebijakan Privasi &amp; Syarat"
-                android:textAllCaps="false"
-                android:textColor="@color/dash_white"
-                android:backgroundTint="@color/dash_text_secondary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                app:cornerRadius="8dp" />
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMenuResetRole"
                 android:layout_width="match_parent"
