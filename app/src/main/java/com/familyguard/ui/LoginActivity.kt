@@ -51,6 +51,8 @@ class LoginActivity : BaseActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
+        binding.btnGoogleSignIn.setSize(com.google.android.gms.common.SignInButton.SIZE_WIDE)
+
         binding.btnGoogleSignIn.setOnClickListener {
             binding.progressBar.visibility = android.view.View.VISIBLE
             signInLauncher.launch(googleSignInClient.signInIntent)
@@ -95,4 +97,3 @@ class LoginActivity : BaseActivity() {
         }
     }
 }
-
