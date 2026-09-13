@@ -205,10 +205,13 @@ class ParentDashboardActivity : BaseActivity() {
     }
 
     private fun setupFamilyNameHeader(code: String) {
+        binding.rowFamilyName.setOnClickListener { showRenameFamilyDialog(code) }
+
         val localFamilyName = AppLockPrefs.getFamilyName(this)
         if (!localFamilyName.isNullOrBlank()) {
             binding.tvFamilyName.text = "Keluarga $localFamilyName"
             binding.tvFamilyName.visibility = android.view.View.VISIBLE
+            binding.ivEditFamilyName.visibility = android.view.View.VISIBLE
             return
         }
 
@@ -221,10 +224,45 @@ class ParentDashboardActivity : BaseActivity() {
                 if (!remoteFamilyName.isNullOrBlank()) {
                     binding.tvFamilyName.text = "Keluarga $remoteFamilyName"
                     binding.tvFamilyName.visibility = android.view.View.VISIBLE
+                    binding.ivEditFamilyName.visibility = android.view.View.VISIBLE
 
                     AppLockPrefs.saveFamilyName(this, remoteFamilyName)
                 }
             }
+    }
+
+    private fun showRenameFamilyDialog(code: String) {
+        if (code == "—") {
+            toast("Kode keluarga belum tersedia")
+            return
+        }
+        val currentName = AppLockPrefs.getFamilyName(this).orEmpty()
+        showCenterActionDialog(
+            iconRes = R.drawable.ic_edit,
+            accentColor = R.color.dash_primary,
+            title = "Ubah Nama Keluarga",
+            message = "Nama ini akan terlihat oleh semua anggota keluarga.",
+            inputHint = "Nama keluarga",
+            inputPrefill = currentName,
+            maxLength = 30,
+            confirmText = "Simpan"
+        ) { newName ->
+            val trimmed = newName?.trim().orEmpty()
+            if (trimmed.isEmpty()) {
+                toast("Nama keluarga tidak boleh kosong")
+                return@showCenterActionDialog
+            }
+            AppLockPrefs.saveFamilyName(this, trimmed)
+            binding.tvFamilyName.text = "Keluarga $trimmed"
+            binding.tvFamilyName.visibility = android.view.View.VISIBLE
+            binding.ivEditFamilyName.visibility = android.view.View.VISIBLE
+
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("families").child(code).child("familyName")
+                .setValue(trimmed)
+                .addOnSuccessListener { toast("Nama keluarga diperbarui") }
+                .addOnFailureListener { toast("Gagal menyimpan, coba lagi") }
+        }
     }
 
     private fun setupMap() {
@@ -688,6 +726,7 @@ class ParentDashboardActivity : BaseActivity() {
         title: String,
         message: String?,
         inputHint: String? = null,
+        inputPrefill: String? = null,
         inputType: Int? = null,
         maxLength: Int? = null,
         confirmText: String,
@@ -722,6 +761,10 @@ class ParentDashboardActivity : BaseActivity() {
             tilInput.hint = inputHint
             inputType?.let { etInput.inputType = it }
             maxLength?.let { etInput.filters = arrayOf(android.text.InputFilter.LengthFilter(it)) }
+            inputPrefill?.let {
+                etInput.setText(it)
+                etInput.setSelection(it.length)
+            }
         }
 
         btnConfirm.text = confirmText
@@ -767,4 +810,3 @@ class ParentDashboardActivity : BaseActivity() {
         approvalRequestsListener?.let { FamilyLink.removeApprovalRequestsListener(this, it) }
     }
 }
-

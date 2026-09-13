@@ -34,14 +34,14 @@
                 app:tint="@color/dash_white" />
 
             <FrameLayout
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_login_icon_circle">
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_header_icon_circle">
                 <ImageView
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_home"
                     app:tint="@color/dash_white"

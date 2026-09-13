@@ -86,16 +86,37 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
-                    <TextView
-                        android:id="@+id/tvFamilyName"
+                    <LinearLayout
+                        android:id="@+id/rowFamilyName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text=""
-                        android:visibility="gone"
-                        android:textColor="@color/dash_primary_text_soft"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp">
+                        <TextView
+                            android:id="@+id/tvFamilyName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:visibility="gone"
+                            android:textColor="@color/dash_primary_text_soft"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <ImageView
+                            android:id="@+id/ivEditFamilyName"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_marginStart="6dp"
+                            android:src="@drawable/ic_edit"
+                            app:tint="@color/dash_primary_text_muted"
+                            android:visibility="gone"
+                            android:contentDescription="Ubah nama keluarga" />
+                    </LinearLayout>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
