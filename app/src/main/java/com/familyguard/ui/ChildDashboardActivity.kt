@@ -179,7 +179,6 @@ class ChildDashboardActivity : BaseActivity() {
         val localFamilyName = AppLockPrefs.getFamilyName(this)
         if (!localFamilyName.isNullOrBlank()) {
             binding.tvFamilyName.text = "Keluarga: $localFamilyName"
-            return
         }
 
         if (code == "—") return
@@ -188,7 +187,7 @@ class ChildDashboardActivity : BaseActivity() {
             .get()
             .addOnSuccessListener { snapshot ->
                 val remoteFamilyName = snapshot.getValue(String::class.java)
-                if (!remoteFamilyName.isNullOrBlank()) {
+                if (!remoteFamilyName.isNullOrBlank() && remoteFamilyName != localFamilyName) {
                     binding.tvFamilyName.text = "Keluarga: $remoteFamilyName"
                     AppLockPrefs.saveFamilyName(this, remoteFamilyName)
                 }
@@ -382,4 +381,3 @@ class ChildDashboardActivity : BaseActivity() {
     private fun formatCode(code: String) =
         if (code.length == 6) "${code.take(3)}-${code.drop(3)}" else code
 }
-

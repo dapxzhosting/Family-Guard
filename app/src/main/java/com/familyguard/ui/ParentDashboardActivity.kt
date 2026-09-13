@@ -212,7 +212,6 @@ class ParentDashboardActivity : BaseActivity() {
             binding.tvFamilyName.text = "Keluarga $localFamilyName"
             binding.tvFamilyName.visibility = android.view.View.VISIBLE
             binding.ivEditFamilyName.visibility = android.view.View.VISIBLE
-            return
         }
 
         if (code == "—") return
@@ -221,7 +220,7 @@ class ParentDashboardActivity : BaseActivity() {
             .get()
             .addOnSuccessListener { snapshot ->
                 val remoteFamilyName = snapshot.getValue(String::class.java)
-                if (!remoteFamilyName.isNullOrBlank()) {
+                if (!remoteFamilyName.isNullOrBlank() && remoteFamilyName != localFamilyName) {
                     binding.tvFamilyName.text = "Keluarga $remoteFamilyName"
                     binding.tvFamilyName.visibility = android.view.View.VISIBLE
                     binding.ivEditFamilyName.visibility = android.view.View.VISIBLE
