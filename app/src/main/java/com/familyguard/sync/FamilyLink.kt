@@ -18,6 +18,23 @@ object FamilyLink {
 
     private fun userRef(uid: String) = db.child("users").child(uid)
 
+    /**
+     * Reads families/$code/kickLog/$uid for the current user. This path stays
+     * readable (per rules) even after membership is revoked, so it's used to
+     * tell "I was kicked" apart from "the family was deleted" once every
+     * other read under families/$code starts failing with permission denied.
+     */
+    private fun wasKicked(code: String, onResult: (Boolean) -> Unit) {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            onResult(false)
+            return
+        }
+        familyRef(code).child("kickLog").child(uid).get()
+            .addOnSuccessListener { snap -> onResult(snap.exists()) }
+            .addOnFailureListener { onResult(false) }
+    }
+
     fun listenFamilyDeletion(context: Context, onDeleted: () -> Unit) {
         val code = AppLockPrefs.getFamilyCode(context)
         if (code.isNullOrBlank()) return
@@ -34,9 +51,13 @@ object FamilyLink {
                 // Once our own membership is removed (kicked, or family deleted),
                 // reads to this path are denied entirely instead of returning an
                 // empty snapshot, so this fires PERMISSION_DENIED instead of
-                // onDataChange. Treat that the same as "family gone".
+                // onDataChange. Only treat it as "family deleted" if we weren't
+                // specifically kicked - otherwise listenForKick's callback is
+                // the correct one to fire, and firing both races the UI.
                 if (error.code == DatabaseError.PERMISSION_DENIED) {
-                    onDeleted()
+                    wasKicked(code) { kicked ->
+                        if (!kicked) onDeleted()
+                    }
                 }
             }
         }
@@ -286,8 +307,21 @@ object FamilyLink {
                 deviceRef(code, targetDeviceId).removeValue()
                     .addOnCompleteListener {
                         if (targetUid != null) {
-                            familyRef(code).child("members").child(targetUid).removeValue()
-                                .addOnCompleteListener { onComplete?.invoke() }
+                            // Written BEFORE the membership itself is removed
+                            // below, while we still have write access as a
+                            // member. This stays readable by the kicked uid
+                            // even after they lose access to the rest of the
+                            // family (see rules: kickLog/$uid grants read to
+                            // auth.uid === $uid regardless of membership), so
+                            // the kicked device can tell "I was kicked" apart
+                            // from "the family was deleted" once every other
+                            // read starts failing with permission denied.
+                            familyRef(code).child("kickLog").child(targetUid)
+                                .setValue(System.currentTimeMillis())
+                                .addOnCompleteListener {
+                                    familyRef(code).child("members").child(targetUid).removeValue()
+                                        .addOnCompleteListener { onComplete?.invoke() }
+                                }
                         } else {
                             onComplete?.invoke()
                         }
@@ -319,14 +353,13 @@ object FamilyLink {
             }
             override fun onCancelled(error: DatabaseError) {
                 // Same as above: once membership is removed the read on this
-                // device path is denied outright, so this is how a kick (or a
-                // deleted family) actually surfaces now. We no longer bother
-                // distinguishing "kicked" from "family deleted" here since both
-                // mean the same thing for this device: onKicked() clears local
-                // state either way, and the deletion-specific listener will
-                // also fire independently for its own cleanup.
+                // device path is denied outright, so this is how a kick
+                // actually surfaces now. Confirm via kickLog before firing,
+                // so a genuine family deletion doesn't get reported as a kick.
                 if (error.code == DatabaseError.PERMISSION_DENIED) {
-                    onKicked()
+                    wasKicked(code) { kicked ->
+                        if (kicked) onKicked()
+                    }
                 }
             }
         }
