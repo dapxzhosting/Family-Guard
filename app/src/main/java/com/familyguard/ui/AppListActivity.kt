@@ -198,7 +198,9 @@ class AppListActivity : BaseActivity() {
                     binding.tvAppListEmpty.visibility = if (appListData.isEmpty()) View.VISIBLE else View.GONE
                 }
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                android.util.Log.w("AppListActivity", "Firebase listener cancelled: ${error.message}")
+            }
         }
         deviceRef.addValueEventListener(deviceListener!!)
     }
@@ -212,7 +214,9 @@ class AppListActivity : BaseActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 childHasPin = snapshot.getValue(Boolean::class.java) ?: false
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                android.util.Log.w("AppListActivity", "Firebase listener cancelled: ${error.message}")
+            }
         }
         pinRef.addValueEventListener(pinStatusListener!!)
     }
@@ -298,4 +302,3 @@ class AppListActivity : BaseActivity() {
         const val EXTRA_CHILD_NAME = "extra_child_name"
     }
 }
-

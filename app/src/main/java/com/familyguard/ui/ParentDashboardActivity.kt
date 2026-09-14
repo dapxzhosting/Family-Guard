@@ -616,7 +616,9 @@ class ParentDashboardActivity : BaseActivity() {
 
                 updateCurrentAppUI(node.child("currentApp"), appListData)
             }
-            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                android.util.Log.w("ParentDashboard", "Firebase listener cancelled: ${error.message}")
+            }
         }
         deviceRef.addValueEventListener(appListListener!!)
     }

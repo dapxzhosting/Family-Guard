@@ -1,6 +1,7 @@
 package com.familyguard.sync
 
 import android.content.Context
+import android.util.Log
 import com.familyguard.admin.LockManager
 import com.familyguard.utils.AppLockPrefs
 import com.google.firebase.database.DataSnapshot
@@ -10,6 +11,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 object FamilyLink {
+
+    private const val TAG = "FamilyLink"
 
     private val db = FirebaseDatabase.getInstance().reference
 
@@ -277,7 +280,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         familyRef(code).child("childLeftNotice").addValueEventListener(listener)
@@ -497,7 +500,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         deviceRef(code, targetDeviceId).child("currentApp").addValueEventListener(listener)
@@ -706,7 +709,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         familyRef(code).child("messages").child(ownDeviceId).addValueEventListener(listener)
@@ -795,7 +798,7 @@ object FamilyLink {
                 onChange(list)
             }
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         approvalRequestsRef(code).addValueEventListener(listener)
@@ -819,7 +822,7 @@ object FamilyLink {
                 val durationMinutes = snapshot.child("durationMinutes").getValue(Int::class.java) ?: 15
                 onStatusChange(status, durationMinutes)
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) { Log.w(TAG, "Firebase listener cancelled: ${error.message}") }
         }
         approvalRequestsRef(code).child(requestId).addValueEventListener(listener)
         return listener
@@ -921,7 +924,7 @@ object FamilyLink {
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onChildRemoved(snapshot: DataSnapshot) {}
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) { Log.w(TAG, "Firebase listener cancelled: ${error.message}") }
         }
         ref.addChildEventListener(listener)
         liveControlListener = listener
@@ -1165,7 +1168,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
 
@@ -1214,7 +1217,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         devicesRef(code).addValueEventListener(listener)
@@ -1250,7 +1253,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
         devicesRef(code).addValueEventListener(listener)
@@ -1296,7 +1299,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         }
 
@@ -1311,7 +1314,7 @@ object FamilyLink {
             }
 
             override fun onCancelled(error: DatabaseError) {
-
+                Log.w(TAG, "Firebase listener cancelled: ${error.message}")
             }
         })
 
@@ -1360,7 +1363,7 @@ object FamilyLink {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.getValue(String::class.java)?.let(onOffer)
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) { Log.w(TAG, "Firebase listener cancelled: ${error.message}") }
         }
         webrtcRef(code).child("offer").addValueEventListener(offerListener!!)
     }
@@ -1372,7 +1375,7 @@ object FamilyLink {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.getValue(String::class.java)?.let(onAnswer)
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) { Log.w(TAG, "Firebase listener cancelled: ${error.message}") }
         }
         webrtcRef(code).child("answer").addValueEventListener(answerListener!!)
     }
@@ -1393,7 +1396,7 @@ object FamilyLink {
                     onCandidate(mid, idx, cand)
                 }
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) { Log.w(TAG, "Firebase listener cancelled: ${error.message}") }
         }
         webrtcRef(code).child(node).addValueEventListener(listener)
 

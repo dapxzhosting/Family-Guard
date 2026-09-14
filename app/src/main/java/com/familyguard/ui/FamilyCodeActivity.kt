@@ -123,6 +123,41 @@ class FamilyCodeActivity : BaseActivity() {
     }
 
     private fun commitNewFamilyCode(code: String) {
+        // A parent-generated code is picked randomly from a fairly small
+        // space (32^6 ≈ 1B combos) with no uniqueness check today - a
+        // collision would silently merge two unrelated families onto the
+        // same node, leaking one family's location/messages/screen to the
+        // other. For the parent (creation) path, verify the code isn't
+        // already taken before committing; if it is, generate a fresh one
+        // and ask the user to try again rather than writing into someone
+        // else's family.
+        if (AppLockPrefs.getRole(this) == AppLockPrefs.ROLE_PARENT) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("families").child(code).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        generatedCode = generateCode()
+                        binding.tvFamilyCode.text = formatCode(generatedCode)
+                        Toast.makeText(
+                            this,
+                            "Kode tadi sudah dipakai, kode baru sudah dibuat. Coba lagi.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        proceedWithFamilyCode(code)
+                    }
+                }
+                .addOnFailureListener {
+                    // Can't verify uniqueness right now (offline/etc) - proceed
+                    // anyway rather than blocking setup; collision risk is low.
+                    proceedWithFamilyCode(code)
+                }
+        } else {
+            proceedWithFamilyCode(code)
+        }
+    }
+
+    private fun proceedWithFamilyCode(code: String) {
         AppLockPrefs.saveFamilyCode(this, code)
         FamilyLink.registerDevice(this)
         FamilyLink.saveUserProfile(this)
@@ -194,4 +229,3 @@ class FamilyCodeTextWatcher(
         isEditing = false
     }
 }
-
