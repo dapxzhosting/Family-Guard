@@ -31,7 +31,13 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-
+                // Once our own membership is removed (kicked, or family deleted),
+                // reads to this path are denied entirely instead of returning an
+                // empty snapshot, so this fires PERMISSION_DENIED instead of
+                // onDataChange. Treat that the same as "family gone".
+                if (error.code == DatabaseError.PERMISSION_DENIED) {
+                    onDeleted()
+                }
             }
         }
         familyDeletionListener = listener
@@ -63,9 +69,18 @@ object FamilyLink {
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) onExists() else onGone()
             }
-            .addOnFailureListener {
-
-                onExists()
+            .addOnFailureListener { e ->
+                // A permission-denied failure here means our membership is gone
+                // (kicked or family deleted) - the family may well still exist,
+                // we just can no longer read it. Any other failure (network,
+                // timeout) is treated as inconclusive and we optimistically stay.
+                if (e is com.google.firebase.database.DatabaseException &&
+                    e.message?.contains("Permission denied", ignoreCase = true) == true
+                ) {
+                    onGone()
+                } else {
+                    onExists()
+                }
             }
     }
 
@@ -93,7 +108,12 @@ object FamilyLink {
                 if (!exists) onGone()
             }
             override fun onCancelled(error: DatabaseError) {
-
+                // Same PERMISSION_DENIED-instead-of-empty-snapshot situation as
+                // listenFamilyDeletion above.
+                if (error.code == DatabaseError.PERMISSION_DENIED) {
+                    familyExistsCache = false
+                    onGone()
+                }
             }
         }
         existenceListener = listener
@@ -298,7 +318,16 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-
+                // Same as above: once membership is removed the read on this
+                // device path is denied outright, so this is how a kick (or a
+                // deleted family) actually surfaces now. We no longer bother
+                // distinguishing "kicked" from "family deleted" here since both
+                // mean the same thing for this device: onKicked() clears local
+                // state either way, and the deletion-specific listener will
+                // also fire independently for its own cleanup.
+                if (error.code == DatabaseError.PERMISSION_DENIED) {
+                    onKicked()
+                }
             }
         }
         kickListenerRef = ref

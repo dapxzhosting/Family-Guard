@@ -50,6 +50,9 @@ class GuardService : Service() {
                     com.familyguard.sync.FamilyLink.clearLocalFamilyState(this)
                     stopSelf()
                 }
+                FamilyLink.listenForKick(this) {
+                    handleKicked()
+                }
                 FamilyLink.registerDevice(this)
                 FamilyLink.stopListening(this, force = true)
                 FamilyLink.startListening(this, isGlobal = true) { title, message, fromDeviceId ->
@@ -67,6 +70,16 @@ class GuardService : Service() {
 
     private fun showDeviceLockScreen() {
         LockScreenActivity.requestDeviceLock(this)
+    }
+
+    private fun handleKicked() {
+        showGlobalMessage(
+            "Keluar dari FamilyGuard",
+            "Kamu telah dikeluarkan dari keluarga oleh orang tua.",
+            AppLockPrefs.getDeviceId(this)
+        )
+        FamilyLink.clearLocalFamilyState(this)
+        stopSelf()
     }
 
     private fun startLockWatchdog() {
@@ -115,6 +128,7 @@ class GuardService : Service() {
         super.onDestroy()
         FamilyLink.stopListening(this, force = true)
         FamilyLink.stopLiveControlListening(this)
+        FamilyLink.stopListeningForKick()
         com.familyguard.sync.FamilyLink.stopFamilyExistenceGuard()
         com.familyguard.receiver.ScreenStateReceiver.unregister(this, screenStateReceiver)
         screenStateReceiver = null
