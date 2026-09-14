@@ -520,4 +520,3 @@ class LockScreenActivity : Activity() {
         const val MAX_PIN_LENGTH = 6
     }
 }
-

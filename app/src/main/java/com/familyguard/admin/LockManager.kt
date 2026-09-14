@@ -47,4 +47,3 @@ class LockManager(private val context: Context) {
     companion object {
     }
 }
-

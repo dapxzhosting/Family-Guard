@@ -39,4 +39,3 @@ class PrivacyPolicyActivity : BaseActivity() {
         const val EXTRA_IS_FROM_SETTINGS = "extra_is_from_settings"
     }
 }
-

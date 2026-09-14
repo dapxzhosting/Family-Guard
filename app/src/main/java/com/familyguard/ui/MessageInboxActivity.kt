@@ -84,4 +84,3 @@ class MessageInboxActivity : BaseActivity() {
         messagesListener?.let { FamilyLink.removeMessagesListener(this, myDeviceId, it) }
     }
 }
-

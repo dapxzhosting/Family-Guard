@@ -105,4 +105,3 @@ class FamilyMemberAdapter(
 
     override fun getItemCount(): Int = members.size
 }
-

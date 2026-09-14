@@ -54,4 +54,3 @@ object NetworkStatusHelper {
         return { cm.unregisterNetworkCallback(callback) }
     }
 }
-

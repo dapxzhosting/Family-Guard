@@ -38,4 +38,3 @@ class FamilyNameActivity : BaseActivity() {
         finish()
     }
 }
-

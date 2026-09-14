@@ -67,4 +67,3 @@ class RoleSelectionActivity : BaseActivity() {
         finish()
     }
 }
-

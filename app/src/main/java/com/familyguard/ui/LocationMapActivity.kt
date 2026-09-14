@@ -156,4 +156,3 @@ class LocationMapActivity : BaseActivity() {
         locationListener?.let { FamilyLink.removeLocationObserver(this, it) }
     }
 }
-

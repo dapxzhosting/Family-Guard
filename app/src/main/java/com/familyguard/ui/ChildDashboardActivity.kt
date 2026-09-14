@@ -339,8 +339,6 @@ class ChildDashboardActivity : BaseActivity() {
         }
     }
 
-
-
     override fun onDestroy() {
         super.onDestroy()
         FamilyLink.stopListening(this)

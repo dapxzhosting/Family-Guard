@@ -99,4 +99,3 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun dp(value: Int): Int =
         (value * resources.displayMetrics.density).toInt()
 }
-

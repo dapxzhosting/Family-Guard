@@ -21,12 +21,6 @@ object FamilyLink {
 
     private fun userRef(uid: String) = db.child("users").child(uid)
 
-    /**
-     * Reads families/$code/kickLog/$uid for the current user. This path stays
-     * readable (per rules) even after membership is revoked, so it's used to
-     * tell "I was kicked" apart from "the family was deleted" once every
-     * other read under families/$code starts failing with permission denied.
-     */
     private fun wasKicked(code: String, onResult: (Boolean) -> Unit) {
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
@@ -51,12 +45,7 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-                // Once our own membership is removed (kicked, or family deleted),
-                // reads to this path are denied entirely instead of returning an
-                // empty snapshot, so this fires PERMISSION_DENIED instead of
-                // onDataChange. Only treat it as "family deleted" if we weren't
-                // specifically kicked - otherwise listenForKick's callback is
-                // the correct one to fire, and firing both races the UI.
+
                 if (error.code == DatabaseError.PERMISSION_DENIED) {
                     wasKicked(code) { kicked ->
                         if (!kicked) onDeleted()
@@ -94,10 +83,7 @@ object FamilyLink {
                 if (snapshot.exists()) onExists() else onGone()
             }
             .addOnFailureListener { e ->
-                // A permission-denied failure here means our membership is gone
-                // (kicked or family deleted) - the family may well still exist,
-                // we just can no longer read it. Any other failure (network,
-                // timeout) is treated as inconclusive and we optimistically stay.
+
                 if (e is com.google.firebase.database.DatabaseException &&
                     e.message?.contains("Permission denied", ignoreCase = true) == true
                 ) {
@@ -132,8 +118,7 @@ object FamilyLink {
                 if (!exists) onGone()
             }
             override fun onCancelled(error: DatabaseError) {
-                // Same PERMISSION_DENIED-instead-of-empty-snapshot situation as
-                // listenFamilyDeletion above.
+
                 if (error.code == DatabaseError.PERMISSION_DENIED) {
                     familyExistsCache = false
                     onGone()
@@ -234,9 +219,6 @@ object FamilyLink {
         val id = AppLockPrefs.getDeviceId(context)
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
 
-        // Remove the device entry first; membership (which grants write access
-        // to the rest of the family subtree, including this device node) must
-        // be removed last so this call still has permission while it runs.
         deviceRef(code, id).removeValue()
             .addOnCompleteListener {
                 if (uid != null) {
@@ -310,15 +292,7 @@ object FamilyLink {
                 deviceRef(code, targetDeviceId).removeValue()
                     .addOnCompleteListener {
                         if (targetUid != null) {
-                            // Written BEFORE the membership itself is removed
-                            // below, while we still have write access as a
-                            // member. This stays readable by the kicked uid
-                            // even after they lose access to the rest of the
-                            // family (see rules: kickLog/$uid grants read to
-                            // auth.uid === $uid regardless of membership), so
-                            // the kicked device can tell "I was kicked" apart
-                            // from "the family was deleted" once every other
-                            // read starts failing with permission denied.
+
                             familyRef(code).child("kickLog").child(targetUid)
                                 .setValue(System.currentTimeMillis())
                                 .addOnCompleteListener {
@@ -355,10 +329,7 @@ object FamilyLink {
                 }
             }
             override fun onCancelled(error: DatabaseError) {
-                // Same as above: once membership is removed the read on this
-                // device path is denied outright, so this is how a kick
-                // actually surfaces now. Confirm via kickLog before firing,
-                // so a genuine family deletion doesn't get reported as a kick.
+
                 if (error.code == DatabaseError.PERMISSION_DENIED) {
                     wasKicked(code) { kicked ->
                         if (kicked) onKicked()
@@ -568,11 +539,6 @@ object FamilyLink {
             return
         }
 
-        // IMPORTANT: this must be written before any other write under
-        // families/$code, since the security rules only grant write access
-        // to a family once the caller's uid exists under members/. Firebase
-        // preserves write order on a single connection, so issuing this
-        // first guarantees the membership is applied before the writes below.
         familyRef(code).child("members").child(uid).setValue(true)
             .addOnFailureListener { e ->
 
@@ -885,9 +851,6 @@ object FamilyLink {
     fun sendStopScreenShare(context: Context, targetDeviceId: String) =
         sendCommand(context, "stop_screen_share", emptyMap(), targetDeviceId)
 
-    // --- Jalur cepat khusus kontrol (tap/swipe/back/home/recents/volume/power) ---
-    // Terpisah dari node "commands" umum supaya tidak ikut antre di listener besar,
-    // dan tidak perlu tulis "done" + hapus terpisah (hemat 1 round-trip per perintah).
     private fun liveControlsRef(code: String, deviceId: String) =
         deviceRef(code, deviceId).child("liveControls")
 

@@ -37,10 +37,6 @@ class ChildScreenViewActivity : BaseActivity() {
     private var remoteWidth = 1080
     private var remoteHeight = 2400
 
-    // VideoSink perantara: baca ukuran ASLI tiap frame (termasuk pas HP anak rotate landscape
-    // main game) sebelum diteruskan ke renderer. Tanpa ini, remoteWidth/remoteHeight kepakai
-    // nilai portrait lama terus, makanya kemarin titik tap di mode kontrol jadi meleset waktu
-    // layar anak lagi miring.
     private val remoteFrameSink = object : org.webrtc.VideoSink {
         override fun onFrame(frame: org.webrtc.VideoFrame) {
             val w = frame.rotatedWidth
@@ -107,11 +103,6 @@ class ChildScreenViewActivity : BaseActivity() {
         setupRemoteTouchHandling()
     }
 
-    /**
-     * Toolbar + status bar overlay itu nutupin status bar asli HP anak, bikin susah dikontrol.
-     * Jadi defaultnya disembunyikan otomatis abis beberapa detik supaya area itu kelihatan,
-     * dan bisa dimunculkan lagi kapan saja lewat tombol mata kecil di pojok kanan atas.
-     */
     private fun setupOverlayToggle() {
         binding.btnToggleOverlay.setOnClickListener {
             setOverlayVisible(!overlayVisible)
@@ -121,7 +112,7 @@ class ChildScreenViewActivity : BaseActivity() {
 
     private fun scheduleAutoHideOverlay() {
         overlayHideHandler.removeCallbacks(overlayHideRunnable)
-        // Kalau mode kontrol lagi aktif, tombol-tombol jangan di-auto-hide.
+
         if (controlModeOn) return
         overlayHideHandler.postDelayed(overlayHideRunnable, 3000)
     }
@@ -156,7 +147,7 @@ class ChildScreenViewActivity : BaseActivity() {
                 controlModeOn = false
                 com.familyguard.utils.AnimUtils.slideFadeOut(binding.controlBar, fromTop = false)
                 Toast.makeText(this, "Mode Kontrol nonaktif — hanya melihat", Toast.LENGTH_SHORT).show()
-                // Mode kontrol mati lagi -> nyalakan lagi timer auto-hide seperti biasa.
+
                 if (overlayVisible) scheduleAutoHideOverlay()
             }
         }
@@ -206,7 +197,7 @@ class ChildScreenViewActivity : BaseActivity() {
             com.familyguard.utils.AnimUtils.slideFadeIn(binding.controlBar, fromTop = false)
         }
         Toast.makeText(this, "Mode Kontrol AKTIF — sentuhan akan diteruskan ke HP anak", Toast.LENGTH_SHORT).show()
-        // Mode kontrol aktif -> batalkan auto-hide biar tombol tetap kelihatan.
+
         overlayHideHandler.removeCallbacks(overlayHideRunnable)
     }
 
@@ -217,11 +208,6 @@ class ChildScreenViewActivity : BaseActivity() {
         binding.rendererScreen.setMirror(false)
     }
 
-    /**
-     * Sesuaikan bingkai "emulator" (phoneFrame) supaya rasionya sama persis dengan layar HP anak
-     * saat ini, dan pindahkan kamera/home-indicator ke sisi yang benar kalau posisinya landscape
-     * (mis. lagi main game rotate). Perubahan dianimasikan halus lewat AspectRatioFrameLayout.
-     */
     private fun updatePhoneFrameOrientation(width: Int, height: Int) {
         val ratio = width.toFloat() / height.toFloat()
         binding.phoneFrame.setAspectRatio(ratio)

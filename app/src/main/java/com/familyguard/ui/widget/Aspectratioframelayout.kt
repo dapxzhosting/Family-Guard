@@ -6,20 +6,11 @@ import android.util.AttributeSet
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 
-/**
- * FrameLayout yang menjaga rasio lebar:tinggi tertentu, dibatasi supaya muat di dalam parent-nya
- * (jadi keliatan kayak "bingkai HP" yang di-center di tengah layar, mirip tampilan emulator).
- *
- * Dipakai buat bungkus rendererScreen: begitu HP anak rotate (misal lagi main game),
- * tinggal panggil setAspectRatio() dengan rasio baru dan bingkainya animasi muter/resize halus,
- * bukan lompat tiba-tiba.
- */
 class AspectRatioFrameLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    // Default: rasio HP portrait biasa (9:19.5) sebelum video pertama datang.
     private var aspectRatio: Float = 9f / 19.5f
     private var sizeAnimator: ValueAnimator? = null
 
@@ -47,9 +38,6 @@ class AspectRatioFrameLayout @JvmOverloads constructor(
         }
     }
 
-    // Dipakai pas mode rotasi manual aktif: box ini akan diukur dengan lebar/tinggi parent
-    // ketuker, supaya begitu View-nya diputar 90° secara visual, hasilnya pas muat di layar
-    // (gak kepotong di kiri-kanan).
     var rotated90: Boolean = false
         set(value) {
             if (field == value) return

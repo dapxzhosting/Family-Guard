@@ -95,4 +95,3 @@ class ScreenTimeReportGenerator {
         return builder.toString()
     }
 }
-

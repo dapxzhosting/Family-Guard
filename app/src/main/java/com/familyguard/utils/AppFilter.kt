@@ -49,4 +49,3 @@ object AppFilter {
         return !(homePackage != null && homePackage == packageName)
     }
 }
-

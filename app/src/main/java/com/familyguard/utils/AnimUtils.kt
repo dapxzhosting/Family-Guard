@@ -153,10 +153,6 @@ object AnimUtils {
             .start()
     }
 
-    /**
-     * Ganti drawable ImageView/ImageButton dengan cross-fade halus (misal ikon mata <-> mata-off),
-     * dibarengi sedikit scale biar kerasa "pop"-nya.
-     */
     fun crossFadeImageResource(
         imageView: android.widget.ImageView,
         @androidx.annotation.DrawableRes resId: Int,
@@ -182,11 +178,6 @@ object AnimUtils {
             .start()
     }
 
-    /**
-     * Munculkan overlay bar (top/bottom) dengan fade + slide halus dari tepi layar.
-     * fromTop = true untuk bar yang nempel di atas (slide dari atas ke bawah),
-     * fromTop = false untuk bar yang nempel di bawah (slide dari bawah ke atas).
-     */
     fun slideFadeIn(view: View, fromTop: Boolean, durationMs: Long = 220L) {
         view.animate().cancel()
         val startTranslation = if (fromTop) -view.height.coerceAtLeast(40).toFloat() else view.height.coerceAtLeast(40).toFloat()
@@ -203,10 +194,6 @@ object AnimUtils {
             .start()
     }
 
-    /**
-     * Sembunyikan overlay bar (top/bottom) dengan fade + slide halus ke tepi layar,
-     * baru di-GONE-kan setelah animasinya kelar.
-     */
     fun slideFadeOut(view: View, fromTop: Boolean, durationMs: Long = 200L) {
         if (view.visibility != View.VISIBLE) return
         view.animate().cancel()
@@ -244,4 +231,3 @@ object AnimUtils {
         }
     }
 }
-

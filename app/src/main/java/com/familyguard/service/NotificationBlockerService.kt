@@ -39,4 +39,3 @@ class NotificationBlockerService : NotificationListenerService() {
     companion object {
     }
 }
-

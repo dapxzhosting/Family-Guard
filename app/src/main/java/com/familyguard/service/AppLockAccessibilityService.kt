@@ -177,14 +177,6 @@ class AppLockAccessibilityService : AccessibilityService() {
 
     private class TouchTarget(val left: Float, val top: Float, val width: Float, val height: Float)
 
-    /**
-     * Cari batas window aplikasi yang BENERAN aktif/fokus sekarang di layar HP anak, bukan
-     * asumsi seluruh layar. Ini penting buat app/game yang orientasinya dipaksa landscape:
-     * sistem sering nge-render window app itu "letterbox" (dikompres/di-rotate ke area lebih
-     * kecil di dalam layar), jadi ukuran & posisi window asli BISA BEDA dari ukuran layar penuh.
-     * Kalau ini gagal ketemu (mis. game-nya gak expose window info yang jelas), baru fallback
-     * ke ukuran layar penuh seperti sebelumnya.
-     */
     private fun activeTouchTarget(): TouchTarget {
         try {
             val windowList = windows
@@ -203,7 +195,7 @@ class AppLockAccessibilityService : AccessibilityService() {
                 }
             }
         } catch (e: Exception) {
-            // fallback di bawah
+
         }
         return TouchTarget(
             0f, 0f,
@@ -229,7 +221,6 @@ class AppLockAccessibilityService : AccessibilityService() {
         dispatchGesture(gesture, null, null)
     }
 
-
     override fun onServiceConnected() {
         super.onServiceConnected()
 
@@ -250,13 +241,6 @@ class AppLockAccessibilityService : AccessibilityService() {
         registerDisplayRotationListener()
     }
 
-    /**
-     * Dimensi layar buat konversi koordinat tap (RemoteControlState.realScreenWidth/Height)
-     * sebelumnya cuma diambil sekali pas ScreenCaptureService mulai (biasanya masih portrait).
-     * Kalau anak buka game yang maksa landscape, dimensi layar aslinya berubah tapi nilai lama
-     * gak ikut ke-update — makanya tap dari mode kontrol jadi meleset khusus pas main game.
-     * Listener ini bikin nilainya selalu ke-refresh tiap kali orientasi/ukuran layar berubah.
-     */
     private var displayListenerRegistered = false
 
     private fun registerDisplayRotationListener() {
@@ -301,4 +285,3 @@ class AppLockAccessibilityService : AccessibilityService() {
         var instance: AppLockAccessibilityService? = null
     }
 }
-

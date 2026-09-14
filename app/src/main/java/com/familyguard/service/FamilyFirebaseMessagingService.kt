@@ -122,4 +122,3 @@ class FamilyFirebaseMessagingService : FirebaseMessagingService() {
         const val ACTION_REMOVE = "remove"
     }
 }
-

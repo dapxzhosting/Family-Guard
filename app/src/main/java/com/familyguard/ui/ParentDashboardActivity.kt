@@ -48,13 +48,6 @@ class ParentDashboardActivity : BaseActivity() {
         return selectedChildId
     }
 
-    /**
-     * Commands are queued in Firebase and only reach the child once its
-     * device is back online - there's no delivery confirmation shown
-     * anywhere, so a parent sending a lock/message/pin while the child is
-     * offline has no way of knowing it hasn't landed yet. This just adds a
-     * heads-up to the toast so it's clear the action is pending, not failed.
-     */
     private fun offlineNoticeSuffix(targetDeviceId: String): String {
         val device = childDevices.firstOrNull { it.deviceId == targetDeviceId }
         return if (device != null && !device.online) {
@@ -123,13 +116,6 @@ class ParentDashboardActivity : BaseActivity() {
         setupInbox()
         setupApprovalRequests()
 
-        // Mirrors the same listener already wired up on the child side
-        // (ChildDashboardActivity/ChildMenuActivity) - without this, a
-        // parent sitting on this dashboard when the family gets deleted
-        // (e.g. from another device, or manually in the console) never
-        // finds out: every listener on this screen just goes silently
-        // dead with permission-denied, and the UI stays stuck showing
-        // stale data.
         FamilyLink.listenFamilyDeletion(this) {
             FamilyLink.clearLocalFamilyState(this)
             toast("Keluarga telah dihapus")
@@ -303,9 +289,6 @@ class ParentDashboardActivity : BaseActivity() {
         binding.mapView.setMultiTouchControls(false)
         binding.mapView.controller.setZoom(15.0)
 
-        // Nonaktifkan gesture geser/zoom di preview map ini biar gak "nyolong" gesture
-        // scroll dari ScrollView pas parent lagi discroll. Buat lihat & interaksi peta
-        // penuh, tetap lewat tombol "Lihat Peta Full Layar" (btnOpenMap) di bawahnya.
         binding.mapView.zoomController.setVisibility(
             org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER
         )

@@ -23,8 +23,6 @@ class ParentMenuActivity : BaseActivity() {
 
         updateFamilyStatus()
 
-        // Same gap as ParentDashboardActivity: without this, a parent sitting
-        // on this menu never finds out the family was deleted elsewhere.
         FamilyLink.listenFamilyDeletion(this) {
             FamilyLink.clearLocalFamilyState(this)
             Toast.makeText(this, "Keluarga telah dihapus", Toast.LENGTH_LONG).show()

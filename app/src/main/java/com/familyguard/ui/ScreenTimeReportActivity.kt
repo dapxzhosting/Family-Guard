@@ -142,4 +142,3 @@ class ScreenTimeReportActivity : BaseActivity() {
         private const val DAYS_TOTAL = 14
     }
 }
-

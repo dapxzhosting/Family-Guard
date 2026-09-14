@@ -53,4 +53,3 @@ class UsageAppAdapter(
 
     override fun getItemCount(): Int = items.size
 }
-

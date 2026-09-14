@@ -193,4 +193,3 @@ object AppLockPrefs {
         prefs(context).edit().clear().apply()
     }
 }
-
