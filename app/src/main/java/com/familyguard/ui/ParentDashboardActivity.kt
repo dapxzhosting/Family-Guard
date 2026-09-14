@@ -48,6 +48,22 @@ class ParentDashboardActivity : BaseActivity() {
         return selectedChildId
     }
 
+    /**
+     * Commands are queued in Firebase and only reach the child once its
+     * device is back online - there's no delivery confirmation shown
+     * anywhere, so a parent sending a lock/message/pin while the child is
+     * offline has no way of knowing it hasn't landed yet. This just adds a
+     * heads-up to the toast so it's clear the action is pending, not failed.
+     */
+    private fun offlineNoticeSuffix(targetDeviceId: String): String {
+        val device = childDevices.firstOrNull { it.deviceId == targetDeviceId }
+        return if (device != null && !device.online) {
+            ". HP anak sedang offline, perintah akan dijalankan begitu online kembali."
+        } else {
+            ""
+        }
+    }
+
     private fun requirePinSet(targetDeviceId: String): Boolean {
         val hasPin = childDevices.firstOrNull { it.deviceId == targetDeviceId }?.hasPin ?: false
         if (hasPin) return true
@@ -394,7 +410,7 @@ class ParentDashboardActivity : BaseActivity() {
                 confirmText = "Kunci Sekarang"
             ) {
                 FamilyLink.sendLockScreen(this, target)
-                toast("Perintah kunci layar dikirim")
+                toast("Perintah kunci layar dikirim" + offlineNoticeSuffix(target))
             }
         }
 
@@ -408,7 +424,7 @@ class ParentDashboardActivity : BaseActivity() {
                 confirmText = "Buka Sekarang"
             ) {
                 FamilyLink.sendUnlockScreen(this, target)
-                toast("Perintah buka kunci dikirim")
+                toast("Perintah buka kunci dikirim" + offlineNoticeSuffix(target))
             }
         }
 
@@ -455,7 +471,7 @@ class ParentDashboardActivity : BaseActivity() {
             val target = requireSelectedChildId()
             if (msg.isNotBlank() && target != null) {
                 FamilyLink.sendMessage(this, "Pesan dari Orang Tua", msg, target)
-                toast("Pesan dikirim")
+                toast("Pesan dikirim" + offlineNoticeSuffix(target))
             }
         }
     }
@@ -483,7 +499,7 @@ class ParentDashboardActivity : BaseActivity() {
             val target = requireSelectedChildId()
             if (pin.length == 4 && target != null) {
                 FamilyLink.sendSetPin(this, pin, target)
-                toast("Perintah atur PIN dikirim")
+                toast("Perintah atur PIN dikirim" + offlineNoticeSuffix(target))
             } else if (pin.length != 4) {
                 toast("PIN harus 4 digit!")
             }
