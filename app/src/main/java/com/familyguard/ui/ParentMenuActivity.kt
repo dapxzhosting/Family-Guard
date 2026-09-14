@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.familyguard.R
 import com.familyguard.databinding.ActivityParentMenuBinding
+import com.familyguard.sync.FamilyLink
 import com.familyguard.utils.AccountActions
 import com.familyguard.utils.AnimUtils
 import com.familyguard.utils.AppLockPrefs
@@ -21,6 +22,14 @@ class ParentMenuActivity : BaseActivity() {
         setContentView(binding.root)
 
         updateFamilyStatus()
+
+        // Same gap as ParentDashboardActivity: without this, a parent sitting
+        // on this menu never finds out the family was deleted elsewhere.
+        FamilyLink.listenFamilyDeletion(this) {
+            FamilyLink.clearLocalFamilyState(this)
+            Toast.makeText(this, "Keluarga telah dihapus", Toast.LENGTH_LONG).show()
+            updateFamilyStatus()
+        }
 
         binding.btnMenuDashboard.setOnClickListener {
             if (AppLockPrefs.getFamilyCode(this).isNullOrBlank()) {

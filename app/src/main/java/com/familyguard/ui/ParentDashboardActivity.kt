@@ -122,6 +122,24 @@ class ParentDashboardActivity : BaseActivity() {
         observeChildLeftNotice()
         setupInbox()
         setupApprovalRequests()
+
+        // Mirrors the same listener already wired up on the child side
+        // (ChildDashboardActivity/ChildMenuActivity) - without this, a
+        // parent sitting on this dashboard when the family gets deleted
+        // (e.g. from another device, or manually in the console) never
+        // finds out: every listener on this screen just goes silently
+        // dead with permission-denied, and the UI stays stuck showing
+        // stale data.
+        FamilyLink.listenFamilyDeletion(this) {
+            FamilyLink.clearLocalFamilyState(this)
+            toast("Keluarga telah dihapus")
+            startActivity(
+                Intent(this, ParentMenuActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            )
+            finish()
+        }
     }
 
     private fun setupApprovalRequests() {
