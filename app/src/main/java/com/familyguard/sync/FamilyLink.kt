@@ -188,8 +188,20 @@ object FamilyLink {
             return
         }
         val id = AppLockPrefs.getDeviceId(context)
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+
+        // Remove the device entry first; membership (which grants write access
+        // to the rest of the family subtree, including this device node) must
+        // be removed last so this call still has permission while it runs.
         deviceRef(code, id).removeValue()
-            .addOnCompleteListener { onComplete?.invoke() }
+            .addOnCompleteListener {
+                if (uid != null) {
+                    familyRef(code).child("members").child(uid).removeValue()
+                        .addOnCompleteListener { onComplete?.invoke() }
+                } else {
+                    onComplete?.invoke()
+                }
+            }
     }
 
     fun notifyChildLeftFamily(context: Context, onComplete: (() -> Unit)? = null) {
@@ -248,8 +260,20 @@ object FamilyLink {
             return
         }
 
-        deviceRef(code, targetDeviceId).removeValue()
-            .addOnCompleteListener { onComplete?.invoke() }
+        deviceRef(code, targetDeviceId).child("uid").get()
+            .addOnSuccessListener { snap ->
+                val targetUid = snap.getValue(String::class.java)
+                deviceRef(code, targetDeviceId).removeValue()
+                    .addOnCompleteListener {
+                        if (targetUid != null) {
+                            familyRef(code).child("members").child(targetUid).removeValue()
+                                .addOnCompleteListener { onComplete?.invoke() }
+                        } else {
+                            onComplete?.invoke()
+                        }
+                    }
+            }
+            .addOnFailureListener { onComplete?.invoke() }
     }
 
     private var kickListenerRef: DatabaseReference? = null
@@ -474,17 +498,28 @@ object FamilyLink {
         val userName = AppLockPrefs.getUserName(context) ?: ""
 
         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+
+            return
+        }
+
+        // IMPORTANT: this must be written before any other write under
+        // families/$code, since the security rules only grant write access
+        // to a family once the caller's uid exists under members/. Firebase
+        // preserves write order on a single connection, so issuing this
+        // first guarantees the membership is applied before the writes below.
+        familyRef(code).child("members").child(uid).setValue(true)
+            .addOnFailureListener { e ->
+
+            }
 
         deviceRef(code, id).apply {
             child("role").setValue(role)
             child("userName").setValue(userName)
+            child("uid").setValue(uid)
+                .addOnFailureListener { e ->
 
-            if (uid != null) {
-                child("uid").setValue(uid)
-                    .addOnFailureListener { e ->
-
-                    }
-            }
+                }
             child("online").setValue(true)
             child("lastSeen").setValue(System.currentTimeMillis())
             child("model").setValue(android.os.Build.MODEL)
