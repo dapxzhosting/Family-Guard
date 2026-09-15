@@ -1,5 +1,0 @@
-sdk.dir=/path/to/your/Android/Sdk
-
-turn.host=your-turn-server-host
-turn.username=your-turn-username
-turn.credential=your-turn-credential
